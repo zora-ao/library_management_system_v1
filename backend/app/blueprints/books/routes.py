@@ -7,7 +7,9 @@ books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 
 # For deleting a book
 @books_bp.delete("/<int:id>")
+@jwt_required()
 def delete_book(id):
+
   book = db.session.get(Book, id)
 
   if not book:
@@ -21,6 +23,7 @@ def delete_book(id):
   return jsonify({
     "message": "Book deleted successfully"
   }), 200
+
 
 # For updating a book
 @books_bp.put("/<int:id>")
@@ -46,7 +49,7 @@ def update_book(id):
 
   return jsonify({
     "message": "Book updated successfully"
-  }), 200
+  }), 220
 
 
 # For creating a book
@@ -67,7 +70,7 @@ def create_book():
   category = data.get("category")
   quantity = data.get("quantity")
 
-  if not title or not author:
+  if not all([title, author]):
     return jsonify({
       "message": "Title and Author fields are required"
     }), 400
@@ -100,9 +103,9 @@ def create_book():
     }), 500
 
   return jsonify({
-    "message": "Book added successfully"
+    "message": "Book created successfully"
   }), 201
-
+  
 
 # For getting a single book
 @books_bp.get("/<int:id>")
@@ -118,7 +121,6 @@ def get_book(id):
 
   return jsonify(book.to_dict()), 200
 
-# For getting all the books
 @books_bp.get("/")
 @jwt_required()
 def get_books():

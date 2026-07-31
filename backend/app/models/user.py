@@ -11,6 +11,8 @@ class User(db.Model):
   course = db.Column(db.String(100), nullable=False)
   role = db.Column(db.String(20), nullable=False, default='student')
 
+  borrows = db.relationship("Borrow", backref="user", lazy=True)
+
   def to_dict(self):
     return {
         "id": self.id,

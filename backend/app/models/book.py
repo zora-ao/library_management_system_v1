@@ -12,6 +12,8 @@ class Book(db.Model):
   available = db.Column(db.Integer, default=1)
   created_at = db.Column(db.DateTime, default=db.func.now())
 
+  borrow = db.relationship("Borrow", backref="book", lazy=True)
+
   def to_dict(self):
     return {
         "id": self.id,
