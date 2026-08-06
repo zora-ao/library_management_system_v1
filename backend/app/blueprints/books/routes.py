@@ -1,7 +1,11 @@
 from flask import Blueprint, jsonify, request
-from app.models.book import Book
-from app.extensions import db
 from flask_jwt_extended import jwt_required
+
+from app.models.book import Book
+from app.models.borrow import Borrow
+from app.extensions import db
+from app.utils.cloudinary import upload_book_cover, delete_book_cover
+
 
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 
@@ -12,12 +16,27 @@ def delete_book(id):
 
   book = db.session.get(Book, id)
 
-  if not book:
+  if not book or book.is_deleted:
     return jsonify({
       "message": "Book not found"
     }), 404
 
-  db.session.delete(book)
+  active_book = Borrow.query.filter_by(
+    book_id=id,
+    status="borrowed"
+  ).first()
+
+  if active_book:
+    return jsonify({
+      "message": "Cannot delete book, currently borrowed"
+    }), 400
+
+  book.is_deleted = True
+
+  if book.image_url:
+    delete_book_cover(book.image_url)
+    book.image_url = None
+
   db.session.commit()
 
   return jsonify({
@@ -37,22 +56,29 @@ def update_book(id):
       "message": "Book not found"
     }), 404
 
-  data = request.get_json()
+  book.isbn = request.form.get("isbn", book.isbn)
+  book.title = request.form.get("title", book.title)
+  book.author = request.form.get("author", book.author)
+  book.category = request.form.get("category", book.category)
+  book.total_copies = request.form.get("total_copies", book.total_copies, type=int)
+  book.description = request.form.get("description", book.description)
+  book.pages = request.form.get("pages", book.pages, type=int)
 
-  book.isbn = data.get("isbn", book.isbn)
-  book.title = data.get("title", book.title)
-  book.author = data.get("author", book.author)
-  book.category = data.get("category", book.category)
-  book.total_copies = data.get("total_copies", book.total_copies)
-  book.description = data.get("description", book.description)
-  book.pages = data.get("pages", book.pages)
+  if "image" in request.files["image"] and request.files["image"].filename != "":
+    try:
+      image_file = request.files["image"]
+      book.image_url = upload_book_cover(image_file)
+    except Exception as e:
+      return jsonify({
+        "message": f"Image upload failed: {str(e)}"
+      }), 500
   
-
   db.session.commit()
 
   return jsonify({
-    "message": "Book updated successfully"
-  }), 220
+    "message": "Book updated successfully",
+    "book": book.to_dict()
+  }), 200
 
 
 # For creating a book
@@ -60,34 +86,39 @@ def update_book(id):
 @jwt_required()
 def create_book():
 
-  data = request.get_json()
-
-  if data is None:
-    return jsonify({
-      "message": "Request body must be JSON"
-    }), 400
-
-  isbn = data.get("isbn")
-  title = data.get("title")
-  author = data.get("author")
-  category = data.get("category")
-  total_copies = data.get("total_copies")
-  description = data.get("description")
-  pages = data.get("pages")
+  isbn = request.form.get("isbn")
+  title = request.form.get("title")
+  author = request.form.get("author")
+  category = request.form.get("category")
+  total_copies = request.form.get("total_copies", default=1, type=int)
+  description = request.form.get("description")
+  pages = request.form.get("pages", type=int)
 
   if not all([title, author]):
     return jsonify({
       "message": "Title and Author fields are required"
     }), 400
 
-  existing_book = Book.query.filter_by(
-    isbn=isbn
-  ).first()
+  if isbn:
+    existing_book = Book.query.filter_by(
+      isbn=isbn
+    ).first()
 
-  if existing_book:
-    return jsonify({
-      "message": "Book ISBN already exist"
-    }), 409
+    if existing_book:
+      return jsonify({
+        "message": "Book ISBN already exist"
+      }), 409
+
+  image_url = None
+  if "image" in request.files and request.files["image"].filename != "":
+    try:
+      image_file = request.files["image"]
+      image_url = upload_book_cover(image_file)
+    except Exception as e:
+      return jsonify({
+          "message": f"Image upload failed: {str(e)}"
+        }), 500
+
 
   book = Book(
     isbn=isbn,
@@ -97,7 +128,8 @@ def create_book():
     total_copies=total_copies,
     available_copies=total_copies,
     description=description,
-    pages=pages
+    pages=pages,
+    image_url=image_url
   )
 
   try:
@@ -110,7 +142,8 @@ def create_book():
     }), 500
 
   return jsonify({
-    "message": "Book created successfully"
+    "message": "Book created successfully",
+    "book": book.to_dict()
   }), 201
   
 
@@ -121,7 +154,7 @@ def get_book(id):
 
   book = db.session.get(Book, id)
 
-  if not book:
+  if not book or book.is_deleted:
     return jsonify({
       "message": "Book not found"
     }), 404
@@ -132,7 +165,7 @@ def get_book(id):
 @jwt_required()
 def get_books():
 
-  books = Book.query.all()
+  books = Book.query.filter_by(is_deleted=False).all()
 
   books_list = []
 
