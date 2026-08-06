@@ -43,7 +43,10 @@ def update_book(id):
   book.title = data.get("title", book.title)
   book.author = data.get("author", book.author)
   book.category = data.get("category", book.category)
-  book.quantity = data.get("quantity", book.quantity)
+  book.total_copies = data.get("total_copies", book.total_copies)
+  book.description = data.get("description", book.description)
+  book.pages = data.get("pages", book.pages)
+  
 
   db.session.commit()
 
@@ -68,7 +71,9 @@ def create_book():
   title = data.get("title")
   author = data.get("author")
   category = data.get("category")
-  quantity = data.get("quantity")
+  total_copies = data.get("total_copies")
+  description = data.get("description")
+  pages = data.get("pages")
 
   if not all([title, author]):
     return jsonify({
@@ -89,8 +94,10 @@ def create_book():
     title=title,
     author=author,
     category=category,
-    quantity=quantity,
-    available=quantity
+    total_copies=total_copies,
+    available_copies=total_copies,
+    description=description,
+    pages=pages
   )
 
   try:
