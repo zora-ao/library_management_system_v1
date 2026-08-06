@@ -30,17 +30,17 @@ def login():
   data = request.get_json()
 
   if data is None:
-    return {
+    return jsonify({
       "message": "Request body must be JSON"
-    }, 400
+    }), 400
 
   student_number = data.get("student_number")
   password = data.get("password")
 
-  if not all([student_number, password]):
-    return {
+  if not student_number or not password:
+    return jsonify({
       "message": "All fields are required"
-    }, 400
+    }), 400
 
   user = User.query.filter_by(
     student_number=student_number
@@ -49,22 +49,20 @@ def login():
   if user is None or not check_password_hash(user.password, password):
     return jsonify({
       "message": "Invalid Credentials"
-    }), 401
+    }), 404
 
   token = create_access_token(
     identity=str(user.id),
     additional_claims={
       "role": user.role
     }
-  )
+  )  
 
   return jsonify({
     "access_token": token,
     "token_type": "Bearer",
     "user": user.to_dict()
   }), 200
-
-
 
 # --------register---------
 @auth_bp.post("/register")
@@ -73,9 +71,9 @@ def register():
   data = request.get_json()
 
   if data is None:
-    return {
-      "message": "Request body must be JSON"
-    }, 400
+    return jsonify({
+      "message": "Request body must JSON"
+    }), 400
 
   student_number = data.get("student_number")
   first_name = data.get("first_name")
@@ -84,28 +82,28 @@ def register():
   course = data.get("course")
 
   if not all([student_number, first_name, last_name, password, course]):
-    return {
+    return jsonify({
       "message": "All fields are required"
-    }, 400
+    }), 400
 
   existing_user = User.query.filter_by(
     student_number=student_number
   ).first()
 
   if existing_user:
-    return {
+    return jsonify({
       "message": "Student number already exist"
-    }, 409
+    }), 409
 
   user = User(
-    student_number=student_number,
-    first_name=first_name,
-    last_name=last_name,
-    password=generate_password_hash(password),
-    course=course,
+    student_number = student_number,
+    first_name = first_name,
+    last_name = last_name,
+    password = generate_password_hash(password),
+    course = course
   )
 
-  try:
+  try: 
     db.session.add(user)
     db.session.commit()
   except Exception:
@@ -117,3 +115,4 @@ def register():
   return jsonify({
     "message": "Account created successfully"
   }), 201
+

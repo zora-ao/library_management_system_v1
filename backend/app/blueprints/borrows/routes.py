@@ -7,11 +7,60 @@ from app.models.book import Book
 
 borrows_bp = Blueprint("borrow", __name__, url_prefix="/api/borrow")
 
-BORROW_DURATION_DAYS = 14
+# Returning book
+@borrows_bp.post("/<int:id>/return")
+@jwt_required()
+def return_book(id):
 
+  user_id = int(get_jwt_identity())
+  borrow = db.session.get(Borrow, id)
+
+  if borrow is None:
+    return jsonify({
+      "message": "Borrow record not found"
+    }), 404
+
+  if borrow.user_id != user_id:
+    return jsonify({
+      "message": "Unauthorized"
+    }), 403
+
+  if borrow.returned_at is not None:
+    return jsonify({
+      "message": "Book has been already returned"
+    }), 400
+
+  book = db.session.get(Book, borrow.book_id)
+
+  if book is None:
+    return jsonify({
+      "message": "Book not found"
+    }), 404
+
+  borrow.returned_at = datetime.now(timezone.utc)
+  borrow.status = "returned"
+  book.available += 1
+
+  try:
+    db.session.commit()
+  except Exception:
+    db.session.rollback()
+    return jsonify({
+      "message": "Something went wrong"
+    }),500
+
+  return jsonify({
+    "message": "Book returned successfully",
+    "borrow": borrow.to_dict()
+  }), 200
+
+
+
+# For borrowing book
 @borrows_bp.post("/")
 @jwt_required()
 def borrow_book():
+  BORROW_DURATION_DAYS = 14
 
   user_id = int(get_jwt_identity())
   data = request.get_json()
@@ -62,7 +111,7 @@ def borrow_book():
 
     book.available -= 1
 
-    db.session.add(book)
+    db.session.add(borrow)
     db.session.commit()
 
     return jsonify({
