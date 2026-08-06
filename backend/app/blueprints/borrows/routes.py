@@ -7,6 +7,38 @@ from app.models.book import Book
 
 borrows_bp = Blueprint("borrow", __name__, url_prefix="/api/borrow")
 
+# Getting the borrowed books
+@borrows_bp.get("/me")
+@jwt_required()
+def get_borrowed_books():
+
+  user_id = int(get_jwt_identity())
+
+  active_borrows = Borrow.query.filter_by(
+    user_id=user_id,
+    returned_at=None
+  ).all()
+
+  if not active_borrows:
+    return jsonify({
+      "message": "You don't have an active borrowed books",
+      "borrowed_book": []
+    }), 200
+
+  result = []
+
+  for borrow in active_borrows:
+    book = db.session.get(Book, borrow.book_id)
+    if book:
+      result.append(book.to_dict())
+
+
+  return jsonify({
+    "count": len(result),
+    "borrowed_books": result
+  }), 200
+
+
 # Returning book
 @borrows_bp.post("/<int:id>/return")
 @jwt_required()
