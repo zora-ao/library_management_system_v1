@@ -34,25 +34,25 @@ def login():
       "message": "Request body must be JSON"
     }), 400
 
-  student_number = data.get("student_number")
+  email = data.get("email")
   password = data.get("password")
 
-  if not student_number or not password:
+  if not email or not password:
     return jsonify({
       "message": "All fields are required"
     }), 400
 
   user = User.query.filter_by(
-    student_number=student_number
+    email=email
   ).first()
 
-  if user is None or not check_password_hash(user.password, password):
+  if user is None or not check_password_hash(user.password_hash, password):
     return jsonify({
       "message": "Invalid Credentials"
     }), 404
 
   token = create_access_token(
-    identity=str(user.id),
+    identity=str(user.user_id),
     additional_claims={
       "role": user.role
     }
@@ -76,18 +76,18 @@ def register():
     }), 400
 
   student_number = data.get("student_number")
-  first_name = data.get("first_name")
-  last_name = data.get("last_name")
+  username = data.get("username")
+  email = data.get("email")
   password = data.get("password")
   course = data.get("course")
 
-  if not all([student_number, first_name, last_name, password, course]):
+  if not all([email, username, password]):
     return jsonify({
       "message": "All fields are required"
     }), 400
 
   existing_user = User.query.filter_by(
-    student_number=student_number
+    email=email
   ).first()
 
   if existing_user:
@@ -97,9 +97,9 @@ def register():
 
   user = User(
     student_number = student_number,
-    first_name = first_name,
-    last_name = last_name,
-    password = generate_password_hash(password),
+    username=username,
+    email=email,
+    password_hash = generate_password_hash(password),
     course = course
   )
 
