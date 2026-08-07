@@ -71,7 +71,7 @@ def return_book(id):
 
   borrow.returned_at = datetime.now(timezone.utc)
   borrow.status = "returned"
-  book.available += 1
+  book.available_copies += 1
 
   try:
     db.session.commit()
@@ -116,7 +116,7 @@ def borrow_book():
       "message": "Book not found"
     }), 404
 
-  if book.available <= 0:
+  if book.available_copies <= 0:
     return jsonify({
       "message": "Book is currently out of stock"
     }), 400
@@ -141,7 +141,7 @@ def borrow_book():
       due_date=due_date
     )
 
-    book.available -= 1
+    book.available_copies -= 1
 
     db.session.add(borrow)
     db.session.commit()

@@ -43,7 +43,7 @@ def login():
     }), 400
 
   user = User.query.filter_by(
-    email=email
+    email=email.lower().strip()
   ).first()
 
   if user is None or not check_password_hash(user.password_hash, password):
@@ -83,22 +83,22 @@ def register():
 
   if not all([email, username, password]):
     return jsonify({
-      "message": "All fields are required"
+      "message": "Email, username, and password are required"
     }), 400
 
   existing_user = User.query.filter_by(
-    email=email
+    email=email.lower().strip()
   ).first()
 
   if existing_user:
     return jsonify({
-      "message": "Student number already exist"
+      "message": "Email is already exist"
     }), 409
 
   user = User(
     student_number = student_number,
     username=username,
-    email=email,
+    email=email.lower().strip(),
     password_hash = generate_password_hash(password),
     course = course
   )
