@@ -3,9 +3,13 @@ import LoginPage from "./pages/LoginPage"
 import { ProtectedRoute } from "./routes/ProtectedRoute"
 import HomePage from "./pages/HomePage"
 import RegisterPage from "./pages/RegisterPage"
+import MainLayout from "./components/ui/layout/MainLayout"
+import { useAuth } from "./hooks/useAuth"
 
 
 const App = () => {
+  const { user } = useAuth();
+
   return (
     <Routes>
 
@@ -16,7 +20,15 @@ const App = () => {
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         {/* Routes with authentication */}
-        <Route path="/home" element={<HomePage />} />
+        <Route element={<MainLayout />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/dashboard" element={<div>Dashboard Content</div>} />
+          <Route path="/books" element={<div>Books Management Table</div>} />
+          <Route path="/borrows" element={<div>My Borrows</div>} />
+          {user?.role == "admin" && (
+            <Route path="/users" element={<div>Users Lists</div>} />
+          )}
+        </Route>
       </Route>
 
       {/* Default Route */}
