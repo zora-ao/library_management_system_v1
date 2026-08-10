@@ -1,12 +1,12 @@
 
 export interface Book {
-  id: string;
+  book_id: string;
   isbn?: string;
   title: string;
   author: string;
   category: string;
-  totalCopies: number;
-  availableCopies: number;
+  total_copies: number;
+  available_copies: number;
   image_url: string;
   description?: string;
   pages: number;
