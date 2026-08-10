@@ -7,8 +7,12 @@ export interface Book {
   category: string;
   totalCopies: number;
   availableCopies: number;
-  imageUrl: string;
+  image_url: string;
   description?: string;
   pages: number;
 }
 
+export interface BookResponse {
+  message: string;
+  book: Book
+}

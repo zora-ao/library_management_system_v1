@@ -38,7 +38,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       login(res.access_token, res.user);
       if (onSuccess) onSuccess();
 
-      navigate("/home")
+      navigate("/dashboard")
     } catch (err: any) {
       setServerError(
         err.response?.data?.message || "Invalid credentials. Please try again."

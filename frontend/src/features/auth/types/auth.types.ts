@@ -1,3 +1,5 @@
+export type UserRole = "student" | "librarian" | "admin";
+
 export interface User {
   id: string;
   username: string;
@@ -5,7 +7,7 @@ export interface User {
   email: string;
   password: string;
   course?: string;
-  role: "student" | "admin";
+  role: UserRole;
 }
 
 export interface AuthResponse {

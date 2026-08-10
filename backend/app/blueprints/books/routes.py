@@ -82,7 +82,7 @@ def update_book(id):
 
 
 # For creating a book
-@books_bp.post("/")
+@books_bp.post("")
 @jwt_required()
 def create_book():
 
@@ -161,7 +161,7 @@ def get_book(id):
 
   return jsonify(book.to_dict()), 200
 
-@books_bp.get("/")
+@books_bp.get("")
 @jwt_required()
 def get_books():
 

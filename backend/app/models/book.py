@@ -28,6 +28,7 @@ class Book(db.Model):
         "category": self.category,
         "image_url": self.image_url,
         "total_copies": self.total_copies,
+        "available_copies": self.available_copies,
         "description": self.description,
         "pages": self.pages,
         "created_at": self.created_at.isoformat() if self.created_at else None

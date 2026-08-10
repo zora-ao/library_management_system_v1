@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "../button";
-import { BookmarkCheck, BookOpen, ChevronLeft, ChevronRight, LayoutDashboard, LogOut, User } from "lucide-react";
+import { BookAIcon, BookmarkCheck, BookOpen, ChevronLeft, ChevronRight, LayoutDashboard, LogOut, User } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import type React from "react";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ const Navbar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
     ...(user?.role == "admin"
       ? [
         { label: "Manage User", path: "/users", icon: User },
+        { label: "Books List", path: "/book-list", icon: BookAIcon }
       ]
       : []
     ),

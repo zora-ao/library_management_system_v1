@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage"
 import RegisterPage from "./pages/RegisterPage"
 import MainLayout from "./components/ui/layout/MainLayout"
 import { useAuth } from "./hooks/useAuth"
+import BooksListPage from "./pages/BooksListPage"
 
 
 const App = () => {
@@ -21,12 +22,14 @@ const App = () => {
       <Route element={<ProtectedRoute />}>
         {/* Routes with authentication */}
         <Route element={<MainLayout />}>
-          <Route path="/home" element={<HomePage />} />
           <Route path="/dashboard" element={<div>Dashboard Content</div>} />
-          <Route path="/books" element={<div>Books Management Table</div>} />
+          <Route path="/books" element={<HomePage />} />
           <Route path="/borrows" element={<div>My Borrows</div>} />
           {user?.role == "admin" && (
-            <Route path="/users" element={<div>Users Lists</div>} />
+            <>
+              <Route path="/users" element={<div>Users Lists</div>} />
+              <Route path="/book-list" element={<BooksListPage />} />
+            </>
           )}
         </Route>
       </Route>
