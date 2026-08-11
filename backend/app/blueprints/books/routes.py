@@ -64,7 +64,7 @@ def update_book(id):
   book.description = request.form.get("description", book.description)
   book.pages = request.form.get("pages", book.pages, type=int)
 
-  if "image" in request.files["image"] and request.files["image"].filename != "":
+  if "image" in request.files and request.files["image"].filename != "":
     try:
       image_file = request.files["image"]
       book.image_url = upload_book_cover(image_file)

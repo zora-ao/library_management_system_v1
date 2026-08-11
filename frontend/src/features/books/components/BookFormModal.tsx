@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -13,18 +13,24 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useCreateBooks } from "@/hooks/useBooks";
+import { useCreateBooks, useUpdateBooks } from "@/hooks/useBooks";
 import { type BookFormData, bookSchema } from "../types/book.schema";
 import { Loader2, Upload, X } from "lucide-react";
+import type { Book } from "../types/book.types";
 
 interface BookFormModalProps {
   isOpen: boolean;
   onClose: () => void;
+  book?: Book | null;
 }
 
-const BookFormModal = ({ isOpen, onClose }: BookFormModalProps) => {
+const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
   const createBookMutation = useCreateBooks();
+  const updateBookMutation = useUpdateBooks();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const isEditing = !!book;
+  const isPending = createBookMutation.isPending || updateBookMutation.isPending;
 
   const {
     register,
@@ -45,6 +51,33 @@ const BookFormModal = ({ isOpen, onClose }: BookFormModalProps) => {
       image: undefined,
     },
   });
+
+  useEffect(() => {
+    if (book) {
+      reset({
+        title: book.title || "",
+        author: book.author || "",
+        isbn: book.isbn || "",
+        category: book.category || "",
+        description: book.description || "",
+        total_copies: book.total_copies ?? 1,
+        pages: book.pages ? String(book.pages) : "",
+      });
+      setImagePreview(book.image_url || null);
+    } else {
+      reset({
+        title: "",
+        author: "",
+        isbn: "",
+        category: "",
+        description: "",
+        total_copies: 1,
+        pages: "",
+        image: undefined,
+      });
+      setImagePreview(null);
+    }
+  }, [book, reset, isOpen])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,11 +103,15 @@ const BookFormModal = ({ isOpen, onClose }: BookFormModalProps) => {
   };
 
   const onSubmit = (data: BookFormData) => {
-    createBookMutation.mutate(data, {
-      onSuccess: () => {
-        handleClose();
-      },
-    });
+    if (isEditing && book){
+      const bookId = parseInt(book.book_id);
+      updateBookMutation.mutate(
+        { bookId, data },
+        { onSuccess: handleClose }
+      );
+    } else {
+      createBookMutation.mutate(data, { onSuccess: handleClose });
+    }
   };
 
   return (

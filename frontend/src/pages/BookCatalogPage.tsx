@@ -20,7 +20,7 @@ const BookCatalogPage = () => {
         Error loading catalog: {error.message}
       </div>
     );
-  }
+  } 
 
   return (
     <div className="p-6">

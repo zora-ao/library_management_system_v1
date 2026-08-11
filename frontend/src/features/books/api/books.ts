@@ -31,5 +31,36 @@ export const createBook = async( data: BookFormData ): Promise<BookResponse> => 
   });
 
   return res.data
+};
 
-} 
+export const updateBook = async(
+  bookId: number,
+  data: BookFormData
+): Promise<BookResponse> => {
+
+  const formData = new FormData();
+
+  if (data.title !== undefined) formData.append("title", data.title);
+  if (data.author !== undefined) formData.append("author", data.author);
+  if (data.isbn !== undefined) formData.append("isbn", data.isbn ?? "");
+  if (data.category !== undefined) formData.append("category", data.category ?? "");
+  if (data.total_copies !== undefined) formData.append("total_copies", String(data.total_copies));
+  if (data.description !== undefined) formData.append("description", data.description ?? "");
+  if (data.pages !== undefined) formData.append("pages", String(data.pages));
+
+  if(data.image instanceof File){
+    formData.append("image", data.image);
+  }
+
+  const res = await api.put<BookResponse>(`/books/${bookId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    }
+  });
+
+  return res.data;
+};
+
+export const deleteBook = async(bookId: number): Promise<void> => {
+  await api.delete(`/books/${bookId}`);
+};
