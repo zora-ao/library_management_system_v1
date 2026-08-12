@@ -1,15 +1,17 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
+from sqlalchemy.orm import joinedload
 
 from app.models import Book, Borrow, Category
 from app.extensions import db
 from app.utils.cloudinary import upload_book_cover, delete_book_cover
 
+from middleware.auth import admin_required
+
 
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 
 # For getting or setting the category
-
 def get_or_create_category(category_input):
 
   if not category_input:
@@ -33,10 +35,35 @@ def get_or_create_category(category_input):
 
   return new_category.category_id
 
+# For restoring a book
+@books_bp.put()
+@admin_required()
+def restore_book(id):
+  book = db.session.get(Book, id)
+
+  if not book or not book.is_deleted:
+    return jsonify({
+      "message": "Book not found or not deleted"
+    }), 404
+
+  book.is_deleted = False
+
+  try:
+    db.session.commit()
+  except Exception:
+    db.session.rollback()
+    return jsonify({
+      "message": "Failed to restore a book"
+    }), 500
+
+  return jsonify({
+    "message": "Book successfully restored",
+    "book": book.to_dict()
+  }), 200
 
 # For deleting a book
 @books_bp.delete("/<int:id>")
-@jwt_required()
+@admin_required()
 def delete_book(id):
 
   book = db.session.get(Book, id)
@@ -58,20 +85,22 @@ def delete_book(id):
 
   book.is_deleted = True
 
-  if book.image_url:
-    delete_book_cover(book.image_url)
-    book.image_url = None
-
-  db.session.commit()
+  try:
+      db.session.commit()
+  except Exception:
+      db.session.rollback()
+      return jsonify({
+          "message": "Failed to delete book"
+      }), 500
 
   return jsonify({
-    "message": "Book deleted successfully"
+      "message": "Book deleted successfully"
   }), 200
 
 
 # For updating a book
 @books_bp.put("/<int:id>")
-@jwt_required()
+@admin_required()
 def update_book(id):
 
   book = db.session.get(Book, id)
@@ -120,7 +149,7 @@ def update_book(id):
 
 # For creating a book
 @books_bp.post("")
-@jwt_required()
+@admin_required()
 def create_book():
 
   isbn = request.form.get("isbn")
@@ -190,6 +219,7 @@ def create_book():
 @books_bp.get("/<int:id>")
 @jwt_required()
 def get_book(id):
+  book = Book.query.options(joinedload(Book.category)).filter_by(book_id=id, is_deleted=False).first()
 
   book = db.session.get(Book, id)
 
@@ -204,12 +234,29 @@ def get_book(id):
 @jwt_required()
 def get_books():
 
-  books = Book.query.filter_by(is_deleted=False).all()
+  search_query = request.args.get("search", "").strip()
+  page = request.args.get("page", 1, type=int)
+  limit = request.args.get("limit", 10, type=int)
 
-  books_list = []
+  query = Book.query.options(joinedload(Book.category)).filter(Book.is_deleted == False)
 
-  for book in books:
-    books_list.append(book.to_dict())
+  if search_query:
+    query = query.filter(
+      Book.title.ilike(f"%{search_query}%") |
+      Book.author.ilike(f"%{search_query}%")
+    )
 
-  return jsonify(books_list), 200
+  paginated_books = query.paginate(page=page, per_page=limit, error_out=False)
 
+
+  return jsonify({
+    "books": [book.to_dict() for book in paginated_books.items],
+    "pagination": {
+      "total_items": paginated_books.total,
+      "total_pages": paginated_books.pages,
+      "current_page": paginated_books.page,
+      "per_page": paginated_books.per_page,
+      "has_next": paginated_books.has_next,
+      "has_prev": paginated_books.has_prev
+    }
+  }), 200
