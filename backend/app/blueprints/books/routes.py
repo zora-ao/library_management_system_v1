@@ -1,13 +1,38 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 
-from app.models.book import Book
-from app.models.borrow import Borrow
+from app.models import Book, Borrow, Category
 from app.extensions import db
 from app.utils.cloudinary import upload_book_cover, delete_book_cover
 
 
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
+
+# For getting or setting the category
+
+def get_or_create_category(category_input):
+
+  if not category_input:
+    return None
+
+  clean_name = category_input.strip()
+  if not clean_name:
+    return None
+
+  existing_category = Category.query.filter(
+    db.func.lower(Category.name) == clean_name.lower()
+  ).first()
+
+  if existing_category:
+    return existing_category.category_id
+
+  new_category = Category(name=clean_name)
+  db.session.add(new_category)
+  db.session.flush()
+  db.session.commit()
+
+  return new_category.category_id
+
 
 # For deleting a book
 @books_bp.delete("/<int:id>")
@@ -51,18 +76,30 @@ def update_book(id):
 
   book = db.session.get(Book, id)
 
-  if not book:
-    return jsonify({
-      "message": "Book not found"
-    }), 404
+  if not book or book.is_deleted:
+      return jsonify({
+        "message": "Book not found"
+      }), 404
 
-  book.isbn = request.form.get("isbn", book.isbn)
+  new_isbn = request.form.get("isbn")
+    # Check ISBN uniqueness if changed
+  if new_isbn and new_isbn != book.isbn:
+      existing_isbn = Book.query.filter(Book.isbn == new_isbn, Book.book_id != id).first()
+      if existing_isbn:
+          return jsonify({
+              "message": "Book ISBN already exists"
+          }), 409
+      book.isbn = new_isbn
+
   book.title = request.form.get("title", book.title)
   book.author = request.form.get("author", book.author)
-  book.category = request.form.get("category", book.category)
   book.total_copies = request.form.get("total_copies", book.total_copies, type=int)
   book.description = request.form.get("description", book.description)
   book.pages = request.form.get("pages", book.pages, type=int)
+
+  category_input = request.form.get("category_name")
+  if category_input:
+    book.category_id = get_or_create_category(category_input)
 
   if "image" in request.files and request.files["image"].filename != "":
     try:
@@ -89,7 +126,6 @@ def create_book():
   isbn = request.form.get("isbn")
   title = request.form.get("title")
   author = request.form.get("author")
-  category = request.form.get("category")
   total_copies = request.form.get("total_copies", default=1, type=int)
   description = request.form.get("description")
   pages = request.form.get("pages", type=int)
@@ -98,6 +134,9 @@ def create_book():
     return jsonify({
       "message": "Title and Author fields are required"
     }), 400
+
+  category_input = request.form.get("category_name")
+  category_id = get_or_create_category(category_input)
 
   if isbn:
     existing_book = Book.query.filter_by(
@@ -124,7 +163,7 @@ def create_book():
     isbn=isbn,
     title=title,
     author=author,
-    category=category,
+    category_id=category_id,
     total_copies=total_copies,
     available_copies=total_copies,
     description=description,

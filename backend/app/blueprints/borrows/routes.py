@@ -2,8 +2,7 @@ from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
-from app.models.borrow import Borrow
-from app.models.book import Book
+from app.models import Borrow, Book
 
 borrows_bp = Blueprint("borrow", __name__, url_prefix="/api/borrow")
 

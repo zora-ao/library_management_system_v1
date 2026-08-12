@@ -7,7 +7,7 @@ class Book(db.Model):
   isbn = db.Column(db.String(20), unique=True)
   title = db.Column(db.String(200), nullable=False)
   author = db.Column(db.String(100), nullable=False)
-  category = db.Column(db.String(50))
+  category_id = db.Column(db.Integer, db.ForeignKey("categories.category_key"), nullable=True)
   
   image_url = db.Column(db.String(500), nullable=True)
   total_copies = db.Column(db.Integer, nullable=False, default=1)
@@ -25,7 +25,8 @@ class Book(db.Model):
         "isbn": self.isbn,
         "title": self.title,
         "author": self.author,
-        "category": self.category,
+        "category_id": self.category_id,
+        "category_name": self.category.name if self.category else None,
         "image_url": self.image_url,
         "total_copies": self.total_copies,
         "available_copies": self.available_copies,
