@@ -13,9 +13,9 @@ def me():
   user_id = int(get_jwt_identity())
   user = db.session.get(User, user_id)
 
-  if user is None:
+  if not user or not user.is_active:
     return {
-      "message": "User not found"
+      "message": "User not found or inactive"
     }, 404
 
   return jsonify({
@@ -27,92 +27,81 @@ def me():
 @auth_bp.post("/login")
 def login():
 
-  data = request.get_json()
+  data = request.get_json() or {}
 
-  if data is None:
-    return jsonify({
-      "message": "Request body must be JSON"
-    }), 400
-
-  email = data.get("email")
+  email = data.get("email", "").strip().lower()
   password = data.get("password")
 
   if not email or not password:
     return jsonify({
-      "message": "All fields are required"
+      "message": "Email and password required"
     }), 400
 
-  user = User.query.filter_by(
-    email=email.lower().strip()
-  ).first()
+  user = User.query.filter_by(email=email).first()
 
-  if user is None or not check_password_hash(user.password_hash, password):
+  if not user or user.check_password(password):
     return jsonify({
-      "message": "Invalid Credentials"
-    }), 404
+      "message": "Invalid email and password"
+    }), 401
 
-  token = create_access_token(
+  if not user.is_active:
+    return jsonify({
+      "message": "Account is deactivated"
+    }), 403
+
+  # generate jwt with custom claims for roles
+  access_token = create_access_token(
     identity=str(user.user_id),
-    additional_claims={
-      "role": user.role
-    }
-  )  
+    additional_claims={"role": user.role, "username": user.username}
+  )
 
   return jsonify({
-    "access_token": token,
-    "token_type": "Bearer",
+    "message": "Login successfully",
+    "token": access_token,
     "user": user.to_dict()
   }), 200
+
 
 # --------register---------
 @auth_bp.post("/register")
 def register():
 
-  data = request.get_json()
+  data = request.get_json() or {}
 
-  if data is None:
-    return jsonify({
-      "message": "Request body must JSON"
-    }), 400
-
-  student_number = data.get("student_number")
-  username = data.get("username")
-  email = data.get("email")
-  password = data.get("password")
-  course = data.get("course")
+  student_number = data.get("student_number", "").strip() or None
+  username = data.get("username", "").strip()
+  email = data.get("email", "").strip().lower()
+  password = data.get("password", "")
+  course = data.get("course", "").strip() or None
 
   if not all([email, username, password]):
     return jsonify({
       "message": "Email, username, and password are required"
     }), 400
 
-  existing_user = User.query.filter_by(
-    email=email.lower().strip()
-  ).first()
-
-  if existing_user:
+  if User.query.filter((User.email == email) | (User.username == username)).first():
     return jsonify({
-      "message": "Email is already exist"
+      "message": "Username or password already exist"
     }), 409
 
-  user = User(
-    student_number = student_number,
-    username=username,
-    email=email.lower().strip(),
-    password_hash = generate_password_hash(password),
-    course = course
-  )
+  try:
+    new_user = User(
+      username=username,
+      email=email,
+      password=password,
+      student_number=student_number,
+      course=course,
+      role="student"
+    )
 
-  try: 
-    db.session.add(user)
+    db.session.add(new_user)
     db.session.commit()
-  except Exception:
+
+    return jsonify({
+      "message": "User registered successfully"
+    }), 201
+  except Exception as e:
     db.session.rollback()
     return jsonify({
-      "message": "Something went wrong"
-    }), 500
-
-  return jsonify({
-    "message": "Account created successfully"
-  }), 201
-
+      "message": "Registration failed", "error": str(e)
+    })
