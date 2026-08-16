@@ -1,7 +1,7 @@
 from app.models.base import BaseEntity
 from app.extensions import db
 
-class Category(BaseEntity): # inheritance
+class Category(BaseEntity): # inheritance 
   __tablename__ = "categories"
 
   category_id = db.Column(db.Integer, primary_key=True)

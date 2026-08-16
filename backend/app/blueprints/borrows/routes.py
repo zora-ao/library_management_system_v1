@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.orm import joinedload
 from app.extensions import db
 from app.models import Borrow, Book
 
@@ -13,7 +14,8 @@ def get_borrowed_books():
 
   user_id = int(get_jwt_identity())
 
-  active_borrows = Borrow.query.filter_by(
+  # Get the user's active borrowed books
+  active_borrows = Borrow.query.options(joinedload(Borrow.book)).filter_by(
     user_id=user_id,
     returned_at=None
   ).all()
@@ -30,7 +32,6 @@ def get_borrowed_books():
     book = db.session.get(Book, borrow.book_id)
     if book:
       result.append(book.to_dict())
-
 
   return jsonify({
     "count": len(result),
@@ -68,12 +69,14 @@ def return_book(id):
       "message": "Book not found"
     }), 404
 
-  borrow.returned_at = datetime.now(timezone.utc)
-  borrow.status = "returned"
-  book.available_copies += 1
-
   try:
+    borrow.marked_as_returned()
+    book.increment_available()
+
     db.session.commit()
+  except ValueError as e:
+    db.session.rollback()
+    return jsonify({"message": str(e)}), 400
   except Exception:
     db.session.rollback()
     return jsonify({
@@ -84,7 +87,6 @@ def return_book(id):
     "message": "Book returned successfully",
     "borrow": borrow.to_dict()
   }), 200
-
 
 
 # For borrowing book
@@ -134,13 +136,13 @@ def borrow_book():
   due_date = datetime.now(timezone.utc) + timedelta(days=BORROW_DURATION_DAYS)
 
   try:
+    book.decrement_available()
+
     borrow = Borrow(
       user_id=user_id,
       book_id=book_id,
       due_date=due_date
     )
-
-    book.available_copies -= 1
 
     db.session.add(borrow)
     db.session.commit()
@@ -149,6 +151,10 @@ def borrow_book():
       "message": "Book borrowed successfully",
       "borrow": borrow.to_dict()
     }), 201
+
+  except ValueError as e:
+    db.session.rollback()
+    return jsonify({"message": str(e)}), 400
 
   except Exception:
     db.session.rollback()

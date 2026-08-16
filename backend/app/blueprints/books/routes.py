@@ -14,15 +14,13 @@ books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 # For getting or setting the category
 def get_or_create_category(category_input):
 
-  if not category_input:
-    return None
+  if not category_input or not category_input.strip():
+    return None 
 
   clean_name = category_input.strip()
-  if not clean_name:
-    return None
 
   existing_category = Category.query.filter(
-    db.func.lower(Category.name) == clean_name.lower()
+    db.func.lower(Category._name) == clean_name.lower()
   ).first()
 
   if existing_category:
@@ -31,7 +29,6 @@ def get_or_create_category(category_input):
   new_category = Category(name=clean_name)
   db.session.add(new_category)
   db.session.flush()
-  db.session.commit()
 
   return new_category.category_id
 
@@ -122,9 +119,16 @@ def update_book(id):
 
   book.title = request.form.get("title", book.title)
   book.author = request.form.get("author", book.author)
-  book.total_copies = request.form.get("total_copies", book.total_copies, type=int)
   book.description = request.form.get("description", book.description)
   book.pages = request.form.get("pages", book.pages, type=int)
+
+  new_total = request.form.get("total_copies", type=int)
+  if new_total is not None and new_total != book.total_copies:
+    try:
+      book.adjust_total_copies(new_total)
+    except Exception as e:
+      return jsonify({"message": str(e)}), 400
+
 
   category_input = request.form.get("category_name")
   if category_input:
@@ -219,9 +223,8 @@ def create_book():
 @books_bp.get("/<int:id>")
 @jwt_required()
 def get_book(id):
+  # Find the book and load its category
   book = Book.query.options(joinedload(Book.category)).filter_by(book_id=id, is_deleted=False).first()
-
-  book = db.session.get(Book, id)
 
   if not book or book.is_deleted:
     return jsonify({

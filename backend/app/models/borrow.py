@@ -26,8 +26,11 @@ class Borrow(BaseEntity): # Inheritance
   @property
   def status(self) -> str:
     # evaluate if overdue
-    if self._status == "borrowed" and datetime.now(timezone.utc) > self.due_date.replace(tzinfo=timezone.utc):
-      return "Overdue"
+    if self._status == "borrowed":
+      due = self.due_date.replace(tzinfo=timezone.utc) if self.due_date.tzinfo is None else self.due_date
+      now = datetime.now(timezone.utc)
+      if now > due:
+        return "overdue"
     return self._status
 
   def marked_as_returned(self):
