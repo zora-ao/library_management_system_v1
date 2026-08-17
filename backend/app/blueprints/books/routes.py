@@ -234,7 +234,6 @@ def get_book(id):
   return jsonify(book.to_dict()), 200
 
 @books_bp.get("")
-@jwt_required()
 def get_books():
 
   search_query = request.args.get("search", "").strip()

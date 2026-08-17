@@ -12,7 +12,6 @@ import { Button } from "@base-ui/react/button";
 import { loginUser } from "../api/authApi";
 
 import { Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -21,7 +20,6 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const [serverError, setServerError] = useState<string | null>(null);
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const {
     register,
@@ -37,8 +35,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       const res = await loginUser(values);
       login(res.access_token, res.user);
       if (onSuccess) onSuccess();
-
-      navigate("/dashboard")
     } catch (err: any) {
       setServerError(
         err.response?.data?.message || "Invalid credentials. Please try again."

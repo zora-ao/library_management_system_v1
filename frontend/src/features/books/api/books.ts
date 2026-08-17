@@ -3,10 +3,11 @@ import type { Book, BookResponse } from "../types/book.types";
 import type { BookFormData } from "../types/book.schema";
 
 
-export const getBooks = async(): Promise<Book[]> => {
-  const res = await api.get<Book[]>("/books");
+export const getBooks = async(categoryId?: string): Promise<Book[]> => {
+  const params = categoryId ? { category_id: categoryId } : {};
+  const { data } = await api.get("/books", { params });
 
-  return res.data
+  return Array.isArray(data) ? data : data.books || [];
 };
 
 export const createBook = async( data: BookFormData ): Promise<BookResponse> => {
