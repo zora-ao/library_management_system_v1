@@ -3,12 +3,12 @@ from flask_jwt_extended import jwt_required
 from app.models import Category, Book
 from app.extensions import db
 
-from middleware.auth import admin_required
+from app.middleware.auth import admin_required
 
 category_bp = Blueprint("categories", __name__, url_prefix="/api/categories")
 
 # deleting category
-@category_bp.delete("/<int:id>")
+@category_bp.delete("/<uuid:id>")
 @admin_required()
 def delete_category(id):
 
@@ -39,7 +39,7 @@ def delete_category(id):
   }), 200
 
 # updating category
-@category_bp.put("/<int:id>")
+@category_bp.put("/<uuid:id>")
 @admin_required()
 def update_category(id):
 

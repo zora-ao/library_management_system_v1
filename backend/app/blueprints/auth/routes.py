@@ -51,7 +51,7 @@ def login():
 
   # generate jwt with custom claims for roles
   access_token = create_access_token(
-    identity=str(user.user_id),
+    identity=str(user.id),
     additional_claims={"role": user.role, "username": user.username}
   )
 
@@ -68,15 +68,15 @@ def register():
 
   data = request.get_json() or {}
 
-  student_number = data.get("student_number", "").strip() or None
   username = data.get("username", "").strip()
   email = data.get("email", "").strip().lower()
   password = data.get("password", "")
   course = data.get("course", "").strip() or None
+  role = data.get("role", "student").strip().lower()
 
-  if not all([email, username, password]):
+  if not all([email, username, password, role]):
     return jsonify({
-      "message": "Email, username, and password are required"
+      "message": "All fields are required"
     }), 400
 
   if User.query.filter((User.email == email) | (User.username == username)).first():
@@ -89,9 +89,8 @@ def register():
       username=username,
       email=email,
       password=password,
-      student_number=student_number,
       course=course,
-      role="student"
+      role=role
     )
 
     db.session.add(new_user)

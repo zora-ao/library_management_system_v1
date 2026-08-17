@@ -5,11 +5,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 class User(BaseEntity): # Inheritance
   __tablename__ = "users"
 
-  user_id = db.Column(db.Integer, primary_key=True)
-  student_number = db.Column(db.String(10), unique=True, nullable=True)
   username = db.Column(db.String(100), nullable=False)
   email = db.Column(db.String(100), unique=True, nullable=False)
-  course = db.Column(db.String(100), nullable=True)
   is_active = db.Column(db.Boolean, nullable=False, default=True)
   role = db.Column(db.String(20), nullable=False, default='student')
   created_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
@@ -20,11 +17,9 @@ class User(BaseEntity): # Inheritance
   _password_hash = db.Column("password_hash", db.String(255), nullable=False)
 
   # constructor
-  def __init__(self, username: str, email: str, password: str, role: str = "student", student_number: str = None, course: str = None):
-    self.student_number = student_number
+  def __init__(self, username: str, email: str, password: str, role: str = "student"):
     self.username = username
     self.email = email
-    self.course = course
     self.role = role
     self.password = password
 
@@ -49,11 +44,9 @@ class User(BaseEntity): # Inheritance
   # polymorphism
   def to_dict(self):
     return {
-        "user_id": self.user_id,
-        "student_number": self.student_number,
+        "id": self.id,
         "username": self.username,
         "email": self.email,
-        "course": self.course,
         "role": self.role,
         "is_active": self.is_active,
         "created_at": self.created_at if self.created_at else None

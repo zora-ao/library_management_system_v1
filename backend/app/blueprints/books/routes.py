@@ -6,7 +6,7 @@ from app.models import Book, Borrow, Category
 from app.extensions import db
 from app.utils.cloudinary import upload_book_cover, delete_book_cover
 
-from middleware.auth import admin_required
+from app.middleware.auth import admin_required
 
 
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
@@ -33,7 +33,7 @@ def get_or_create_category(category_input):
   return new_category.category_id
 
 # For restoring a book
-@books_bp.put()
+@books_bp.put("/<uuid:id>")
 @admin_required()
 def restore_book(id):
   book = db.session.get(Book, id)
@@ -59,7 +59,7 @@ def restore_book(id):
   }), 200
 
 # For deleting a book
-@books_bp.delete("/<int:id>")
+@books_bp.delete("/<uuid:id>")
 @admin_required()
 def delete_book(id):
 
@@ -71,7 +71,7 @@ def delete_book(id):
     }), 404
 
   active_book = Borrow.query.filter_by(
-    book_id=id,
+    id=id,
     status="borrowed"
   ).first()
 
@@ -96,7 +96,7 @@ def delete_book(id):
 
 
 # For updating a book
-@books_bp.put("/<int:id>")
+@books_bp.put("/<uuid:id>")
 @admin_required()
 def update_book(id):
 
@@ -110,7 +110,7 @@ def update_book(id):
   new_isbn = request.form.get("isbn")
     # Check ISBN uniqueness if changed
   if new_isbn and new_isbn != book.isbn:
-      existing_isbn = Book.query.filter(Book.isbn == new_isbn, Book.book_id != id).first()
+      existing_isbn = Book.query.filter(Book.isbn == new_isbn, Book.id != id).first()
       if existing_isbn:
           return jsonify({
               "message": "Book ISBN already exists"
@@ -220,11 +220,11 @@ def create_book():
   
 
 # For getting a single book
-@books_bp.get("/<int:id>")
+@books_bp.get("/<uuid:id>")
 @jwt_required()
 def get_book(id):
   # Find the book and load its category
-  book = Book.query.options(joinedload(Book.category)).filter_by(book_id=id, is_deleted=False).first()
+  book = Book.query.options(joinedload(Book.category)).filter_by(id=id, is_deleted=False).first()
 
   if not book or book.is_deleted:
     return jsonify({

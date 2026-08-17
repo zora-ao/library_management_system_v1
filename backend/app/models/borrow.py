@@ -1,13 +1,13 @@
+from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime, timezone
 from app.models.base import BaseEntity
 from app.extensions import db
 
 class Borrow(BaseEntity): # Inheritance
-  __tablename__ = "borrow_records"
+  __tablename__ = "borrows"
 
-  borrow_id = db.Column(db.Integer, primary_key=True)
-  user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-  book_id = db.Column(db.Integer, db.ForeignKey("books.book_id"), nullable=False)
+  user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
+  book_id = db.Column(UUID(as_uuid=True), db.ForeignKey("books.id"), nullable=False)
   borrowed_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
   due_date = db.Column(db.DateTime, nullable=False)
   returned_at = db.Column(db.DateTime, nullable=True)
@@ -47,7 +47,7 @@ class Borrow(BaseEntity): # Inheritance
 
   def to_dict(self):
     return {
-      "borrow_id": self.borrow_id,
+      "id": self.id,
       "user_id": self.user_id,
       "book_id": self.book_id,
       "borrowed_at": self.borrowed_at.isoformat() if self.borrowed_at else None,

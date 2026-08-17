@@ -1,14 +1,14 @@
+from sqlalchemy.dialects.postgresql import UUID
 from app.models.base import BaseEntity
 from app.extensions import db
 
 class Book(BaseEntity): # Inheritance
   __tablename__ = "books"
 
-  book_id = db.Column(db.Integer, primary_key=True)
   isbn = db.Column(db.String(20), unique=True)
   title = db.Column(db.String(200), nullable=False)
   author = db.Column(db.String(100), nullable=False)
-  category_id = db.Column(db.Integer, db.ForeignKey("categories.category_id"), nullable=True)
+  category_id = db.Column(UUID(as_uuid=True), db.ForeignKey("categories.id"), nullable=True)
 
   image_url = db.Column(db.String(500), nullable=True)
   description = db.Column(db.String(250))
@@ -72,7 +72,7 @@ class Book(BaseEntity): # Inheritance
   # Polymorphism
   def to_dict(self):
     return {
-        "book_id": self.book_id,
+        "id": self.id,
         "isbn": self.isbn,
         "title": self.title,
         "author": self.author,

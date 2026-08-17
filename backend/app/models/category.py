@@ -4,7 +4,6 @@ from app.extensions import db
 class Category(BaseEntity): # inheritance 
   __tablename__ = "categories"
 
-  category_id = db.Column(db.Integer, primary_key=True)
   books = db.relationship("Book", backref="category", lazy=True)
 
   _name = db.Column("name", db.String(225), unique=True, nullable=False)
@@ -29,6 +28,6 @@ class Category(BaseEntity): # inheritance
   # polymorphism
   def to_dict(self):
     return {
-      "category_id": self.category_id,
+      "id": self.id,
       "name": self.name
     }

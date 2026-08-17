@@ -16,7 +16,7 @@ def get_borrowed_books():
 
   # Get the user's active borrowed books
   active_borrows = Borrow.query.options(joinedload(Borrow.book)).filter_by(
-    user_id=user_id,
+    id=user_id,
     returned_at=None
   ).all()
 
@@ -40,7 +40,7 @@ def get_borrowed_books():
 
 
 # Returning book
-@borrows_bp.post("/<int:id>/return")
+@borrows_bp.post("/<uuid:id>/return")
 @jwt_required()
 def return_book(id):
 
