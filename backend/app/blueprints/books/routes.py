@@ -24,16 +24,16 @@ def get_or_create_category(category_input):
   ).first()
 
   if existing_category:
-    return existing_category.category_id
+    return existing_category.id
 
   new_category = Category(name=clean_name)
   db.session.add(new_category)
   db.session.flush()
 
-  return new_category.category_id
+  return new_category.id
 
 # For restoring a book
-@books_bp.put("/<uuid:id>")
+@books_bp.put("/restore/<uuid:id>")
 @admin_required()
 def restore_book(id):
   book = db.session.get(Book, id)
@@ -101,6 +101,8 @@ def delete_book(id):
 def update_book(id):
 
   book = db.session.get(Book, id)
+
+  print(book)
 
   if not book or book.is_deleted:
       return jsonify({

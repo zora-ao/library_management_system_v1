@@ -6,7 +6,7 @@ import BookDetailsModal from "./BookDetailsModal";
 
 interface BookCardProps {
   book: Book,
-  onBorrow?: (bookId: number) => void;
+  onBorrow?: (bookId: string) => void;
 }
 
 const BookCard = ({ book, onBorrow }: BookCardProps) => {
@@ -37,9 +37,9 @@ const BookCard = ({ book, onBorrow }: BookCardProps) => {
           <div className="space-y-1.5">
             {/* Category Badge & Availability */}
             <div className="flex items-center gap-2 flex-wrap">
-              {book.category && (
+              {book.category_name && (
                 <Badge variant="secondary" className="text-xs font-medium px-2.5 py-0.5">
-                  {book.category}
+                  {book.category_name}
                 </Badge>
               )}
               <Badge

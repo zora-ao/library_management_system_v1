@@ -44,7 +44,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
       title: "",
       author: "",
       isbn: "",
-      category: "",
+      category_name: "",
       description: "",
       total_copies: 1,
       pages: "",
@@ -58,7 +58,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
         title: book.title || "",
         author: book.author || "",
         isbn: book.isbn || "",
-        category: book.category || "",
+        category_name: book.category_name || "",
         description: book.description || "",
         total_copies: book.total_copies ?? 1,
         pages: book.pages ? String(book.pages) : "",
@@ -69,7 +69,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
         title: "",
         author: "",
         isbn: "",
-        category: "",
+        category_name: "",
         description: "",
         total_copies: 1,
         pages: "",
@@ -104,7 +104,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
 
   const onSubmit = (data: BookFormData) => {
     if (isEditing && book){
-      const bookId = parseInt(book.book_id);
+      const bookId = book.id;
       updateBookMutation.mutate(
         { bookId, data },
         { onSuccess: handleClose }
@@ -205,9 +205,9 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
                   <Label htmlFor="category" className="text-xs font-medium">
                     Category
                   </Label>
-                  <Input id="category" placeholder="Fiction, Science" {...register("category")} />
-                  {errors.category && (
-                    <p className="text-xs text-destructive">{errors.category.message}</p>
+                  <Input id="category" placeholder="Fiction, Science" {...register("category_name")} />
+                  {errors.category_name && (
+                    <p className="text-xs text-destructive">{errors.category_name.message}</p>
                   )}
                 </div>
               </div>

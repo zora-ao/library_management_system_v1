@@ -4,14 +4,14 @@ import { type Book } from "@/features/books/types/book.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface BookUpdateProps {
-  bookId: number;
+  bookId: string;
   data: BookFormData
 };
 
-export const useBooks = () => {
+export const useBooks = (categoryId?: string) => {
   return useQuery<Book[]>({
-    queryKey: ["books"],
-    queryFn: getBooks,
+    queryKey: ["books", categoryId],
+    queryFn: () => getBooks(categoryId),
     staleTime: 1000 * 60 * 5
   });
 }
@@ -32,7 +32,6 @@ export const useCreateBooks = () => {
 export const useUpdateBooks = () => {
   const queryClient = useQueryClient();
 
-
   return useMutation({
     mutationFn: ({
       bookId,
@@ -50,7 +49,7 @@ export const useDeleteBooks = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ( bookId: number ) => deleteBook(bookId),
+    mutationFn: ( bookId: string ) => deleteBook(bookId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["books"]

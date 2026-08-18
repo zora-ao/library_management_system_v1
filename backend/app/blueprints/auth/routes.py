@@ -71,7 +71,6 @@ def register():
   username = data.get("username", "").strip()
   email = data.get("email", "").strip().lower()
   password = data.get("password", "")
-  course = data.get("course", "").strip() or None
   role = data.get("role", "student").strip().lower()
 
   if not all([email, username, password, role]):
@@ -89,7 +88,6 @@ def register():
       username=username,
       email=email,
       password=password,
-      course=course,
       role=role
     )
 

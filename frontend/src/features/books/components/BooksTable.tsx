@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 interface BooksTableProps {
   books: Book[];
   onEdit: (book: Book) => void;
-  onDelete: (bookId: number) => void;
+  onDelete: (bookId: string) => void;
   isDeleting?: boolean;
 }
 
 const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) => {
+
+  console.log(books)
 
   if (books.length === 0) {
     return (
@@ -36,7 +38,7 @@ const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) =>
         </TableHeader>
         <TableBody>
           {books.map((book) => {
-            const bookId = book.book_id;
+            const bookId = book.id;
             return (
               <TableRow key={bookId}>
                 <TableCell>
@@ -55,9 +57,9 @@ const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) =>
                 <TableCell className="font-medium">{book.title}</TableCell>
                 <TableCell>{book.author}</TableCell>
                 <TableCell>
-                  {book.category ? (
+                  {book.category_name ? (
                     <Badge variant="secondary" className="font-normal">
-                      {book.category}
+                      {book.category_name}
                     </Badge>
                   ) : (
                     <span className="text-muted-foreground">—</span>
@@ -78,7 +80,7 @@ const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) =>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => onDelete(parseInt(bookId))}
+                    onClick={() => onDelete(bookId)}
                     disabled={isDeleting}
                     className="h-8 w-8 text-muted-foreground hover:text-destructive"
                   >

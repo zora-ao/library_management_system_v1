@@ -33,7 +33,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     setServerError(null);
     try {
       const res = await loginUser(values);
-      login(res.access_token, res.user);
+      console.log(res)
+      login(res.token, res.user);
       if (onSuccess) onSuccess();
     } catch (err: any) {
       setServerError(

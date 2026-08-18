@@ -8,7 +8,7 @@ interface BookDetailsModalProps {
   book: Book;
   isOpen: boolean;
   onClose: () => void
-  onBorrow?: (bookId: number) => void
+  onBorrow?: (bookId: string) => void
 }
 
 const BookDetailsModal = ({book, isOpen, onClose, onBorrow}: BookDetailsModalProps) => {
@@ -16,7 +16,7 @@ const BookDetailsModal = ({book, isOpen, onClose, onBorrow}: BookDetailsModalPro
 
   const handleBorrow = () => {
     if(onBorrow) {
-      onBorrow(parseInt(book.book_id));
+      onBorrow(book.id);
     }
     onClose();
   }
@@ -55,9 +55,9 @@ const BookDetailsModal = ({book, isOpen, onClose, onBorrow}: BookDetailsModalPro
 
               {/* Category and available copies */}
               <div className="flex items-center gap-2 mb-4">
-                {book.category && (
+                {book.category_name && (
                   <Badge variant="secondary" className="text-xs">
-                    {book.category}
+                    {book.category_name}
                   </Badge>
                 )}
                 <Badge

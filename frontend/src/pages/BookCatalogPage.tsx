@@ -25,9 +25,13 @@ const BookCatalogPage = () => {
   return (
     <div className="p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {books.map((book) => (
-          <BookCard key={book.book_id} book={book} />
-        ))}
+        {books.length ===  0 ? (
+          <p>No books available</p>
+        ) : (
+          books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))
+        )}
       </div>
     </div>
   )

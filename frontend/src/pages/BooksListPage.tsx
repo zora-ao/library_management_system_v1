@@ -18,7 +18,7 @@ const BooksListPage = () => {
     setSelectedBook(book);
   };
 
-  const handleDelete = (bookId: number) => {
+  const handleDelete = (bookId: string) => {
     if (confirm("Are you sure you want to delete this book?")) {
       deleteMutation.mutate(bookId);
     }
