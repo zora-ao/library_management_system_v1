@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
 import BookFormModal from "@/features/books/components/BookFormModal";
 import BooksTable from "@/features/books/components/BooksTable";
+import CategoryFilter from "@/features/books/components/CategoryFilter";
+import CategoryModal from "@/features/books/components/CategoryModal";
 import { type Book } from "@/features/books/types/book.types";
 import { useBooks, useDeleteBooks } from "@/hooks/useBooks";
 import { Loader2, Plus } from "lucide-react";
@@ -13,6 +14,8 @@ const BooksListPage = () => {
 
   const [isAddOpen, setIsAddOpen] = useState<boolean>(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState<boolean>(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   const handleEdit = (book: Book) => {
     setSelectedBook(book);
@@ -28,6 +31,10 @@ const BooksListPage = () => {
     setIsAddOpen(false);
     setSelectedBook(null);
   };
+
+  const filteredBooks = selectedCategoryId 
+    ? books.filter((book) => book.category_id === selectedCategoryId)
+    : books;
 
   if (isLoading) {
     return (
@@ -56,14 +63,24 @@ const BooksListPage = () => {
             Manage titles, stock levels, and catalog items.
           </p>
         </div>
-        <Button onClick={() => setIsAddOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Book
-        </Button>
-      </div>  
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setIsCategoryModalOpen(true)}>
+            Manage Categories
+          </Button>
+          <Button onClick={() => setIsAddOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Book
+          </Button>
+        </div>
+      </div> 
+
+      <CategoryFilter
+        selectedCategoryId={selectedCategoryId}
+        onSelectCategory={setSelectedCategoryId}
+      /> 
 
       <BooksTable
-        books={books}
+        books={filteredBooks}
         onEdit={handleEdit}
         onDelete={handleDelete}
         isDeleting={deleteMutation.isPending}
@@ -73,6 +90,11 @@ const BooksListPage = () => {
         isOpen={isAddOpen || !!selectedBook}
         onClose={handleCloseModal}
         book={selectedBook}
+      />
+
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
       />
     </div>
   )

@@ -76,7 +76,7 @@ def update_category(id):
 @category_bp.get("")
 @jwt_required()
 def get_category():
-  categories = Category.query.order_by(Category.name.asc()).all()
+  categories = Category.query.order_by(Category._name.asc()).all()
   return jsonify([cat.to_dict() for cat in categories]), 200
 
 @category_bp.post("")

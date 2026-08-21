@@ -283,7 +283,11 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
               {createBookMutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {createBookMutation.isPending ? "Adding..." : "Add Book"}
+              {isEditing ? (
+                updateBookMutation.isPending ? "Updating..." : "Update Book"
+              ) : (
+                createBookMutation.isPending ? "Adding..." : "Add Book"
+              )}
             </Button>
           </DialogFooter>
         </form>

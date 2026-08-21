@@ -36,7 +36,7 @@ export const createBook = async( data: BookFormData ): Promise<BookResponse> => 
 };
 
 export const updateBook = async(
-  bookId: string,
+  bookId: string, 
   data: BookFormData
 ): Promise<BookResponse> => {
 
