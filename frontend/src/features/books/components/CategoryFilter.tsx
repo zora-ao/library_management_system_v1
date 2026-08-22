@@ -9,6 +9,7 @@ interface CategoryFilterProps {
 
 const CategoryFilter = ({ selectedCategoryId, onSelectCategory }: CategoryFilterProps) => {
   const { data: categories = [], isLoading } = useCategories();
+  
 
   if (isLoading) {
     return (

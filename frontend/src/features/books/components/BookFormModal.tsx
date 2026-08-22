@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -17,6 +17,7 @@ import { useCreateBooks, useUpdateBooks } from "@/hooks/useBooks";
 import { type BookFormData, bookSchema } from "../types/book.schema";
 import { Loader2, Upload, X } from "lucide-react";
 import type { Book } from "../types/book.types";
+import CategorySelect from "./CategorySelect";
 
 interface BookFormModalProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
   const {
     register,
     handleSubmit,
+    control,
     setValue,
     reset,
     formState: { errors },
@@ -205,7 +207,17 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
                   <Label htmlFor="category" className="text-xs font-medium">
                     Category
                   </Label>
-                  <Input id="category" placeholder="Fiction, Science" {...register("category_name")} />
+                  <Controller
+                    name="category_name"
+                    control={control} 
+                    render={({ field }) => (
+                      <CategorySelect
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={errors.category_name?.message}
+                      />
+                    )}
+                  />
                   {errors.category_name && (
                     <p className="text-xs text-destructive">{errors.category_name.message}</p>
                   )}
