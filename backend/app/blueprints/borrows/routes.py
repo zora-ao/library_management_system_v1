@@ -5,18 +5,33 @@ from sqlalchemy.orm import joinedload
 from app.extensions import db
 from app.models import Borrow, Book
 
-borrows_bp = Blueprint("borrow", __name__, url_prefix="/api/borrow")
+borrows_bp = Blueprint("borrow", __name__, url_prefix="/api/borrows")
+
+# getting borrowed history
+@borrows_bp.get("/history")
+@jwt_required()
+def get_borrowed_history():
+  user_id = get_jwt_identity()
+
+  history = (
+    Borrow.query.filter_by(user_id=user_id)
+    .filter(Borrow.returned_at.isnot(None))
+    .order_by(Borrow.returned_at.desc())
+    .all()
+  )
+
+  return jsonify([borrow.to_dict() for borrow in history]), 200
 
 # Getting the borrowed books
 @borrows_bp.get("/me")
 @jwt_required()
 def get_borrowed_books():
 
-  user_id = int(get_jwt_identity())
+  user_id = get_jwt_identity()
 
   # Get the user's active borrowed books
   active_borrows = Borrow.query.options(joinedload(Borrow.book)).filter_by(
-    id=user_id,
+    user_id=user_id,
     returned_at=None
   ).all()
 
@@ -25,13 +40,8 @@ def get_borrowed_books():
       "message": "You don't have an active borrowed books",
       "borrowed_book": []
     }), 200
-
-  result = []
-
-  for borrow in active_borrows:
-    book = db.session.get(Book, borrow.book_id)
-    if book:
-      result.append(book.to_dict())
+  
+  result = [borrow.to_dict() for borrow in active_borrows]
 
   return jsonify({
     "count": len(result),
@@ -40,11 +50,11 @@ def get_borrowed_books():
 
 
 # Returning book
-@borrows_bp.post("/<uuid:id>/return")
+@borrows_bp.put("/<uuid:id>/return")
 @jwt_required()
 def return_book(id):
 
-  user_id = int(get_jwt_identity())
+  user_id = get_jwt_identity()
   borrow = db.session.get(Borrow, id)
 
   if borrow is None:
@@ -52,7 +62,7 @@ def return_book(id):
       "message": "Borrow record not found"
     }), 404
 
-  if borrow.user_id != user_id:
+  if str(borrow.user_id) != str(user_id):
     return jsonify({
       "message": "Unauthorized"
     }), 403
@@ -75,7 +85,7 @@ def return_book(id):
 
     db.session.commit()
   except ValueError as e:
-    db.session.rollback()
+    db.session.rollback() 
     return jsonify({"message": str(e)}), 400
   except Exception:
     db.session.rollback()
@@ -90,12 +100,12 @@ def return_book(id):
 
 
 # For borrowing book
-@borrows_bp.post("/")
+@borrows_bp.post("")
 @jwt_required()
 def borrow_book():
   BORROW_DURATION_DAYS = 14
 
-  user_id = int(get_jwt_identity())
+  user_id = get_jwt_identity()
   data = request.get_json()
 
   if data is None:

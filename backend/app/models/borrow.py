@@ -50,8 +50,12 @@ class Borrow(BaseEntity): # Inheritance
       "id": self.id,
       "user_id": self.user_id,
       "book_id": self.book_id,
+      "book_title": self.book.title if self.book.title else "Unknown",
+      "book_image": self.book.image_url if self.book.image_url else None,
+      "author": self.book.author if self.book.author else None,
       "borrowed_at": self.borrowed_at.isoformat() if self.borrowed_at else None,
       "due_date": self.due_date.isoformat(),
-      "status": self.status,
-      "is_overdue": self.is_overdue()
+      "status": self.status if self.status else "borrowed",
+      "is_overdue": self.is_overdue(),
+      "returned_at": self.returned_at.isoformat() if self.returned_at else None
     }

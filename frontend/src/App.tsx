@@ -6,6 +6,8 @@ import MainLayout from "./components/ui/layout/MainLayout"
 import { useAuth } from "./hooks/useAuth"
 import BooksListPage from "./pages/BooksListPage"
 import BookCatalogPage from "./pages/BookCatalogPage"
+import MyBorrowsPage from "./pages/MyBorrowsPage"
+import MyBorrowHistoryPage from "./pages/MyBorrowHistoryPage"
 
 
 const App = () => {
@@ -24,7 +26,8 @@ const App = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<div>Dashboard Content</div>} />
           <Route path="/books" element={<BookCatalogPage/>} />
-          <Route path="/borrows" element={<div>My Borrows</div>} />
+          <Route path="/my-borrows" element={<MyBorrowsPage />} />
+          <Route path="/my-borrow-history" element={<MyBorrowHistoryPage />} />
           {user?.role == "admin" && (
             <>
               <Route path="/users" element={<div>Users Lists</div>} />

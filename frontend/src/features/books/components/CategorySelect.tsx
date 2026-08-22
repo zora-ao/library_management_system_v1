@@ -21,7 +21,11 @@ const CategorySelect = ({ value, onChange, error }: CategorySelectProps) => {
   }
 
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={value} onValueChange={(value) => {
+      if (value !== null){
+        onChange(value);
+      }
+    }}>
       <SelectTrigger className={error ? "border-destructive" : ""}>
         <SelectValue placeholder="Select a category" />
       </SelectTrigger>

@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import type { Book } from "../types/book.types";
 import { Badge } from "@/components/ui/badge";
-import { BookCheck, BookOpen, Hash, Layers, User } from "lucide-react";
+import { BookCheck, BookOpen, Hash, Layers, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCreateBorrows } from "@/hooks/useBorrows";
 
 interface BookDetailsModalProps {
   book: Book;
@@ -12,14 +13,35 @@ interface BookDetailsModalProps {
 }
 
 const BookDetailsModal = ({book, isOpen, onClose, onBorrow}: BookDetailsModalProps) => {
+  const createBorrowMutation = useCreateBorrows();
   const isAvailable = book.available_copies > 0;
 
   const handleBorrow = () => {
     if(onBorrow) {
       onBorrow(book.id);
+      onClose();
+      return;
     }
-    onClose();
+
+    // 14 days borrow duration
+    const defaultDueDate = new Date();
+    defaultDueDate.setDate(defaultDueDate.getDate() + 14);
+
+    createBorrowMutation.mutate(
+      {
+        book_id: book.id,
+        due_date: defaultDueDate.toISOString().split("T")[0], // YYYY-MM-DD
+      },
+      {
+        onSuccess: () => {
+          onClose();
+        },
+      }
+    )
+
   }
+
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -113,11 +135,19 @@ const BookDetailsModal = ({book, isOpen, onClose, onBorrow}: BookDetailsModalPro
           </Button>
           <Button
             onClick={handleBorrow}
-            disabled={!isAvailable}
+            disabled={!isAvailable || createBorrowMutation.isPending}
             className="flex items-center gap-2"
           >
-            <BookCheck className="h-4 w-4" />
-            {isAvailable ? "Borrow Book" : "Unavailable"}
+            {createBorrowMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <BookCheck className="h-4 w-4" />
+            )}
+            {createBorrowMutation.isPending 
+            ? "Borrowing..."
+            : isAvailable
+            ? "Borrow Book"
+            : "Unavailable"}
           </Button>
         </DialogFooter>
 
