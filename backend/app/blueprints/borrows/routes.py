@@ -2,10 +2,23 @@ from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.orm import joinedload
+
 from app.extensions import db
 from app.models import Borrow, Book
+from app.middleware.auth import admin_required
 
 borrows_bp = Blueprint("borrow", __name__, url_prefix="/api/borrows")
+
+# for librarian/admin 
+@borrows_bp.get("/admin/all")
+@admin_required()
+def get_all_borrows_admin():
+  borrows = (
+    Borrow.query.order_by(Borrow.borrowed_at.desc())
+    .all()
+  )
+
+  return jsonify([borrow.to_dict() for borrow in borrows]), 200
 
 # getting borrowed history
 @borrows_bp.get("/history")

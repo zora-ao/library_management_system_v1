@@ -1,18 +1,19 @@
-import { createBorrow, getBorrowHistory, getBorrows, returnBook } from "@/features/borrows/api/borrows"
+import { createBorrow, getAllBorrows, getBorrowHistory, getBorrows, returnBook } from "@/features/borrows/api/borrows"
 import type { CreateBorrowPayload } from "@/features/borrows/types/borrow.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner";
 
+
 export const useBorrowHistory = () => {
   return useQuery({
-    queryKey: ['borrows'],
+    queryKey: ['borrows', 'history'],
     queryFn: getBorrowHistory
   });
 };
 
 export const useBorrows = () => {
   return useQuery({
-    queryKey: ["borrows"],
+    queryKey: ['borrows', 'active'],
     queryFn: getBorrows
   });
 };
@@ -44,10 +45,10 @@ export const useReturnBook = () => {
     mutationFn: (borrowId: string) => returnBook(borrowId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['borrows']
+        queryKey: ['books']
       });
       queryClient.invalidateQueries({
-        queryKey: ['books']
+        queryKey: ['borrows']
       });
       toast.success("Book return successfully");
     },
@@ -56,3 +57,31 @@ export const useReturnBook = () => {
     }
   });
 };
+
+export const useAdminBorrows = () => {
+
+  return useQuery({
+    queryKey: ['borrows', 'admin'],
+    queryFn: getAllBorrows,
+  });
+};
+
+export const useAdminReturnBook = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (borrowId: string) => returnBook(borrowId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['books']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['borrows']
+      });
+      toast.success("Book return successfully");
+    },
+    onError: () => {
+      toast.error("Failed to return a book");
+    }
+  });
+}

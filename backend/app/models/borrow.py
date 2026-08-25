@@ -49,6 +49,8 @@ class Borrow(BaseEntity): # Inheritance
     return {
       "id": self.id,
       "user_id": self.user_id,
+      "user_name": self.user.username,
+      "user_email": self.user.email,
       "book_id": self.book_id,
       "book_title": self.book.title if self.book.title else "Unknown",
       "book_image": self.book.image_url if self.book.image_url else None,

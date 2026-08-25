@@ -1,6 +1,12 @@
 import { api } from "@/services/api";
 import type { Borrow, CreateBorrowPayload } from "../types/borrow.types";
 
+export const getAllBorrows = async(): Promise<Borrow[]> => {
+  const {data} = await api.get("/borrows/admin/all");
+
+  return Array.isArray(data) ? data : [];
+}
+
 export const getBorrowHistory = async(): Promise<Borrow[]> => {
   const { data } = await api.get("/borrows/history");
 

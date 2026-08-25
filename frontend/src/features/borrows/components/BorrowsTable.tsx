@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 interface BorrowsTableProps {
   borrows: Borrow[];
-  onReturn?: (bookId: string) => void;
+  onReturn?: (borrowId: string) => void;
   isReturning?: boolean;
   returningId?: string;
   isHistoryView?: boolean;

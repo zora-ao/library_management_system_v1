@@ -13,7 +13,7 @@ import { loginUser } from "../api/authApi";
 
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -37,7 +37,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     setServerError(null);
     try {
       const res = await loginUser(values);
-      console.log(res)
+  
       login(res.token, res.user);
       if (onSuccess) onSuccess();
 
@@ -57,7 +57,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         <CardTitle>Login to your account</CardTitle>
         <CardDescription>Enter your email below to login to your account!</CardDescription>
         <CardAction>
-          Sign Up
+          <Link to="/register" className="font-semibold underline underline-offset-4 hover:text-primary">
+            Create account
+          </Link>
         </CardAction>
       </CardHeader>
       <CardContent>
