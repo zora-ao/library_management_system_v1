@@ -1,18 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminBorrowsTable from "@/features/borrows/components/AdminBorrowsTable";
 import { useAdminBorrows, useAdminReturnBook } from "@/hooks/useBorrows"
-import { AlertCircle, BookCheck, BookOpen, Clock, Loader2 } from "lucide-react";
+import { AlertCircle, BookCheck, BookOpen, Clock, Loader2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 const AdminBorrowsPage = () => {
   const { data: borrows = [], isLoading, isError, error } = useAdminBorrows();
   const returnMutation = useAdminReturnBook();
   const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
 
   // for tabs and stats
   const { activeBorrows, overdueBorrows, returnedBorrows } = useMemo(() => {
-    const now = new Date();
+    const now = new Date(); 
     
     const active = borrows.filter((borrow) => !borrow.returned_at);
     const returned = borrows.filter((borrow) => !!borrow.returned_at);
@@ -103,26 +105,40 @@ const AdminBorrowsPage = () => {
 
       {/* for filter tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-        <TabsList className="grid w-full max-w-lg grid-cols-4">
-          <TabsTrigger value="all">
-            All ({borrows.length})
-          </TabsTrigger>
-          <TabsTrigger value="active">
-            Active ({activeBorrows.length})
-          </TabsTrigger>
-          <TabsTrigger value="overdue" className="data-[state=active]:text-destructive">
-            Overdue ({overdueBorrows.length})
-          </TabsTrigger>
-          <TabsTrigger value="returned">
-            Returned ({returnedBorrows.length})
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <TabsList className="grid w-full max-w-lg grid-cols-4">
+            <TabsTrigger value="all">
+              All ({borrows.length})
+            </TabsTrigger>
+            <TabsTrigger value="active">
+              Active ({activeBorrows.length})
+            </TabsTrigger>
+            <TabsTrigger value="overdue" className="data-[state=active]:text-destructive">
+              Overdue ({overdueBorrows.length})
+            </TabsTrigger>
+            <TabsTrigger value="returned">
+              Returned ({returnedBorrows.length})
+            </TabsTrigger>
+          </TabsList>
+
+          {/* search */}
+          <div className="relative max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by user or book..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </div>
 
         {/* all borrows */}
         <TabsContent value="all">
           <AdminBorrowsTable
             borrows={borrows}
             onReturn={(id) => returnMutation.mutate(id)}
+            search={search}
             isReturning={returnMutation.isPending}
             returningId={returnMutation.variables}
           />
@@ -133,6 +149,7 @@ const AdminBorrowsPage = () => {
           <AdminBorrowsTable
             borrows={activeBorrows}
             onReturn={(id) => returnMutation.mutate(id)}
+            search={search}
             isReturning={returnMutation.isPending}
             returningId={returnMutation.variables}
           />
@@ -143,6 +160,7 @@ const AdminBorrowsPage = () => {
           <AdminBorrowsTable
             borrows={overdueBorrows}
             onReturn={(id) => returnMutation.mutate(id)}
+            search={search}
             isReturning={returnMutation.isPending}
             returningId={returnMutation.variables}
           />
@@ -153,6 +171,7 @@ const AdminBorrowsPage = () => {
           <AdminBorrowsTable
             borrows={returnedBorrows}
             onReturn={(id) => returnMutation.mutate(id)}
+            search={search}
             isReturning={returnMutation.isPending}
             returningId={returnMutation.variables}
           />

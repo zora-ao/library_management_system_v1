@@ -1,20 +1,25 @@
-import { useState } from "react";
 import type { Borrow } from "../types/borrow.types";
-import { Book, Calendar, Clock, RotateCcw, Search, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Book, Calendar, Clock, RotateCcw, User } from "lucide-react";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 interface AdminBorrowsTables {
   borrows: Borrow[];
   onReturn?: (borrowId: string) => void;
+  search: string;
   isReturning: boolean;
   returningId?: string;
+  pageSize?: number;
 }
 
-const AdminBorrowsTable = ({ borrows, onReturn, isReturning, returningId }: AdminBorrowsTables) => {
-  const [search, setSearch] = useState("");
+const AdminBorrowsTable = ({ 
+  borrows, search, onReturn, isReturning, returningId, pageSize = 10 
+}: AdminBorrowsTables) => {
+  const [currentPage, setCurrentPage] = useState(1);
 
   const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return "—";
@@ -22,6 +27,7 @@ const AdminBorrowsTable = ({ borrows, onReturn, isReturning, returningId }: Admi
     return isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
   };
 
+  // you can search using book title, username, and email
   const filteredBorrows = borrows.filter((borrow) => {
     const query = search.toLowerCase();
     return (
@@ -31,19 +37,18 @@ const AdminBorrowsTable = ({ borrows, onReturn, isReturning, returningId }: Admi
     );
   });
 
+  // for pagination, total pages is 1 if there's no item or book
+  const totalItems = filteredBorrows.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+  // for safe pagination, users can't go up the total page
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * pageSize; // minus 1 because index always start at zero
+  const paginatedBorrows = filteredBorrows.slice(safePage, startIndex + pageSize);
+
+
   return (
     <div className="space-y-4">
-      {/* search */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by user or book..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
-      </div>
-
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -58,7 +63,7 @@ const AdminBorrowsTable = ({ borrows, onReturn, isReturning, returningId }: Admi
           </TableHeader>
 
           <TableBody>
-            {filteredBorrows.map((borrow) => {
+            {paginatedBorrows.map((borrow) => {
               const isOverdue =
                 !borrow.returned_at &&
                 borrow.due_date &&
@@ -160,6 +165,68 @@ const AdminBorrowsTable = ({ borrows, onReturn, isReturning, returningId }: Admi
           </TableBody>
         </Table>
       </div>
+
+      {/* pagination */}
+      {totalItems > 0 && (
+        <div className="flex flex-col items-center justify-between gap-4 px-2 py-1 sm:flex-row">
+          <p className="text-xs text-muted-foreground">
+            Showing <span className="font-medium text-foreground">{startIndex + 1}</span> to{" "}
+            <span className="font-medium text-foreground">
+              {Math.min(startIndex + pageSize, totalItems)}
+            </span>{" "}
+            of <span className="font-medium text-foreground">{totalItems}</span> entries
+          </p>
+
+          <Pagination className="justify-center sm:justify-end">
+            <PaginationContent>
+              <PaginationItem>
+                {/* for previous button */}
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (safePage > 1) setCurrentPage(safePage - 1);
+                  }}
+                  aria-disabled={safePage === 1}
+                  className={safePage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+
+              {/* links numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1 ).map((pageNum) => ( // it create space for the numbers first so I use Array.from for make the code shorter
+                <PaginationItem key={pageNum}>
+                  <PaginationLink
+                    href="#"
+                    isActive={pageNum === safePage}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(pageNum);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              {/* for next button */}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (safePage < totalPages) setCurrentPage(safePage + 1);
+                  }}
+                  aria-disabled={safePage === totalPages}
+                  className={safePage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
     </div>
   )
 }
