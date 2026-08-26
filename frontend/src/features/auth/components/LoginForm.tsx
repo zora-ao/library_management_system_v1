@@ -12,6 +12,8 @@ import { Button } from "@base-ui/react/button";
 import { loginUser } from "../api/authApi";
 
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { Link, useNavigate } from "react-router-dom";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -20,6 +22,8 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const [serverError, setServerError] = useState<string | null>(null);
   const { login } = useAuth();
+
+  const navigate = useNavigate();
 
   const {
     register,
@@ -33,9 +37,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     setServerError(null);
     try {
       const res = await loginUser(values);
-      console.log(res)
+  
       login(res.token, res.user);
       if (onSuccess) onSuccess();
+
+      navigate("/dashboard");
+
+      toast.success("Welcome Back!");
     } catch (err: any) {
       setServerError(
         err.response?.data?.message || "Invalid credentials. Please try again."
@@ -49,7 +57,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         <CardTitle>Login to your account</CardTitle>
         <CardDescription>Enter your email below to login to your account!</CardDescription>
         <CardAction>
-          Sign Up
+          <Link to="/register" className="font-semibold underline underline-offset-4 hover:text-primary">
+            Create account
+          </Link>
         </CardAction>
       </CardHeader>
       <CardContent>

@@ -4,7 +4,8 @@ export interface Book {
   isbn?: string;
   title: string;
   author: string;
-  category_name: string;
+  category_name?: string;
+  category_id: string;
   total_copies: number;
   available_copies: number;
   image_url: string;

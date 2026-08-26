@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 
 import { type RegisterFormValues, registerSchema } from "../types/auth.schema";
 import { registerUser } from "../api/authApi";
+import { toast } from "sonner";
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -42,6 +43,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       if (onSuccess) onSuccess();
 
       navigate("/login");
+      toast.success("Account created");
     } catch (err: any) {
       setServerError(
         err.response?.data?.message || "Registration failed. Please try again."

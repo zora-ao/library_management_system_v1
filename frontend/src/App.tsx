@@ -2,10 +2,13 @@ import { Navigate, Route, Routes } from "react-router-dom"
 import LoginPage from "./pages/LoginPage"
 import { ProtectedRoute } from "./routes/ProtectedRoute"
 import RegisterPage from "./pages/RegisterPage"
-import MainLayout from "./components/ui/layout/MainLayout"
+import MainLayout from "./components/layout/MainLayout"
 import { useAuth } from "./hooks/useAuth"
 import BooksListPage from "./pages/BooksListPage"
 import BookCatalogPage from "./pages/BookCatalogPage"
+import MyBorrowsPage from "./pages/MyBorrowsPage"
+import AdminBorrowsTables from "./features/borrows/components/AdminBorrowsTable"
+import AdminBorrowsPage from "./pages/AdminBorrowsPage"
 
 
 const App = () => {
@@ -24,10 +27,11 @@ const App = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<div>Dashboard Content</div>} />
           <Route path="/books" element={<BookCatalogPage/>} />
-          <Route path="/borrows" element={<div>My Borrows</div>} />
+          <Route path="/my-borrows" element={<MyBorrowsPage />} />
           {user?.role == "admin" && (
             <>
               <Route path="/users" element={<div>Users Lists</div>} />
+              <Route path="/all-borrows" element={<AdminBorrowsPage />} />
               <Route path="/book-list" element={<BooksListPage />} />
             </>
           )}
