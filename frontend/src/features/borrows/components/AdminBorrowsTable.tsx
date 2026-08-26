@@ -44,7 +44,7 @@ const AdminBorrowsTable = ({
   // for safe pagination, users can't go up the total page
   const safePage = Math.min(currentPage, totalPages);
   const startIndex = (safePage - 1) * pageSize; // minus 1 because index always start at zero
-  const paginatedBorrows = filteredBorrows.slice(safePage, startIndex + pageSize);
+  const paginatedBorrows = filteredBorrows.slice(startIndex, startIndex + pageSize);
 
 
   return (
