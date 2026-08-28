@@ -1,4 +1,6 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
+from google.oauth2 import id_token
+from google.auth.transport import requests
 from app.models import User
 from app.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,6 +8,62 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
+# google oauth
+@auth_bp.post("/google")
+def google_auth():
+  data = request.get_json()
+  token = data.get("token")
+
+  if not token:
+    return jsonify({
+      "message": "Token is required"
+    }), 400
+
+  try:
+    google_client_id = current_app.config["GOOGLE_CLIENT_ID"]
+
+    id_info = id_token.verify_oauth2_token(
+      token, requests.Request(), google_client_id
+    )
+
+    email = id_info["email"]
+    google_id = id_info["sub"]
+    avatar = id_info.get("picture", "")
+    name = id_info.get("name", "")
+    default_username = name if name else email.split("@")[0]
+
+    # find or create user
+    user = User.query.filter(
+      (User.email == email) | (User.google_id == google_id)
+    ).first()
+
+    if not user:
+      user = User(
+        email=email,
+        username= default_username, 
+        google_id=google_id,
+        role="student",
+        avatar_url=avatar,
+      )
+      db.session.add(user)
+      db.session.commit()
+    elif not user.google_id:
+      user.google_id = google_id
+      db.session.commit()
+
+    # issue the jwt token
+    access_token = create_access_token(identity=str(user.id))
+
+    return jsonify({
+      "access_token": access_token,
+      "user": user.to_dict()
+    }), 200
+
+  except ValueError as e:
+    print(f"\n[GOOGLE OAUTH VERIFICATION ERROR]: {e}\n")
+    return jsonify({"message": f"Invalid token: {e}"}), 401
+
+# getting user 
 @auth_bp.get("/me")
 @jwt_required()
 def me():
