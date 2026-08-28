@@ -11,6 +11,8 @@ export interface Book {
   image_url: string;
   description?: string;
   pages: number;
+  rating?: number;
+  publication_year: number;
 }
 
 export interface BookResponse {

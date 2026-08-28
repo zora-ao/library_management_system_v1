@@ -23,11 +23,11 @@ class Book(BaseEntity): # Inheritance
   _available_copies = db.Column("available_copies",db.Integer, nullable=False, default=1)
 
   # Constructor
-  def __init__(self, title, author, total_copies=1, isbn=None, category_id=None, description=None, pages=None, image_url=None):
+  def __init__(self, title, author, total_copies=1, available_copies=None, isbn=None, category_id=None, description=None, pages=None, image_url=None):
     self.title = title
     self.author = author
     self._total_copies = total_copies
-    self._available_copies = total_copies
+    self._available_copies = total_copies if available_copies is not None else total_copies
     self.isbn = isbn
     self.category_id = category_id
     self.description = description

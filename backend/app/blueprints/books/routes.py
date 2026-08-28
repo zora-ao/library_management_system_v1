@@ -156,7 +156,7 @@ def update_book(id):
 # For creating a book
 @books_bp.post("")
 @admin_required()
-def create_book():
+def create_book(): 
 
   isbn = request.form.get("isbn")
   title = request.form.get("title")
