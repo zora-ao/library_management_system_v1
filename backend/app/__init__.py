@@ -5,6 +5,7 @@ from app.blueprints.auth.routes import auth_bp
 from app.blueprints.books.routes import books_bp
 from app.blueprints.borrows.routes import borrows_bp
 from app.blueprints.category.routes import category_bp
+from app.blueprints.users.routes import users_bp
 
 from app.extensions import db, migrate, jwt
 from app.config import Config
@@ -25,5 +26,6 @@ def create_app():
   app.register_blueprint(books_bp)
   app.register_blueprint(borrows_bp)
   app.register_blueprint(category_bp)
+  app.register_blueprint(users_bp)
   
   return app

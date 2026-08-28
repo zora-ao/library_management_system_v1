@@ -9,6 +9,7 @@ import BookCatalogPage from "./pages/BookCatalogPage"
 import MyBorrowsPage from "./pages/MyBorrowsPage"
 import AdminBorrowsTables from "./features/borrows/components/AdminBorrowsTable"
 import AdminBorrowsPage from "./pages/AdminBorrowsPage"
+import AdminUsersPage from "./pages/AdminUsersPage"
 
 
 const App = () => {
@@ -30,7 +31,7 @@ const App = () => {
           <Route path="/my-borrows" element={<MyBorrowsPage />} />
           {user?.role == "admin" && (
             <>
-              <Route path="/users" element={<div>Users Lists</div>} />
+              <Route path="/users" element={<AdminUsersPage />} />
               <Route path="/all-borrows" element={<AdminBorrowsPage />} />
               <Route path="/book-list" element={<BooksListPage />} />
             </>
