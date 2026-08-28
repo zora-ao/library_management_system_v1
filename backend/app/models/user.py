@@ -11,17 +11,32 @@ class User(BaseEntity): # Inheritance
   role = db.Column(db.String(20), nullable=False, default='student')
   created_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
 
+  google_id = db.Column(db.String(255), unique=True, nullable=True, index=True)
+  avatar_url = db.Column(db.String(500), nullable=True)
+
   borrows = db.relationship("Borrow", backref="user", lazy=True)
 
   # protect the raw pass 
-  _password_hash = db.Column("password_hash", db.String(255), nullable=False)
+  _password_hash = db.Column("password_hash", db.String(255), nullable=True)
 
   # constructor
-  def __init__(self, username: str, email: str, password: str, role: str = "student"):
+  def __init__(
+        self, username: str, 
+        email: str, 
+        password: str | None = None, 
+        role: str = "student",
+        google_id: str | None = None,
+        avatar_url: str | None = None
+      ):
     self.username = username
     self.email = email
     self.role = role
-    self.password = password
+    self.google_id = google_id
+    self.avatar_url = avatar_url
+
+    # users who signup/login don't need to input password
+    if password:
+      self.password = password
 
   # encapsulation
   @property
@@ -49,5 +64,6 @@ class User(BaseEntity): # Inheritance
         "email": self.email,
         "role": self.role,
         "is_active": self.is_active,
-        "created_at": self.created_at if self.created_at else None
+        "is_google_account": self.google_id is not None,
+        "created_at": self.created_at if self.created_at else None,
     }
