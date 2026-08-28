@@ -24,3 +24,15 @@ export const getCurrentUser = async(): Promise<User> => {
 
   return res.data;
 }
+
+export const getAllUsers = async(): Promise<User[]> => {
+  const res = await api.get<User[]>("/users");
+
+  return res.data;
+}
+
+export const updateUserRole = async({userId, role}: {userId: string, role: string}): Promise<User> => {
+  const res = await api.put(`/users/${userId}/role`, {role});
+
+  return res.data;
+}
