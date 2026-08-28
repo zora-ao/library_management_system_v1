@@ -56,47 +56,47 @@ const AdminBorrowsPage = () => {
 
       {/* stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card className="bg-slate-blue border-none shadow-sm text-black">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Records</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold text-black">Total Records</CardTitle>
+            <BookOpen className="h-4 w-4 text-black" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{borrows.length}</div>
+            <div className="text-2xl font-bold text-black">{borrows.length}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-sky-blue border-none shadow-sm text-black">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Loans</CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
+            <CardTitle className="text-sm font-semibold text-black">Active Loans</CardTitle>
+            <Clock className="h-4 w-4 text-black" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">
+            <div className="text-2xl font-bold text-black">
               {activeBorrows.length}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-destructive/15 border-none shadow-sm text-black">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue Books</CardTitle>
+            <CardTitle className="text-sm font-semibold text-black">Overdue Books</CardTitle>
             <AlertCircle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">
+            <div className="text-2xl font-bold text-black">
               {overdueBorrows.length}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-pastel-yellow border-none shadow-sm text-black">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Returned Books</CardTitle>
-            <BookCheck className="h-4 w-4 text-emerald-500" />
+            <CardTitle className="text-sm font-semibold text-black">Returned Books</CardTitle>
+            <BookCheck className="h-4 w-4 text-black" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">
+            <div className="text-2xl font-bold text-black">
               {returnedBorrows.length}
             </div>
           </CardContent>
