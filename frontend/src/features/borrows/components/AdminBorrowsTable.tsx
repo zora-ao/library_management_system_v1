@@ -144,7 +144,7 @@ const AdminBorrowsTable = ({
                   {/* action */}
                   <TableCell className="text-right">
                     {!borrow.returned_at ? (
-                      <Button
+                      <Button 
                         size="sm"
                         variant="outline"
                         disabled={isReturning && returningId === borrow.id}
