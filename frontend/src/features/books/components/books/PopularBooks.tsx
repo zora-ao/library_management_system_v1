@@ -2,7 +2,7 @@
 
 import React from "react";
 import BookCard from "./BookCard";
-import type { Book } from "../types/book.types";
+import type { Book } from "../../types/book.types";
 
 interface PopularBooksProps {
   books: Book[];

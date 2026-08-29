@@ -6,7 +6,7 @@ class Category(BaseEntity): # inheritance
 
   _name = db.Column("name", db.String(225), unique=True, nullable=False)
 
-  books = db.relationship("Book", backref="category", lazy=True)
+  books = db.relationship("Book", back_populates="category", lazy=True)
 
   # constructor
   def __init__(self, name):

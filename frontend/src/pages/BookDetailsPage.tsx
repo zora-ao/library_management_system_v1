@@ -1,9 +1,28 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useGetBookById } from "@/hooks/useBooks";
-import { ArrowLeft, BookOpen, Calendar, CheckCircle2, FileText, Hash, Loader2, User, XCircle } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom"
-
+import { 
+  ArrowLeft, 
+  Bookmark, 
+  BookOpen, 
+  Calendar, 
+  CheckCircle2, 
+  FileText, 
+  Hash, 
+  Heart, 
+  Loader2, 
+  Star, 
+  User, 
+  XCircle 
+} from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { BookReviews } from "@/features/books/components/books/BookReviews";
+import { ReviewEntity } from "@/features/books/models/ReviewEntity";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BookDetailsTable from "@/features/books/components/books/BookDetailsTable";
+import RelatedBook from "@/features/books/components/books/RelatedBook";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 const BookDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +36,7 @@ const BookDetailsPage = () => {
         <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
       </div>
     );
-  };
+  }
 
   if (isError || !book) {
     return (
@@ -30,137 +49,146 @@ const BookDetailsPage = () => {
         </div>
       </div>
     );
-  };
+  }
 
   const isAvailable = book.available_copies > 0;
 
-  return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      {/* Navigation Top Bar */}
-      <div>
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)} 
-          className="gap-2 text-xs text-muted-foreground hover:text-foreground p-0 h-auto"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Catalog
-        </Button>
-      </div>
+  // make the json object from api to the ReviewEntity instance
+  const reviewsList = (book.reviews || []).map((review: any) => new ReviewEntity(review));
 
-      {/* Main Details Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        
-        {/* Left Column: Book Poster */}
-        <div className="space-y-4">
-          <div className="relative aspect-[3/4] w-full max-w-[280px] mx-auto md:max-w-none overflow-hidden rounded-2xl bg-muted border border-border shadow-md">
-            {book.image_url ? (
-              <img
-                src={book.image_url}
-                alt={book.title}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-4 text-muted-foreground">
-                <BookOpen className="h-12 w-12 stroke-1" />
-                <span className="text-xs font-semibold uppercase">No Cover Image</span>
-              </div>
-            )}
+  return (
+    <div className="max-w-6xl mx-auto p-4 space-y-8 min-h-screen">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink>
+              <Link to="/dashboard">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink>
+              <Link to="/books">Catalog</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage className="max-w-[200px] sm:max-w-xs truncate font-medium text-foreground">
+              {book.title}
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        {/* book image */}
+        <div className="md:col-span-4 flex justify-center">
+          <div className="w-56 h-80 rounded-2xl overflow-hidden shadow-sm bg-muted/50 border border-black/5">
+            <img
+              src={book.image_url || "/placeholder-cover.jpg"}
+              alt={book.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
+        <div className="md:col-span-6 space-y-4 pt-2">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
+              {book.title}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Author: <span className="font-semibold text-foreground">{book.author}</span>
+            </p>
           </div>
 
-          {/* Action Card */}
-          <div className="bg-card border rounded-xl p-4 space-y-3 shadow-sm">
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-muted-foreground">Availability Status:</span>
-              {isAvailable ? (
-                <span className="flex items-center gap-1 text-emerald-600">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> In Stock ({book.available_copies})
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-destructive">
-                  <XCircle className="h-3.5 w-3.5" /> Out of Stock
-                </span>
-              )}
+          {/* rating */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center text-amber-500">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+              ))}
             </div>
+            <span className="text-xs text-muted-foreground font-medium">
+              {book.total_reviews || 0} reviews
+            </span>
+          </div>
 
-            <Button 
-              disabled={!isAvailable} 
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 rounded-lg"
-            >
-              {isAvailable ? "Borrow This Book" : "Currently Unavailable"}
+          <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-4 max-w-2xl">
+            {book.description || "No overview available for this title."}
+          </p>
+
+          <button className="text-xs text-primary font-semibold hover:underline block pt-1">
+            View More
+          </button>
+
+          <div className="flex items-center gap-3 pt-4">
+            <Button className="gap-2 px-7 py-5 rounded-xl text-xs font-bold bg-primary text-primary-foreground shadow-none hover:opacity-90">
+              <Bookmark className="w-4 h-4" />
+              Borrow
+            </Button>
+            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-black/10 bg-transparent shadow-none hover:bg-black/5">
+              <Heart className="w-4 h-4 text-foreground" />
             </Button>
           </div>
         </div>
 
-        {/* Right Column: Metadata & Description */}
-        <div className="md:col-span-2 space-y-6">
-          
-          {/* Header Info */}
-          <div className="space-y-2 border-b pb-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              {book.category_name && (
-                <Badge variant="secondary" className="text-xs font-medium">
-                  {book.category_name}
-                </Badge>
-              )}
-              <Badge variant="outline" className="text-xs text-muted-foreground">
-                {book.available_copies} of {book.total_copies} Copies Available
-              </Badge>
-            </div>
-
-            <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-              {book.title}
-            </h1>
-
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5 pt-1">
-              <User className="h-4 w-4 text-emerald-600" /> By <span className="font-semibold text-foreground">{book.author}</span>
-            </p>
-          </div>
-
-          {/* Key Specs Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="p-3 bg-muted/40 border rounded-xl space-y-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                <Hash className="h-3 w-3" /> ISBN
-              </span>
-              <p className="text-xs font-semibold text-foreground truncate">
-                {book.isbn || "N/A"}
-              </p>
-            </div>
-
-            <div className="p-3 bg-muted/40 border rounded-xl space-y-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                <FileText className="h-3 w-3" /> Length
-              </span>
-              <p className="text-xs font-semibold text-foreground">
-                {book.pages ? `${book.pages} Pages` : "N/A"}
-              </p>
-            </div>
-
-            <div className="p-3 bg-muted/40 border rounded-xl space-y-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                <Calendar className="h-3 w-3" /> Added Date
-              </span>
-              <p className="text-xs font-semibold text-foreground">
-                {book.created_at ? new Date(book.created_at).toLocaleDateString() : "N/A"}
-              </p>
-            </div>
-          </div>
-
-          {/* Description Section */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
-              Overview / Synopsis
-            </h3>
-            <p className="text-xs md:text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-              {book.description || "No description available for this book."}
-            </p>
-          </div>
-
+        <div className="md:col-span-2">
+          <RelatedBook
+            authorName={book.author}
+            books={[]}
+            onSelectBook={(selectedId) => navigate(`/catalog/${selectedId}`)}
+          />
         </div>
+      </div>
 
+      {/* content section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-4">
+        <div className="lg:col-span-12">
+          <Tabs defaultValue="details" className="w-full space-y-6">
+            <TabsList variant="line" className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 gap-8">
+              <TabsTrigger
+                value="details"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs font-semibold px-0 pb-3"
+              >
+                Book Details
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="reviews"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs font-semibold px-0 pb-3"
+              >
+                Reviews ({reviewsList.length})
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="recommendations"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs font-semibold px-0 pb-3"
+              >
+                Recommendations
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="details">
+              <BookDetailsTable book={book} />
+            </TabsContent>
+
+            <TabsContent value="reviews">
+              <BookReviews bookId={book.id} reviews={reviewsList} />
+            </TabsContent>
+
+            <TabsContent value="recommendations">
+              <Card>
+                <CardContent className="p-4 text-xs text-muted-foreground">
+                  Recommended titles based on your reading history will appear here.
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
 };
 
-export default BookDetailsPage
+export default BookDetailsPage;

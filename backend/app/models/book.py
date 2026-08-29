@@ -18,8 +18,8 @@ class Book(BaseEntity): # Inheritance
 
   # relationships
   borrows = db.relationship("Borrow", backref="book", lazy=True)
-  reviews = db.relationship("Review", backref="review", lazy=True, cascade="all, delete-orphan")
-  category = db.relationship("Category", backref="books", lazy=True)
+  category = db.relationship("Category", back_populates="books", lazy=True)
+  reviews = db.relationship("Review", backref="book", lazy=True, cascade="all, delete-orphan")
 
   # Encapsulation
   _total_copies = db.Column("total_copies", db.Integer, nullable=False, default=1)

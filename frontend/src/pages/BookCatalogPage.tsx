@@ -1,11 +1,11 @@
 import { useState } from "react";
-import BookCard from "@/features/books/components/BookCard";
 import { useBooks } from "@/hooks/useBooks";
 import { Loader2, Search, BookOpen, Bell, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LibrarySidebar } from "@/features/books/components/LibrarySidebar";
+import BookCard from "@/features/books/components/books/BookCard";
 
 const BookCatalogPage = () => {
   const { data: books = [], isLoading, isError, error } = useBooks();

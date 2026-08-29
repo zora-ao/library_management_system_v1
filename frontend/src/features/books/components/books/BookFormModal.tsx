@@ -13,10 +13,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCreateBooks, useUpdateBooks } from "@/hooks/useBooks";
-import { type BookFormData, bookSchema } from "../types/book.schema";
+import { type BookFormData, bookSchema } from "../../types/book.schema";
 import { Loader2, Upload, X } from "lucide-react";
-import type { Book } from "../types/book.types";
-import CategorySelect from "./CategorySelect";
+import type { Book } from "../../types/book.types";
+import CategorySelect from "../categories/CategorySelect";
+
 
 interface BookFormModalProps {
   isOpen: boolean;

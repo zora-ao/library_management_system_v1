@@ -9,6 +9,7 @@ class Review(BaseEntity):
   user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
   rating = db.Column(db.Integer, nullable=False)
   comment = db.Column(db.Text, nullable=True)
+  created_at = db.Column(db.DateTime, server_default=db.func.now())
 
   user = db.relationship("User", backref="reviews")
 

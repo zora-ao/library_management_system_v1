@@ -1,7 +1,16 @@
 import { api } from "@/services/api";
 import type { Book, BookResponse } from "../types/book.types";
 import type { BookFormData } from "../types/book.schema";
+import { type IReview, ReviewEntity } from "../models/ReviewEntity";
 
+export const submitReview = async(
+  bookId: string, 
+  payload: { rating: number; comment: string }) => {
+
+    const { data } = await api.post<IReview>(`/books/${bookId}/reviews`, payload);
+
+    return new ReviewEntity(data);
+}
 
 export const getBooks = async(categoryId?: string): Promise<Book[]> => {
   // Add category filter to the request if a category was selected 
