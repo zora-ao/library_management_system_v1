@@ -13,6 +13,7 @@ export interface Book {
   pages: number;
   rating?: number;
   publication_year: number;
+  created_at?: string;
 }
 
 export interface BookResponse {

@@ -4,9 +4,9 @@ from app.extensions import db
 class Category(BaseEntity): # inheritance 
   __tablename__ = "categories"
 
-  books = db.relationship("Book", backref="category", lazy=True)
-
   _name = db.Column("name", db.String(225), unique=True, nullable=False)
+
+  books = db.relationship("Book", backref="category", lazy=True)
 
   # constructor
   def __init__(self, name):

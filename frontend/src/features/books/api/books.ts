@@ -11,6 +11,12 @@ export const getBooks = async(categoryId?: string): Promise<Book[]> => {
   return Array.isArray(data) ? data : data.books || [];
 };
 
+export const getBookById = async(bookId: string): Promise<Book> => {
+  const { data } = await api.get(`/books/${bookId}`);
+
+  return data;
+}
+
 export const createBook = async( data: BookFormData ): Promise<BookResponse> => {
   const formData = new FormData();
 

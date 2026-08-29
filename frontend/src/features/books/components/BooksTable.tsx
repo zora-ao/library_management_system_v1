@@ -13,8 +13,6 @@ interface BooksTableProps {
 
 const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) => {
 
-  console.log(books)
-
   if (books.length === 0) {
     return (
       <div className="rounded-md border bg-card p-8 text-center text-muted-foreground">

@@ -16,7 +16,10 @@ class Book(BaseEntity): # Inheritance
   created_at = db.Column(db.DateTime, server_default=db.func.now())
   is_deleted = db.Column(db.Boolean, default=False, nullable=False)
 
+  # relationships
   borrows = db.relationship("Borrow", backref="book", lazy=True)
+  reviews = db.relationship("Review", backref="review", lazy=True, cascade="all, delete-orphan")
+  category = db.relationship("Category", backref="books", lazy=True)
 
   # Encapsulation
   _total_copies = db.Column("total_copies", db.Integer, nullable=False, default=1)
@@ -42,6 +45,16 @@ class Book(BaseEntity): # Inheritance
   @property
   def available_copies(self):
     return self._available_copies
+
+  @property
+  def average_rating(self):
+    if not self.reviews:
+      return 0.0
+    return round(sum(review.rating for review in self.reviews) / len(self.reviews), 1)
+
+  @property
+  def total_reviews(self):
+    return len(self.reviews)
 
   def adjust_total_copies(self, new_total: int):
     # it safely update the total copies and recalculate available copies
