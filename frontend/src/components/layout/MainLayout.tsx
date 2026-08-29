@@ -14,7 +14,7 @@ const MainLayout = () => {
         onToggle={() => setCollapse((prev) => !prev)}
       />
       <div className="flex flex-1 flex-col min-w-0">
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-6 md:px-7 overflow-y-auto">
           <Outlet />
         </main>
       </div>

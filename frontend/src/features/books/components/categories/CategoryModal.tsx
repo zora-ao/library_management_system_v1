@@ -1,7 +1,7 @@
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from "@/hooks/useCategories";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { type CategoryFormData, categorySchema, type Category } from "../types/category.types";
+import { type CategoryFormData, categorySchema, type Category } from "../../types/category.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

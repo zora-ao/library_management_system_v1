@@ -1,3 +1,11 @@
+export interface Review {
+  id: string;
+  user_id: string;
+  user_name?: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
 
 export interface Book {
   id: string;
@@ -11,6 +19,11 @@ export interface Book {
   image_url: string;
   description?: string;
   pages: number;
+  average_rating?: number;
+  total_reviews?: number;
+  reviews?: Review[];
+  publication_year: number;
+  created_at?: string;
 }
 
 export interface BookResponse {

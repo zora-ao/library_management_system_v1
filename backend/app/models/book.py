@@ -16,18 +16,21 @@ class Book(BaseEntity): # Inheritance
   created_at = db.Column(db.DateTime, server_default=db.func.now())
   is_deleted = db.Column(db.Boolean, default=False, nullable=False)
 
+  # relationships
   borrows = db.relationship("Borrow", backref="book", lazy=True)
+  category = db.relationship("Category", back_populates="books", lazy=True)
+  reviews = db.relationship("Review", backref="book", lazy=True, cascade="all, delete-orphan")
 
   # Encapsulation
   _total_copies = db.Column("total_copies", db.Integer, nullable=False, default=1)
   _available_copies = db.Column("available_copies",db.Integer, nullable=False, default=1)
 
   # Constructor
-  def __init__(self, title, author, total_copies=1, isbn=None, category_id=None, description=None, pages=None, image_url=None):
+  def __init__(self, title, author, total_copies=1, available_copies=None, isbn=None, category_id=None, description=None, pages=None, image_url=None):
     self.title = title
     self.author = author
     self._total_copies = total_copies
-    self._available_copies = total_copies
+    self._available_copies = total_copies if available_copies is not None else total_copies
     self.isbn = isbn
     self.category_id = category_id
     self.description = description
@@ -42,6 +45,16 @@ class Book(BaseEntity): # Inheritance
   @property
   def available_copies(self):
     return self._available_copies
+
+  @property
+  def average_rating(self):
+    if not self.reviews:
+      return 0.0
+    return round(sum(review.rating for review in self.reviews) / len(self.reviews), 1)
+
+  @property
+  def total_reviews(self):
+    return len(self.reviews)
 
   def adjust_total_copies(self, new_total: int):
     # it safely update the total copies and recalculate available copies

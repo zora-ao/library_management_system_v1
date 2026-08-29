@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import BookFormModal from "@/features/books/components/BookFormModal";
-import BooksTable from "@/features/books/components/BooksTable";
-import CategoryFilter from "@/features/books/components/CategoryFilter";
-import CategoryModal from "@/features/books/components/CategoryModal";
+import BookFormModal from "@/features/books/components/books/BookFormModal";
+import BooksTable from "@/features/books/components/books/BooksTable";
+import CategoryFilter from "@/features/books/components/categories/CategoryFilter";
+import CategoryModal from "@/features/books/components/categories/CategoryModal";
 import { type Book } from "@/features/books/types/book.types";
 import { useBooks, useDeleteBooks } from "@/hooks/useBooks";
 import { Loader2, Plus } from "lucide-react";

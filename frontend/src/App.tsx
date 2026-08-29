@@ -7,9 +7,9 @@ import { useAuth } from "./hooks/useAuth"
 import BooksListPage from "./pages/BooksListPage"
 import BookCatalogPage from "./pages/BookCatalogPage"
 import MyBorrowsPage from "./pages/MyBorrowsPage"
-import AdminBorrowsTables from "./features/borrows/components/AdminBorrowsTable"
 import AdminBorrowsPage from "./pages/AdminBorrowsPage"
 import AdminUsersPage from "./pages/AdminUsersPage"
+import BookDetailsPage from "./pages/BookDetailsPage"
 
 
 const App = () => {
@@ -28,6 +28,7 @@ const App = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<div>Dashboard Content</div>} />
           <Route path="/books" element={<BookCatalogPage/>} />
+          <Route path="/books/:id" element={<BookDetailsPage />} />
           <Route path="/my-borrows" element={<MyBorrowsPage />} />
           {user?.role == "admin" && (
             <>
