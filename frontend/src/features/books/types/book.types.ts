@@ -7,6 +7,15 @@ export interface Review {
   created_at: string;
 }
 
+export interface ReviewStatsResponse {
+  average_rating: number;
+  total_reviews: number;
+}
+
+export interface ReviewResponse extends Review {
+  book_id: string;
+}
+
 export interface Book {
   id: string;
   isbn?: string;

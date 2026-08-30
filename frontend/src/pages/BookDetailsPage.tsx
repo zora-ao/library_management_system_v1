@@ -1,34 +1,28 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useGetBookById } from "@/hooks/useBooks";
+import { useGetBookById, useGetBookReviewStats } from "@/hooks/useBooks";
 import { 
   ArrowLeft, 
   Bookmark, 
-  BookOpen, 
-  Calendar, 
-  CheckCircle2, 
-  FileText, 
-  Hash, 
   Heart, 
   Loader2, 
   Star, 
-  User, 
-  XCircle 
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { BookReviews } from "@/features/books/components/books/BookReviews";
-import { ReviewEntity } from "@/features/books/models/ReviewEntity";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BookDetailsTable from "@/features/books/components/books/BookDetailsTable";
 import RelatedBook from "@/features/books/components/books/RelatedBook";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import BookReviews from "@/features/books/components/books/BookReviews";
 
 const BookDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const { data: book, isLoading, isError, error } = useGetBookById(id);
+  const { data: stats } = useGetBookReviewStats(id);
+
+  console.log(stats)
 
   if (isLoading) {
     return (
@@ -51,10 +45,8 @@ const BookDetailsPage = () => {
     );
   }
 
-  const isAvailable = book.available_copies > 0;
-
-  // make the json object from api to the ReviewEntity instance
-  const reviewsList = (book.reviews || []).map((review: any) => new ReviewEntity(review));
+  const totalReviews = stats?.total_reviews ?? book.total_reviews ?? 0;
+  const averageRating = stats?.average_rating ?? 0;
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-8 min-h-screen">
@@ -81,7 +73,7 @@ const BookDetailsPage = () => {
       </Breadcrumb>
       
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-        {/* book image */}
+        {/* Book image */}
         <div className="md:col-span-4 flex justify-center">
           <div className="w-56 h-80 rounded-2xl overflow-hidden shadow-sm bg-muted/50 border border-black/5">
             <img
@@ -102,15 +94,22 @@ const BookDetailsPage = () => {
             </p>
           </div>
 
-          {/* rating */}
+          {/* Rating Header */}
           <div className="flex items-center gap-2">
             <div className="flex items-center text-amber-500">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                <Star 
+                  key={i} 
+                  className={`w-4 h-4 ${
+                    i < Math.round(averageRating) 
+                      ? "fill-amber-500 text-amber-500" 
+                      : "text-muted-foreground/20"
+                  }`} 
+                />
               ))}
             </div>
             <span className="text-xs text-muted-foreground font-medium">
-              {book.total_reviews || 0} reviews
+              {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
             </span>
           </div>
 
@@ -142,7 +141,7 @@ const BookDetailsPage = () => {
         </div>
       </div>
 
-      {/* content section */}
+      {/* Content Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pt-4">
         <div className="lg:col-span-12">
           <Tabs defaultValue="details" className="w-full space-y-6">
@@ -158,7 +157,7 @@ const BookDetailsPage = () => {
                 value="reviews"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs font-semibold px-0 pb-3"
               >
-                Reviews ({reviewsList.length})
+                Reviews ({totalReviews})
               </TabsTrigger>
 
               <TabsTrigger
@@ -174,7 +173,7 @@ const BookDetailsPage = () => {
             </TabsContent>
 
             <TabsContent value="reviews">
-              <BookReviews bookId={book.id} reviews={reviewsList} />
+              <BookReviews bookId={book.id} />
             </TabsContent>
 
             <TabsContent value="recommendations">

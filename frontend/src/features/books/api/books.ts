@@ -1,11 +1,24 @@
 import { api } from "@/services/api";
-import type { Book, BookResponse } from "../types/book.types";
+import type { Book, BookResponse, ReviewResponse, ReviewStatsResponse } from "../types/book.types";
 import type { BookFormData } from "../types/book.schema";
 import { type IReview, ReviewEntity } from "../models/ReviewEntity";
 
+export const getBookReviews = async(bookId: string): Promise<ReviewResponse[]> => {
+  const { data } = await api.get<{ reviews: ReviewResponse[] }>(`/books/${bookId}/reviews`);
+
+  return data.reviews;
+}
+
+export const getBookReviewStats = async(bookId: string): Promise<ReviewStatsResponse> => {
+  const { data } = await api.get<ReviewStatsResponse>(`/books/${bookId}/reviews/stats`);
+
+  return data;
+}
+
 export const submitReview = async(
-  bookId: string, 
-  payload: { rating: number; comment: string }) => {
+    bookId: string, 
+    payload: { rating: number; comment: string }
+  ) => {
 
     const { data } = await api.post<IReview>(`/books/${bookId}/reviews`, payload);
 

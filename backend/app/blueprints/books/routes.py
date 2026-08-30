@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import logging
 
 from app.middleware.auth import admin_required
 from app.services.book_service import BookService
@@ -16,6 +17,43 @@ def get_related_books(id):
     return jsonify([ book.to_dict() for book in related ]), 200
   except ValueError as e:
     return jsonify({"message": f"Failed to fetch related books: {str(e)}"}), 500
+
+# get all reviews
+@books_bp.get("/<uuid:id>/reviews")
+@jwt_required()
+def get_book_reviews(id):
+
+  try:
+    reviews = BookService.get_book_reviews(id)
+
+    return jsonify({
+      "reviews": [review.to_dict() for review in reviews]
+    }), 200
+  
+  except LookupError as e:
+    return jsonify({
+      "message": f"Book not found: {e}"
+    }), 404
+
+  except Exception as e:
+    return jsonify({
+      "message": f"Failed to get book reviews: {e}"
+    }), 500
+
+# get book review stat
+@books_bp.get("/<uuid:id>/reviews/stats")
+@jwt_required()
+def get_book_review_stats(id):
+  try:
+    stats = BookService.get_book_reviews_stats(id)
+
+    return jsonify(stats), 200
+
+  except Exception as e:
+    logging.error(f"Error fetching stats for book {id}: {str(e)}", exc_info=True)
+    return jsonify({
+      "message": f"Failed to get the book review stats: {e}"
+    }), 500
 
 # add review
 @books_bp.post("/<uuid:id>/reviews")

@@ -1,4 +1,5 @@
-import { createBook, deleteBook, getBookById, getBooks, updateBook } from "@/features/books/api/books";
+import { createBook, deleteBook, getBookById, getBookReviews, getBookReviewStats, getBooks, submitReview, updateBook } from "@/features/books/api/books";
+import { ReviewEntity } from "@/features/books/models/ReviewEntity";
 import type { BookFormData } from "@/features/books/types/book.schema";
 import { type Book } from "@/features/books/types/book.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +15,38 @@ export const useBooks = (categoryId?: string) => {
     queryKey: ["books", categoryId],
     queryFn: () => getBooks(categoryId),
     staleTime: 1000 * 60 * 5
+  });
+}
+
+export const useGetBookReviews = (bookId?: string) => {
+  return useQuery({
+    queryKey: ["book-reviews", bookId],
+    queryFn: () => getBookReviews(bookId!),
+    enabled: !!bookId,
+    select: (data) => data.map((reviewData) => new ReviewEntity(reviewData)),
+  });
+};
+
+export const useSubmitReview = (bookId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: {rating: number, comment: string}) =>
+      submitReview(bookId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["book-reviews", bookId] });
+      queryClient.invalidateQueries({ queryKey: ["book-review-stats", bookId] });
+    }
+  })
+
+}
+
+export const useGetBookReviewStats = (bookId?: string) => {
+
+  return useQuery({
+    queryKey: ["book-review-stats", bookId],
+    queryFn: () => getBookReviewStats(bookId!),
+    enabled: !!bookId
   });
 }
 
