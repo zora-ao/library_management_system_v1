@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 from app.extensions import db
 from app.models import Borrow, Book
 from app.middleware.auth import admin_required
+from app.services.borrow_service import BorrowService
 
 borrows_bp = Blueprint("borrow", __name__, url_prefix="/api/borrows")
 
@@ -13,11 +14,7 @@ borrows_bp = Blueprint("borrow", __name__, url_prefix="/api/borrows")
 @borrows_bp.get("/admin/all")
 @admin_required()
 def get_all_borrows_admin():
-  borrows = (
-    Borrow.query.order_by(Borrow.borrowed_at.desc())
-    .all()
-  )
-
+  borrows = BorrowService.get_all_borrows_admin()
   return jsonify([borrow.to_dict() for borrow in borrows]), 200
 
 # getting borrowed history
@@ -26,12 +23,7 @@ def get_all_borrows_admin():
 def get_borrowed_history():
   user_id = get_jwt_identity()
 
-  history = (
-    Borrow.query.filter_by(user_id=user_id)
-    .filter(Borrow.returned_at.isnot(None))
-    .order_by(Borrow.returned_at.desc())
-    .all()
-  )
+  history = BorrowService.get_borrowed_history(user_id)
 
   return jsonify([borrow.to_dict() for borrow in history]), 200
 
@@ -42,11 +34,8 @@ def get_borrowed_books():
 
   user_id = get_jwt_identity()
 
-  # Get the user's active borrowed books
-  active_borrows = Borrow.query.options(joinedload(Borrow.book)).filter_by(
-    user_id=user_id,
-    returned_at=None
-  ).all()
+  # Get the user's active borrowed books 
+  active_borrows = BorrowService.get_user_active_borrows(user_id)
 
   if not active_borrows:
     return jsonify({
@@ -60,57 +49,6 @@ def get_borrowed_books():
     "count": len(result),
     "borrowed_books": result
   }), 200
-
-
-# Returning book
-@borrows_bp.put("/<uuid:id>/return")
-@jwt_required()
-def return_book(id):
-
-  user_id = get_jwt_identity()
-  borrow = db.session.get(Borrow, id)
-
-  if borrow is None:
-    return jsonify({
-      "message": "Borrow record not found"
-    }), 404
-
-  if str(borrow.user_id) != str(user_id):
-    return jsonify({
-      "message": "Unauthorized"
-    }), 403
-
-  if borrow.returned_at is not None:
-    return jsonify({
-      "message": "Book has been already returned"
-    }), 400
-
-  book = db.session.get(Book, borrow.book_id)
-
-  if book is None:
-    return jsonify({
-      "message": "Book not found"
-    }), 404
-
-  try:
-    borrow.marked_as_returned()
-    book.increment_available()
-
-    db.session.commit()
-  except ValueError as e:
-    db.session.rollback() 
-    return jsonify({"message": str(e)}), 400
-  except Exception:
-    db.session.rollback()
-    return jsonify({
-      "message": "Something went wrong"
-    }),500
-
-  return jsonify({
-    "message": "Book returned successfully",
-    "borrow": borrow.to_dict()
-  }), 200
-
 
 # For borrowing book
 @borrows_bp.post("")
@@ -133,54 +71,36 @@ def borrow_book():
       "message": "Book id is required"
     }), 400
 
-  book = db.session.get(Book, book_id)
-
-  if not book:
-    return jsonify({
-      "message": "Book not found"
-    }), 404
-
-  if book.available_copies <= 0:
-    return jsonify({
-      "message": "Book is currently out of stock"
-    }), 400
-
-  active_borrow = Borrow.query.filter_by(
-    user_id=user_id,
-    book_id=book_id,
-    returned_at=None
-  ).first()
-
-  if active_borrow:
-    return jsonify({
-      "message": "You already borrowed this book"
-    }), 400
-
-  due_date = datetime.now(timezone.utc) + timedelta(days=BORROW_DURATION_DAYS)
-
   try:
-    book.decrement_available()
-
-    borrow = Borrow(
-      user_id=user_id,
-      book_id=book_id,
-      due_date=due_date
-    )
-
-    db.session.add(borrow)
-    db.session.commit()
-
+    borrow = BorrowService.borrow_book(user_id, book_id)
     return jsonify({
       "message": "Book borrowed successfully",
       "borrow": borrow.to_dict()
     }), 201
 
   except ValueError as e:
-    db.session.rollback()
-    return jsonify({"message": str(e)}), 400
-
+    return jsonify({ "message": str(e) }), 400
   except Exception:
-    db.session.rollback()
+    return jsonify({"message": "Something went wrong"}), 500
+
+# Returning book
+@borrows_bp.put("/<uuid:id>/return")
+@jwt_required()
+def return_book(id):
+
+  user_id = get_jwt_identity()
+
+  try:
+    borrow = BorrowService.return_book(id, user_id)
+
     return jsonify({
-      "message": "Something went wrong"
-    }), 500
+      "message": "Book returned successfully"
+    }), 200
+  except PermissionError as e:
+    return jsonify({ "message": str(e) }), 403
+  except ValueError as e:
+    # check then match if not found or already returned
+    status_code = 404 if "not found" in str(e) else 400
+    return jsonify({ "message": str(e) }), status_code
+  except Exception as e:
+    return jsonify({ "message": "Something went wrong" }), 500
