@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 class User(BaseEntity): # Inheritance
   __tablename__ = "users"
 
-  username = db.Column(db.String(100), nullable=False)
+  username = db.Column(db.String(100), unique=True, nullable=False)
   email = db.Column(db.String(100), unique=True, nullable=False)
   is_active = db.Column(db.Boolean, nullable=False, default=True)
   role = db.Column(db.String(20), nullable=False, default='student')
@@ -51,6 +51,8 @@ class User(BaseEntity): # Inheritance
 
   def check_password(self, plain_password: str) -> bool:
     # for verification
+    if not self._password_hash:
+      return False
     return check_password_hash(self._password_hash, plain_password)
 
   def is_admin_or_librarian(self) -> bool:

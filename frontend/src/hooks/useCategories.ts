@@ -1,5 +1,5 @@
 import { createCategory, deleteCategory, getCategories, updateCategory } from "@/features/books/api/categories";
-import type { Category, CategoryFormData } from "@/features/books/types/category.types";
+import type { CategoryFormData } from "@/features/books/types/category.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 

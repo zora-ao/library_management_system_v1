@@ -1,6 +1,6 @@
-import type { Book } from "../types/book.types";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Star } from "lucide-react";
+import type { Book } from "../../types/book.types";
 
 interface BookCardProps {
   book: Book;
