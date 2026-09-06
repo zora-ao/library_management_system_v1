@@ -15,12 +15,12 @@ def create_app():
   app = Flask(__name__)
   app.config.from_object(Config)
 
-  CORS(app, origins=["http://localhost:5173", "https://library-management-system-libra.vercel.app"])
+  CORS(app, origins=["https://library-management-system-libra.vercel.app"])
 
   db.init_app(app)
   migrate.init_app(app, db)
   jwt.init_app(app)
-
+  
   # Register the blueprints
   app.register_blueprint(auth_bp)
   app.register_blueprint(books_bp)
