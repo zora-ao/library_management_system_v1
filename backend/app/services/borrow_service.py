@@ -44,13 +44,13 @@ class BorrowService:
     active_borrow = Borrow.query.filter_by(
         user_id=user_id,
         book_id=book_id,
-        returned_at=None
+        returned_at=None 
       ).first()
 
     if active_borrow:
       raise ValueError("You already borrowed this book")
 
-    due_date = datetime.now(timezone.utc) + timedelta(days=BORROW_DURATION)
+    due_date = datetime.now(timezone.utc) + timedelta(days=BorrowService.BORROW_DURATION)
 
     try:
       book.decrement_available()

@@ -1,9 +1,6 @@
-from flask import Blueprint, request, jsonify, current_app
-from google.oauth2 import id_token
-from google.auth.transport import requests
-from app.models import User
+from flask import Blueprint, request, jsonify
 from app.extensions import db
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services.auth_service import AuthService
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
