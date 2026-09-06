@@ -31,7 +31,6 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const isEditing = !!book;
-  const isPending = createBookMutation.isPending || updateBookMutation.isPending;
 
   const {
     register,

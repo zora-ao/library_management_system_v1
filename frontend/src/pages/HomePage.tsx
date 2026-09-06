@@ -1,6 +1,3 @@
-import BookCard from "@/features/books/components/BookCard";
-import { useBooks } from "@/hooks/useBooks"
-import { Loader2 } from "lucide-react";
 
 
 const HomePage = () => {

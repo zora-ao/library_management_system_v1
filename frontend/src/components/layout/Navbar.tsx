@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "../ui/button";
-import { BookA, BookAIcon, BookmarkCheck, BookmarkIcon, BookOpen, ChevronLeft, ChevronRight, History, LayoutDashboard, LogOut, User } from "lucide-react";
+import { BookAIcon, BookmarkCheck, BookmarkIcon, BookOpen, ChevronLeft, ChevronRight, LayoutDashboard, LogOut, User } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import type React from "react";
 import { cn } from "@/lib/utils";

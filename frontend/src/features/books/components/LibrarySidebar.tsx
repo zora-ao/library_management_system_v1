@@ -1,4 +1,4 @@
-import { Book, Calendar, Clock, Bookmark, ArrowRight, ShieldCheck } from "lucide-react";
+import {Clock, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 

@@ -30,7 +30,7 @@ class Book(BaseEntity): # Inheritance
     self.title = title
     self.author = author
     self._total_copies = total_copies
-    self._available_copies = total_copies if available_copies is not None else total_copies
+    self._available_copies = total_copies if available_copies is not None else available_copies
     self.isbn = isbn
     self.category_id = category_id
     self.description = description

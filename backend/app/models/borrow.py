@@ -16,7 +16,7 @@ class Borrow(BaseEntity): # Inheritance
   _status = db.Column("status", db.String(100), default="borrowed", nullable=False)
 
   # Constructor
-  def __init__(self, user_id: int, book_id: int, due_date: datetime, status: str = "borrowed"):
+  def __init__(self, user_id: UUID, book_id: UUID, due_date: datetime, status: str = "borrowed"):
     self.user_id = user_id
     self.book_id = book_id
     self.due_date = due_date
@@ -43,7 +43,7 @@ class Borrow(BaseEntity): # Inheritance
 
   # helper function for checking if overdue
   def is_overdue(self) -> bool:
-    return self._status == "overdue"
+    return self.status == "overdue"
 
   def to_dict(self):
     return {
