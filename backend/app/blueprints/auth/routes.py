@@ -64,8 +64,8 @@ def login():
     return jsonify({ "message": str(e) }), 403
   except ValueError as e:
     return jsonify({ "message": str(e) }), 400
-  except Exception:
-    return jsonify({ "message": "Failed to login user" }), 500
+  except Exception as e:
+    return jsonify({ "message": f"Failed to login user: {e}" }), 500
 
 
 # --------register---------
