@@ -80,8 +80,8 @@ class AuthService:
   def register_user(username, email, password, role="student"):
 
     existing_user = User.query.filter(
-      (User.email == email) | (User.username == username).first()
-    )
+      (User.email == email) | (User.username == username)
+    ).first()
 
     if existing_user:
       raise ValueError("Username or email already exist")
