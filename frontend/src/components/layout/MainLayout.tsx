@@ -1,25 +1,30 @@
-import { useState } from "react"
-import { Outlet } from "react-router-dom"
-import Navbar from "./Navbar";
-
-
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { Sidebar } from "./Sidebar";
+import { MobileHeader } from "./MobileHeader";
 
 const MainLayout = () => {
-  const [collapsed, setCollapse] = useState<boolean>(false);
+  const [collapsed, setCollapsed] = useState<boolean>(false);
 
   return (
-    <div className="h-screen flex bg-background">
-      <Navbar
+    <div className="min-h-screen flex flex-col md:flex-row bg-background">
+      {/* Mobile Top Header with Hamburger Sheet */}
+      <MobileHeader />
+
+      {/* Desktop Collapsible Sidebar */}
+      <Sidebar
         collapsed={collapsed}
-        onToggle={() => setCollapse((prev) => !prev)}
+        onToggle={() => setCollapsed((prev) => !prev)}
       />
-      <div className="flex flex-1 flex-col min-w-0">
-        <main className="flex-1 p-6 md:px-7 overflow-y-auto">
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col min-w-0 h-screen overflow-hidden">
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           <Outlet />
         </main>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MainLayout
+export default MainLayout;
