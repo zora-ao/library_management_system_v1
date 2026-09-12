@@ -144,11 +144,13 @@ def get_book(id):
 def get_books():
 
   search_query = request.args.get("search", "").strip()
+  category_id = request.args.get("category_id", "").strip() or None
   page = request.args.get("page", 1, type=int)
   limit = request.args.get("limit", 10, type=int)
 
   paginated_books = BookService.get_paginated_books(
     search_query=search_query,
+    category_id=category_id,
     page=page,
     limit=limit
   )

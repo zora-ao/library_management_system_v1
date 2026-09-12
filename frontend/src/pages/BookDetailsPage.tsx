@@ -22,8 +22,6 @@ const BookDetailsPage = () => {
   const { data: book, isLoading, isError, error } = useGetBookById(id);
   const { data: stats } = useGetBookReviewStats(id);
 
-  console.log(stats)
-
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">

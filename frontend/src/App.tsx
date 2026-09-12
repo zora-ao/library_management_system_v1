@@ -10,6 +10,7 @@ import MyBorrowsPage from "./pages/MyBorrowsPage"
 import AdminBorrowsPage from "./pages/AdminBorrowsPage"
 import AdminUsersPage from "./pages/AdminUsersPage"
 import BookDetailsPage from "./pages/BookDetailsPage"
+import AllBooksPage from "./pages/AllBooksPage"
 
 
 const App = () => {
@@ -28,6 +29,7 @@ const App = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<div>Dashboard Content</div>} />
           <Route path="/books" element={<BookCatalogPage/>} />
+          <Route path="/all-books" element={<AllBooksPage />} />
           <Route path="/books/:id" element={<BookDetailsPage />} />
           <Route path="/my-borrows" element={<MyBorrowsPage />} />
           {user?.role == "admin" && (

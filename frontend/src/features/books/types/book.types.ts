@@ -30,7 +30,6 @@ export interface Book {
   pages: number;
   average_rating?: number;
   total_reviews?: number;
-  reviews?: Review[];
   publication_year: number;
   created_at?: string;
 }

@@ -63,8 +63,17 @@ class BookService:
         return query.filter(Book.id == book_id).first()
 
     @staticmethod
-    def get_paginated_books(search_query="", page=1, limit=10):
-        query = Book.query.options(joinedload(Book.category)).filter(Book.is_deleted == False)
+    def get_paginated_books(search_query="", category_id=None,  page=1, limit=10):
+        # Added joinedload(Book.reviews) to load reviews for rating calculation
+        query = Book.query.options(
+            joinedload(Book.category), 
+            joinedload(Book.reviews)
+        ).filter(Book.is_deleted == False)
+
+        # Filter by category if passed
+        if category_id:
+            query = query.filter(Book.category_id == category_id)
+
         if search_query:
             query = query.filter(
                 Book.title.ilike(f"%{search_query}%") |
