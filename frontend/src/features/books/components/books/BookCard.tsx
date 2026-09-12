@@ -9,6 +9,8 @@ interface BookCardProps {
 const BookCard = ({ book }: BookCardProps) => {
   const navigate = useNavigate();
 
+  console.log(book)
+
   return (
     <div
       onClick={() => navigate(`/books/${book.id}`)}
@@ -42,7 +44,7 @@ const BookCard = ({ book }: BookCardProps) => {
         {/* Rating */}
         <div className="flex items-center gap-1 pt-0.5">
           <span className="text-[10px] font-semibold text-foreground">
-            4.5
+            {book.average_rating != null ? book.average_rating : 0}
           </span>
           <Star className="h-2.5 w-2.5 fill-amber-400 stroke-amber-400" />
         </div>
