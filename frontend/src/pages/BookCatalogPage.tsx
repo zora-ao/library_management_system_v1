@@ -7,18 +7,12 @@ import { NavLink } from "react-router-dom";
 
 const BookCatalogPage = () => {
   const { data: books = [], isLoading, isError, error } = useBooks();
-  const [search, setSearch] = useState("");
 
-  const filteredBooks = books.filter(
-    (book) =>
-      book.title.toLowerCase().includes(search.toLowerCase()) ||
-      book.author.toLowerCase().includes(search.toLowerCase())
-  );
 
   // Group books into sections
-  const popularBooks = filteredBooks.slice(0, 5);
-  const recommendedBooks = filteredBooks.slice(4, 8);
-  const otherBooks = filteredBooks.slice(0, 5);
+  const popularBooks = books.slice(0, 5);
+  const recommendedBooks = books.slice(4, 8);
+  const otherBooks = books.slice(0, 5);
 
   if (isLoading) {
     return (
