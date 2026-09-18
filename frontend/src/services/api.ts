@@ -7,6 +7,7 @@ export const api = axios.create({
   },
 });
 
+// this will attach the jwt for every request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -19,5 +20,17 @@ api.interceptors.request.use(
   }
 );
 
+// this will handle when the jwt expiration or invalid
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 
