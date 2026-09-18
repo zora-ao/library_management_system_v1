@@ -1,145 +1,242 @@
+import { useState } from "react";
 import { useBooks } from "@/hooks/useBooks";
-import { Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  Loader2,
+  Search,
+  BookOpen,
+} from "lucide-react";
 import BookCard from "@/features/books/components/books/BookCard";
-import { NavLink } from "react-router-dom";
+import BookFilters from "@/features/books/components/books/BookFilters";
+import { Button } from "@/components/ui/button";
+import BookPagination from "@/features/books/components/books/BookCatalogPagination";
+
+const GENRES = [
+  "All",
+  "Sci-Fi",
+  "Fantasy",
+  "Software",
+  "Tech",
+  "Literature",
+  "History",
+  "Self-Help",
+];
+
+const ITEMS_PER_PAGE = 8;
 
 const BookCatalogPage = () => {
   const { data: books = [], isLoading, isError, error } = useBooks();
 
+  // Filter & Search States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSort, setSelectedSort] = useState("A-Z");
+  const [availability, setAvailability] = useState("all");
+  const [selectedGenre, setSelectedGenre] = useState("All");
 
-  // 1. POPULAR: Sorted by highest rating / most reviews, limited to 5
-  const popularBooks = [...books]
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Filter Logic
+  const filteredBooks = books.filter((book) => {
+    const matchesSearch =
+      book.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      book.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      book.category_name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesGenre =
+      selectedGenre === "All" ||
+      book.category_name?.toLowerCase() === selectedGenre.toLowerCase();
+
+    const matchesAvailability =
+      availability === "all" ||
+      (availability === "available" && (book.available_copies ?? 0) > 0) ||
+      (availability === "reserved" && (book.available_copies ?? 0) === 0);
+
+    return matchesSearch && matchesGenre && matchesAvailability;
+  });
+
+  // Sorting Logic
+  const sortedBooks = [...filteredBooks].sort((a, b) => {
+    if (selectedSort === "A-Z") return (a.title || "").localeCompare(b.title || "");
+    if (selectedSort === "Z-A") return (b.title || "").localeCompare(a.title || "");
+    return 0;
+  });
+
+  // Popular Books (top 4 rated)
+  const popularBooks = [...sortedBooks]
     .sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0))
-    .slice(0, 5);
-  
-  // 2. RECOMMENDED: Books with rating >= 4.0 and review activity
-  const recommendedBooks = books.filter(
-      (book) =>
-        (book.average_rating ?? 0) >= 4.0 && (book.total_reviews ?? 0) >= 1
-    ).slice(0, 5);
-  
-  // 3. OTHER BOOKS: Regular catalog slice or newly added titles
-  const otherBooks = books.slice(0, 5);
+    .slice(0, 4);
+
+  // Pagination Calculations for All Books
+  const totalPages = Math.ceil(sortedBooks.length / ITEMS_PER_PAGE) || 1;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedBooks = sortedBooks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSelectedSort("A-Z");
+    setAvailability("all");
+    setSelectedGenre("All");
+    setCurrentPage(1);
+  };
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="m-6 p-4 border border-destructive/20 bg-destructive/10 text-destructive rounded-md">
-        Error loading catalog: {error.message}
+      <div className="m-6 p-4 border border-destructive/20 bg-destructive/10 text-destructive rounded-xl text-sm">
+        Error loading catalog: {error ? (error as Error).message : "Failed to fetch catalog"}
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 pb-12">
-      {/* 1. CURATED HERO BANNER */}
-      {/* <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white p-8 md:p-10 flex items-center justify-between shadow-lg">
-        <div className="space-y-4 z-10 max-w-lg">
-          <span className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-semibold tracking-wider uppercase text-purple-200 border border-white/10">
+    <div className="max-w-7xl mx-auto space-y-6 pb-12 px-0 sm:px-0">
+      {/* Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-black text-white p-8 md:px-5 flex items-center justify-between shadow-md">
+        <div className="space-y-3 z-10 max-w-lg">
+          <span className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-semibold tracking-wider uppercase text-purple-100 border border-white/10">
             CURATED SELECTION
           </span>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight leading-tight uppercase">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight uppercase">
             MOST READ BOOKS THESE MONTHS
           </h1>
           <p className="text-xs md:text-sm text-purple-100/80 leading-relaxed">
             View trending books in this month and explore recommended reads curated by librarians.
           </p>
-          <Button
-            size="sm"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-6 py-5 text-xs font-bold gap-2 shadow-md transition-all hover:gap-3"
-          >
-            VIEW NOW <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="hidden lg:block relative shrink-0">
-          <div className="w-48 h-36 border-4 border-white/20 rounded-2xl rotate-6 flex items-center justify-center bg-white/5 backdrop-blur-xs">
-            <div className="w-full h-full border-r-2 border-white/20" />
+          <div className="pt-2">
+            <Button
+              size="sm"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-6 py-5 text-xs font-bold gap-2 shadow-sm transition-all hover:gap-3 cursor-pointer"
+            >
+              VIEW NOW <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-      </div> */}
+        <div className="hidden lg:flex relative shrink-0 items-center justify-center pr-8 opacity-40">
+          <BookOpen className="w-48 h-48 text-purple-200 stroke-[1.2]" />
+        </div>
+      </div>
 
-      {/* 2. POPULAR SECTION */}
-      <section className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-lg font-bold tracking-tight text-foreground">Popular</h2>
-            <p className="text-xs text-muted-foreground">Most requested titles this week</p>
-          </div>
-          <NavLink to="/all-books?filter=popular" className="text-sm font-medium text-primary hover:text-black">
-            View Popular
-          </NavLink>
+      {/* Search Input */}
+      <div className="flex items-center gap-2 bg-slate-50/50 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs">
+        <div className="relative flex-1 flex items-center">
+          <Search className="absolute left-4 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            placeholder="Search books by title, author, genre, or ISBN..."
+            className="w-full bg-transparent pl-11 pr-4 py-2.5 text-xs sm:text-sm text-foreground focus:outline-none placeholder:text-slate-400"
+          />
+        </div>
+        <Button className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-6 py-2.5 text-xs font-semibold gap-2 shadow-xs shrink-0 cursor-pointer">
+          <Search className="w-3.5 h-3.5" />
+          Search
+        </Button>
+      </div>
+
+      {/* Main Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-2">
+        <div className="lg:col-span-3">
+          <BookFilters
+            selectedSort={selectedSort}
+            onSortChange={setSelectedSort}
+            availability={availability}
+            onAvailabilityChange={(val) => {
+              setAvailability(val);
+              setCurrentPage(1);
+            }}
+            selectedGenre={selectedGenre}
+            onGenreChange={(genre) => {
+              setSelectedGenre(genre);
+              setCurrentPage(1);
+            }}
+            onClearFilters={handleClearFilters}
+            genres={GENRES}
+          />
         </div>
 
-        {popularBooks.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-6 text-center">No popular books available.</p>
-        ) : (
-          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-5 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
-            {popularBooks.map((book) => (
-              <div key={book.id} className="min-w-[150px] max-w-[170px] sm:min-w-0 sm:max-w-none snap-start shrink-0">
-                <BookCard book={book} />
+        <main className="lg:col-span-9 space-y-10">
+          {/* Popular Section */}
+          <section className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+                  Popular
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Most requested titles this week
+                </p>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* 3. RECOMMENDED FOR YOU SECTION */}
-      <section className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-lg font-bold tracking-tight text-foreground">Recommended For You</h2>
-            <p className="text-xs text-muted-foreground">Based on your recent reading history and preferences</p>
-          </div>
-          <NavLink to="/all-books?filter=recommended" className="text-sm font-medium text-primary hover:text-black">
-            View Recommended
-          </NavLink>
-        </div>
-
-        {recommendedBooks.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-6 text-center">No recommendations found.</p>
-        ) : (
-          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-5 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
-            {recommendedBooks.map((book) => (
-              <div key={book.id} className="min-w-[150px] max-w-[170px] sm:min-w-0 sm:max-w-none snap-start shrink-0">
-                <BookCard book={book} />
+            </div>
+            {popularBooks.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-6 text-center">
+                No popular books available matching filters.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {popularBooks.map((book) => (
+                  <BookCard key={book.id} book={book} />
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+            )}
+          </section>
 
-      {/* 4. OTHER BOOKS SECTION */}
-      <section className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-lg font-bold tracking-tight text-foreground">Other Books</h2>
-            <p className="text-xs text-muted-foreground">Browse general catalog titles across all genres</p>
-          </div>
-          <NavLink to="/all-books" className="text-sm font-medium text-primary hover:text-black">
-            View Others
-          </NavLink>
-        </div>
-
-        {otherBooks.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-6 text-center">No books found matching your criteria.</p>
-        ) : (
-          <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-5 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none">
-            {otherBooks.map((book) => (
-              <div key={book.id} className="min-w-[150px] max-w-[170px] sm:min-w-0 sm:max-w-none snap-start shrink-0">
-                <BookCard book={book} />
+          {/* All Books Section with Pagination */}
+          <section className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+                  All Books
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Browse general catalog titles across all genres
+                </p>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
+            </div>
+
+            {paginatedBooks.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-6 text-center">
+                No books found matching your criteria.
+              </p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {paginatedBooks.map((book) => (
+                    <BookCard key={book.id} book={book} />
+                  ))}
+                </div>
+
+                {/* Clean Shadcn Pagination Component */}
+                <BookPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  startIndex={startIndex}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  totalItems={sortedBooks.length}
+                />
+              </>
+            )}
+          </section>
+        </main>
+      </div>
     </div>
   );
 };
