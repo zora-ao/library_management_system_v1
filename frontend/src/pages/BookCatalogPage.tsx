@@ -141,13 +141,15 @@ const BookCatalogPage = () => {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            placeholder="Search books by title, author, genre, or ISBN..."
+            placeholder="Search books"
             className="w-full bg-transparent pl-11 pr-4 py-2.5 text-xs sm:text-sm text-foreground focus:outline-none placeholder:text-slate-400"
           />
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-6 py-2.5 text-xs font-semibold gap-2 shadow-xs shrink-0 cursor-pointer">
+        <Button 
+          className="text-white rounded-xl px-6 py-2.5 text-xs font-semibold gap-2 shadow-xs shrink-0 cursor-pointer"
+        >
           <Search className="w-3.5 h-3.5" />
-          Search
+          <p className="hidden md:block">Search</p>
         </Button>
       </div>
 
