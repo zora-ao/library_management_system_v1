@@ -3,6 +3,7 @@ import type { Borrow } from "../types/borrow.types"
 import { Book, Calendar, Clock, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatAuthorName } from "@/utils/formatAuthorName";
 
 interface BorrowsTableProps {
   borrows: Borrow[];
@@ -57,13 +58,13 @@ const BorrowsTable = ({ borrows, onReturn, isReturning, returningId, isHistoryVi
                         <Book className="h-4 w-4" />
                       </div>
                     )}
-                    <div className="flex flex-col">
-                      <span className="font-medium leading-none">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-sm sm:text-base">
                         {borrow.book_title || "Unknown Book"}
-                      </span>
+                      </p>
                       {borrow.author && (
-                        <span className="text-xs text-muted-foreground mt-1">
-                          {borrow.author}
+                        <span className="truncate text-xs text-muted-foreground mt-1">
+                          {formatAuthorName(borrow.author, 1)}
                         </span>
                       )}
                     </div>
