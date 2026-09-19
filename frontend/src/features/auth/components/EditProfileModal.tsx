@@ -22,7 +22,7 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
   const { user } = useAuth();
   const { mutate: updateUserProfile, isPending: isSubmitting } = useUpdateUserProfile();
 
-  const student = user?.role === "student" ? user : null;
+  const student = user?.role === "student" ? user.student : null;
 
   const [formData, setFormData] = useState({
     username: user?.username || "",
@@ -63,9 +63,12 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
         email: formData.email,
         phone: formData.phone,
         avatar_url: formData.avatarUrl,
-        student_number: formData.studentNumber,
-        course: formData.course,
-        year_level: formData.yearLevel,
+        
+        student: {
+          student_number: formData.studentNumber,
+          course: formData.course,
+          year_level: formData.yearLevel,
+        },
       },
       {
         onSuccess: () => {

@@ -77,17 +77,17 @@ def register():
   username = data.get("username", "").strip()
   email = data.get("email", "").strip().lower()
   password = data.get("password", "")
-  role = data.get("role", "student").strip().lower()
 
-  if not all([email, username, password, role]):
-    return jsonify({
-      "message": "All fields are required"
-    }), 400
+  if not username or not email or not password:
+      return jsonify({
+          "message": "Username, email, and password are required"
+      }), 400
 
   try:
-    AuthService.register_user(username, email, password, role)
+    AuthService.register_user(username, email, password)
     return jsonify({ "message": "User created successfully" }), 201
   except ValueError as e:
     return jsonify({ "message": str(e) }), 409
-  except Exception:
-    return jsonify({ "message": "Failed to create user" }), 500
+  except Exception as e:
+    print("Registration error:", e)
+    return jsonify({ f"message": "Failed to create user" }), 500

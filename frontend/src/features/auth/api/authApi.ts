@@ -6,10 +6,12 @@ export interface UpdateProfilePayload {
   username?: string;
   email?: string;
   phone?: string;
-  student_number?: string;
-  course?: string;
-  year_level?: string;
   avatar_url?: string;
+  student?: {
+    student_number?: string;
+    course?: string;
+    year_level?: string;
+  };
 }
 
 export const updateUserProfile = async (data: UpdateProfilePayload) => {

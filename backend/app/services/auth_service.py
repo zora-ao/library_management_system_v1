@@ -1,7 +1,7 @@
 from flask import current_app
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from app.models import User
+from app.models import User, Student
 from app.extensions import db
 from flask_jwt_extended import create_access_token
 
@@ -36,6 +36,14 @@ class AuthService:
         avatar_url=avatar
       )
       db.session.add(user)
+      db.session.flush()
+
+      student = Student(
+          user_id=user.id,
+          enrollment_status="Enrolled"
+      )
+
+      db.session.add(student)
       db.session.commit()
 
     elif not user.google_id:
@@ -77,7 +85,7 @@ class AuthService:
     }
 
   @staticmethod
-  def register_user(username, email, password, role="student"):
+  def register_user(username, email, password):
 
     existing_user = User.query.filter(
       (User.email == email) | (User.username == username)
@@ -90,11 +98,18 @@ class AuthService:
       new_user = User(
         username=username,
         email=email,
-        password=password,
-        role=role
+        password=password
       )
 
       db.session.add(new_user)
+      db.session.flush()
+
+      new_student = Student(
+            user_id=new_user.id,
+            enrollment_status="Enrolled"
+        )
+
+      db.session.add(new_student)
       db.session.commit()
 
       return new_user

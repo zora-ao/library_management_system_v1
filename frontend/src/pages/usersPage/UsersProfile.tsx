@@ -27,7 +27,7 @@ export default function StudentProfile() {
   const activeCount = activeBorrows?.length ?? 0;
   const historyCount = borrowHistory?.length ?? 0;
 
-  const student = user?.role === "student" ? user : null;
+  const student = user?.role === "student" ? user.student : null;
 
   const handleCopyEmail = () => {
     if (user?.email) {

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.middleware.auth import admin_required
-from app.models import User
+from app.models import User, Student
 from app.extensions import db
 
 users_bp = Blueprint("users", __name__, url_prefix="/api/users")
@@ -35,6 +35,36 @@ def update_current_user():
   if "avatar_url" in data:
       user.avatar_url = data["avatar_url"]
 
+
+  if user.role == "student" and "student" in data:
+    student_data = data["student"] or {}
+
+    if not user.student:
+      user.student = Student(
+          enrollment_status="Enrolled"
+      )
+
+    if "student_number" in student_data:
+      student_number = student_data["student_number"].strip()
+
+      existing_student = Student.query.filter(
+          Student.student_number == student_number,
+          Student.user_id != user.id
+      ).first()
+
+      if existing_student:
+          return jsonify({
+              "message": "Student number already in use"
+          }), 400
+      
+      user.student.student_number = student_number
+
+    if "course" in student_data:
+        user.student.course = student_data["course"].strip()
+
+    if "year_level" in student_data:
+            user.student.year_level = student_data["year_level"].strip()
+            
   db.session.commit()
 
   return jsonify({

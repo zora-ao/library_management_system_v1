@@ -11,12 +11,18 @@ export interface BaseUser {
   created_at?: string;
 }
 
+export interface StudentProfile {
+  id: string;
+  user_id: string;
+  student_number: string | null;
+  course: string | null;
+  year_level: string | null;
+  enrollment_status: string;
+}
+
 export interface Student extends BaseUser {
   role: "student";
-  student_number?: string;
-  year_level?: string;
-  course?: string;
-  enrollment_status?: string;
+  student: StudentProfile | null;
 }
 
 export interface Librarian extends BaseUser {
@@ -42,7 +48,5 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string;
   username: string;
-  student_number?: string;
   password: string;
-  course?: string;
 }

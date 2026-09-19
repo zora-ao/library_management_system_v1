@@ -3,5 +3,6 @@ from app.models.borrow import Borrow
 from app.models.category import Category
 from app.models.user import User
 from app.models.review import Review
+from app.models.student import Student
 
-__all__ = ["Book", "Borrow", "Category", "User", "Review"]
+__all__ = ["Book", "Borrow", "Category", "User", "Review", "Student"]
