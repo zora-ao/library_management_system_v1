@@ -10,14 +10,14 @@ export const getAllBorrows = async(): Promise<Borrow[]> => {
 export const getBorrowHistory = async(): Promise<Borrow[]> => {
   const { data } = await api.get("/borrows/history");
 
-  return Array.isArray(data) ? data : [];
+  return Array.isArray(data) ? data : data?.history || data?.data || [];
 }
 
 export const getBorrows = async(): Promise<Borrow[]> => {
   const { data } = await api.get("/borrows/me");
 
 
-  return Array.isArray(data) ? data : data.borrowed_books || [];
+  return Array.isArray(data) ? data : data?.borrowed_books || [];
 };
 
 

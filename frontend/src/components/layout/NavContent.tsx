@@ -9,11 +9,13 @@ import {
   ChevronRight, 
   LayoutDashboard, 
   LogOut, 
-  User 
+  User, 
+  User2
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import type React from "react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 interface NavContentProps {
   collapsed?: boolean;
@@ -106,10 +108,21 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
       {/* Footer User Info and Logout */}
       <div className="border-t p-3 space-y-2 mt-auto">
         {!collapsed && user && (
-          <div className="px-2 py-1.5 text-xs">
-            <p className="font-medium text-foreground truncate">{user.username}</p>
-            <p className="text-muted-foreground truncate">{user.email}</p>
-          </div>
+          <NavLink
+            to="/profile"
+            className="flex items-center gap-3 px-3 py-2 text-xs rounded-xl hover:bg-slate-100 transition-colors"
+          >
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarImage src={user.avatar_url} alt={user.username} />
+              <AvatarFallback className="bg-purple-100 text-purple-700 font-semibold text-[10px]">
+                {user.username?.slice(0, 2).toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-foreground truncate">{user.username}</p>
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            </div>
+          </NavLink>
         )}
 
         <Button

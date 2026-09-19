@@ -1,6 +1,22 @@
 import { api } from "@/services/api";
 import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from "../types/auth.types";
 
+
+export interface UpdateProfilePayload {
+  username?: string;
+  email?: string;
+  phone?: string;
+  student_number?: string;
+  course?: string;
+  year_level?: string;
+  avatar_url?: string;
+}
+
+export const updateUserProfile = async (data: UpdateProfilePayload) => {
+  const response = await api.put("/users/me", data);
+  return response.data;
+};
+
 export const loginUser = async(credentials: LoginCredentials): Promise<AuthResponse> => {
   const res = await api.post<AuthResponse>("/auth/login", {
     email: credentials.email.trim().toLowerCase(),
@@ -36,3 +52,4 @@ export const updateUserRole = async({userId, role}: {userId: string, role: strin
 
   return res.data;
 }
+

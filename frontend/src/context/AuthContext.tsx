@@ -1,8 +1,10 @@
 import type { User } from "@/features/auth/types/auth.types";
-import React, { createContext, useEffect, useState, type ReactNode } from "react";
+import React, { createContext, useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 
 interface AuthContextType {
   user: User | null;
+  setUser: Dispatch<SetStateAction<User | null>>;
+  updateUser: (user: User) => void;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -20,6 +22,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const updateUser = (updatedUser: User) => {
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -59,6 +66,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
+        updateUser,
         token,
         isAuthenticated: !!token,
         isLoading,
