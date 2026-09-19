@@ -1,35 +1,53 @@
 export type UserRole = "student" | "librarian" | "admin";
 
-export interface User {
+export interface BaseUser {
   id: string;
-  avatar_url: string;
   username: string;
-  student_number?: string;
   email: string;
-  password: string;
-  course?: string;
-  role: UserRole;
-  google_id?: string;
-  is_google_account?: boolean;
+  avatar_url: string;
+  phone?: string;
+  status?: string;
   is_active?: boolean;
+  is_google_account?: boolean;
   created_at?: string;
 }
 
+export interface StudentProfile {
+  id: string;
+  user_id: string;
+  student_number: string | null;
+  course: string | null;
+  year_level: string | null;
+  enrollment_status: string;
+}
+
+export interface Student extends BaseUser {
+  role: "student";
+  student: StudentProfile | null;
+}
+
+export interface Librarian extends BaseUser {
+  role: "librarian";
+}
+
+export interface Admin extends BaseUser {
+  role: "admin";
+}
+
+export type User = Student | Librarian | Admin;
+
 export interface AuthResponse {
   token: string;
-  user: User
+  user: User;
 }
 
 export interface LoginCredentials {
   email: string;
-  password: string
+  password: string;
 }
 
 export interface RegisterCredentials {
   email: string;
   username: string;
-  student_number?: string;
   password: string;
-  course?: string;
 }
-

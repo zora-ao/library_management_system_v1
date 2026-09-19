@@ -1,5 +1,5 @@
 import { AuthContext } from "@/context/AuthContext"
-import { getAllUsers, updateUserRole} from "@/features/auth";
+import { getAllUsers, updateUserProfile, updateUserRole} from "@/features/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react"
 
@@ -32,3 +32,21 @@ export const useUpdateUserRole = () => {
     }
   })
 }
+
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
+  const { updateUser } = useAuth();
+
+  return useMutation({
+    mutationFn: updateUserProfile,
+    onSuccess: (data) => {
+      console.log("Updated profile response:", data);
+
+      if (data?.user) {
+        updateUser(data.user);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+};
