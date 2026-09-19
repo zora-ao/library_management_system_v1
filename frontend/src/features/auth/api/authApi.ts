@@ -11,12 +11,17 @@ export interface UpdateProfilePayload {
     student_number?: string;
     course?: string;
     year_level?: string;
+    avatar?: File;
   };
 }
 
-export const updateUserProfile = async (data: UpdateProfilePayload) => {
-  const response = await api.put("/users/me", data);
-  return response.data;
+export const updateUserProfile = async (formData: FormData) => {
+  const { data } = await api.put("/users/me", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return data;
 };
 
 export const loginUser = async(credentials: LoginCredentials): Promise<AuthResponse> => {

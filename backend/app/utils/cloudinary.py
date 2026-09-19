@@ -40,3 +40,45 @@ def delete_book_cover(image_url):
   except Exception as e:
     print(f"Failed to delete Cloudinary image: {str(e)}")
     return None
+
+def upload_avatar(file):
+  init_cloudinary()
+
+  result = cloudinary.uploader.upload(
+        file,
+        folder="library_avatars",
+        transformation=[
+            {
+                "width": 300,
+                "height": 300,
+                "crop": "fill",
+                "gravity": "face",
+            },
+            {
+                "quality": "auto",
+            },
+        ],
+    )
+
+  return result.get("secure_url")
+
+def delete_avatar(image_url):
+  if not image_url:
+      return None
+
+  init_cloudinary()
+
+  try:
+      match = re.search(
+          r"/upload/(?:v\d+/)?(.+)\.[a-zA-Z]+$",
+          image_url,
+      )
+
+      if match:
+          public_id = match.group(1)
+          return cloudinary.uploader.destroy(public_id)
+
+  except Exception as e:
+      print(f"Failed to delete Cloudinary avatar: {str(e)}")
+
+  return None
