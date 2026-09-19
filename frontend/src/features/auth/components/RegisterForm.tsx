@@ -2,16 +2,9 @@ import type React from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,6 +19,8 @@ interface RegisterFormProps {
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -43,7 +38,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       if (onSuccess) onSuccess();
 
       navigate("/login");
-      toast.success("Account created");
+      toast.success("Account created successfully!");
     } catch (err: any) {
       setServerError(
         err.response?.data?.message || "Registration failed. Please try again."
@@ -52,110 +47,134 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-md">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-        <CardDescription>
-          Enter your details below to set up your account
-        </CardDescription>
-      </CardHeader>
+    <div className="w-full space-y-4">
+      {/* Server Error Alert */}
+      {serverError && (
+        <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg">
+          {serverError}
+        </div>
+      )}
 
-      <CardContent>
-        {/* Server Error Alert */}
-        {serverError && (
-          <div className="mb-4 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-            {serverError}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* Email & Username Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Email */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-[10px] font-bold tracking-wider uppercase text-stone-600">
+              EMAIL ADDRESS
+            </Label>
             <Input
               id="email"
               type="email"
               placeholder="student@gmail.com"
+              className="w-full px-3 py-2 text-xs bg-stone-50/50 border border-stone-200 rounded-xl focus:outline-none focus:border-stone-400 focus:bg-white transition-colors"
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-xs text-destructive">
+              <p className="text-[11px] text-red-500 font-medium">
                 {errors.email.message}
               </p>
             )}
           </div>
 
           {/* Username */}
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="username" className="text-[10px] font-bold tracking-wider uppercase text-stone-600">
+              USERNAME
+            </Label>
             <Input
               id="username"
               type="text"
-              placeholder="johndoe"
+              placeholder="Choose a username"
+              className="w-full px-3 py-2 text-xs bg-stone-50/50 border border-stone-200 rounded-xl focus:outline-none focus:border-stone-400 focus:bg-white transition-colors"
               {...register("username")}
             />
             {errors.username && (
-              <p className="text-xs text-destructive">
+              <p className="text-[11px] text-red-500 font-medium">
                 {errors.username.message}
               </p>
             )}
           </div>
+        </div>
 
+        {/* Password & Confirm Password Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Password */}
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              {...register("password")}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-[10px] font-bold tracking-wider uppercase text-stone-600">
+              PASSWORD
+            </Label>
+            <div className="relative flex items-center">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••••••"
+                className="w-full pl-3 pr-8 py-2 text-xs bg-stone-50/50 border border-stone-200 rounded-xl focus:outline-none focus:border-stone-400 focus:bg-white transition-colors"
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
+            </div>
             {errors.password && (
-              <p className="text-xs text-destructive">
+              <p className="text-[11px] text-red-500 font-medium">
                 {errors.password.message}
               </p>
             )}
           </div>
 
-          {/* Confirm Password (if present in schema) */}
-          {"confirmPassword" in registerSchema.shape && (
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+          {/* Confirm Password */}
+          <div className="space-y-1.5">
+            <Label htmlFor="confirmPassword" className="text-[10px] font-bold tracking-wider uppercase text-stone-600">
+              CONFIRM PASSWORD
+            </Label>
+            <div className="relative flex items-center">
               <Input
                 id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="••••••••••••"
+                className="w-full pl-3 pr-8 py-2 text-xs bg-stone-50/50 border border-stone-200 rounded-xl focus:outline-none focus:border-stone-400 focus:bg-white transition-colors"
                 {...register("confirmPassword" as keyof RegisterFormValues)}
               />
-              {errors.confirmPassword && (
-                <p className="text-xs text-destructive">
-                  {errors.confirmPassword.message as string}
-                </p>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-2 text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
             </div>
-          )}
-
-          {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Registering...
-              </>
-            ) : (
-              "Register"
+            {errors.confirmPassword && (
+              <p className="text-[11px] text-red-500 font-medium">
+                {errors.confirmPassword.message as string}
+              </p>
             )}
-          </Button>
-        </form>
+          </div>
+        </div>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link to="/login" className="font-semibold underline underline-offset-4 hover:text-primary">
-            Sign in
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full py-2.5 px-4 bg-stone-900 hover:bg-stone-800 text-stone-100 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-70 mt-2"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Creating Account...
+            </>
+          ) : (
+            <>
+              Create Account <ArrowRight className="w-3.5 h-3.5" />
+            </>
+          )}
+        </Button>
+      </form>
+    </div>
   );
 };
 

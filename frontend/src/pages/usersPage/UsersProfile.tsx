@@ -61,7 +61,7 @@ export default function StudentProfile() {
                 <img
                   src={
                     user?.avatar_url ||
-                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256"
+                    "https://i.pinimg.com/236x/7f/14/88/7f1488d1276bd2a22354976d66845f6f.jpg?nii=t"
                   }
                   alt={user?.username || "Student avatar"}
                   className="w-28 h-28 rounded-full border-4 border-white object-cover shadow-md mx-auto bg-slate-100"

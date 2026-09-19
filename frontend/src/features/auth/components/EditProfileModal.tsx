@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useUpdateUserProfile } from "@/hooks/useAuth";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface EditProfileModalProps {
   open: boolean;
