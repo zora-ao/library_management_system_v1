@@ -23,6 +23,7 @@ const UserTable = () => {
     mutationUpdateRole.mutate({ userId, role: newRole });
   }
 
+
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">

@@ -9,8 +9,7 @@ import {
   ChevronRight, 
   LayoutDashboard, 
   LogOut, 
-  User, 
-  User2
+  User
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import type React from "react";

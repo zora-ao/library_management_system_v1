@@ -8,6 +8,7 @@ export interface BaseUser {
   phone?: string;
   status?: string;
   is_active?: boolean;
+  is_google_account?: boolean;
   created_at?: string;
 }
 
