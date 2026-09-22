@@ -1,74 +1,58 @@
-import { Link } from "react-router-dom";
-import { BookOpen } from "lucide-react";
 import LoginForm from "@/features/auth/components/LoginForm";
 import GLogin from "@/features/auth/components/GLogin";
+import { Link } from "react-router-dom";
 
 const LoginPage = () => {
   return (
-    <div className="h-screen w-full md:flex bg-stone-50/50">
-      {/* Left Panel - Hero / Library Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-stone-900 overflow-hidden p-12 flex-col justify-end">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-70"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1600&auto=format&fit=crop')`,
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/20 to-stone-950/40" />
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-stone-900 overflow-y-auto">
+      
+      <div
+        className="fixed inset-0 bg-cover bg-center opacity-85"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=1600&auto=format&fit=crop')`,
+        }}
+      />
+      <div className="fixed inset-0 bg-stone-950/20 backdrop-blur-[2px]" />
 
-        {/* Bottom Quote & Subtitle */}
-        <div className="relative z-10 max-w-lg space-y-3">
-          <p className="text-2xl lg:text-3xl font-serif italic text-stone-100 leading-snug">
-            "A sanctuary for curious minds, where centuries of dialogue await your inquiry."
-          </p>
-          <p className="text-xs font-semibold tracking-widest text-stone-400 uppercase">
-            Main Reading Hall • Established 1884
+    
+      <div className="relative z-10 w-full max-w-[440px] bg-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 my-auto">
+        
+        {/* Logo & Header */}
+        <div className="flex flex-col items-center text-center">
+
+          <h1 className="text-lg font-bold text-stone-900">
+            Welcome Back
+          </h1>
+          <p className="text-[11px] text-stone-500 max-w-xs leading-normal">
+            Please enter your details
           </p>
         </div>
-      </div>
 
-      {/* Right Panel - Auth Form Area */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-16">
-        <div className="w-full max-w-md space-y-6">
-          
-          {/* Header & Logo */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-stone-900 text-stone-100 flex items-center justify-center font-bold text-lg shadow-sm">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              <span className="font-serif text-2xl font-bold tracking-tight text-stone-900">
-                LIBERA
-              </span>
-            </div>
-            <p className="text-xs text-stone-500 leading-relaxed">
-              Welcome back. Access your digital card, catalog reservations, and scholarly databases.
-            </p>
-          </div>
+  
+        <LoginForm />
 
-          {/* Embedded Login Form Component */}
-          <LoginForm />
-
-          {/* Divider */}
-          <div className="relative flex items-center justify-center my-4">
-            <div className="border-t border-stone-200 w-full" />
-            <span className="bg-stone-50/50 px-3 text-[10px] font-semibold text-stone-400 tracking-wider uppercase absolute">
-              Or sign in with
-            </span>
-          </div>
-
-          {/* Google OAuth Login */}
-          <GLogin />
-
-          {/* Footer Link */}
-          <p className="text-center text-xs text-stone-500 pt-2">
-            Don't have an account?{" "}
-            <Link to="/register" className="font-semibold text-stone-900 underline underline-offset-4 hover:text-stone-700 transition-colors">
-              Create account
-            </Link>
-          </p>
-
+        {/* Divider */}
+        <div className="relative flex items-center justify-center my-3">
+          <div className="border-t border-stone-200 w-full" />
+          <span className="bg-white px-3 text-[9px] font-semibold text-stone-400 tracking-wider uppercase absolute">
+            OR CONTINUE WITH
+          </span>
         </div>
+
+  
+        <GLogin />
+
+        {/* Footer Link */}
+        <p className="text-center text-[11px] text-stone-500 pt-1">
+          Don't have account yet?
+          <Link
+            to="/register"
+            className="pl-1 font-semibold text-stone-900 underline underline-offset-4 hover:text-stone-700 transition-colors"
+          >
+            Register Account
+          </Link>
+        </p>
+
       </div>
     </div>
   );

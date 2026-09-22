@@ -32,8 +32,7 @@ const GLogin = () => {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
-      <h2 className="text-xl font-semibold">Sign In</h2>
+    <div className="flex flex-col items-center gap-4 p-4 rounded-sm">
       <GoogleLogin
         onSuccess={handleGoogleSuccess}
         onError={() => console.log("Google Login Failed")}
