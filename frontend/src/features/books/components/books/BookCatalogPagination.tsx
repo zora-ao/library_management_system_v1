@@ -27,7 +27,6 @@ const BookPagination = ({
 }: BookPaginationProps) => {
   if (totalPages <= 1) return null;
 
-  // Helper to construct a dynamic list of page numbers with ellipses
   const getPageNumbers = () => {
     const pages: (number | "ellipsis")[] = [];
 
@@ -53,14 +52,14 @@ const BookPagination = ({
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
-      <p className="text-xs text-slate-500">
+      <p className="text-xs ">
         Showing
-        <span className="font-semibold text-slate-700">{startIndex + 1}</span>{" "}
+        <span className="font-semibold px-1">{startIndex + 1}</span>
         to
-        <span className="font-semibold text-slate-700">
+        <span className="font-semibold px-1">
           {Math.min(startIndex + itemsPerPage, totalItems)}
         </span>
-        of <span className="font-semibold text-slate-700">{totalItems}</span>{" "}
+        of <span className="font-semibold">{totalItems}</span>
         books
       </p>
 
@@ -97,7 +96,7 @@ const BookPagination = ({
                   isActive={currentPage === page}
                   className={`cursor-pointer ${
                     currentPage === page
-                      ? "bg-purple-600 text-white hover:bg-purple-700 hover:text-white"
+                      ? "bg-primary text-white hover:bg-dark-brown hover:text-white"
                       : ""
                   }`}
                 >

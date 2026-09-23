@@ -2,6 +2,7 @@ import { createBorrow, getAllBorrows, getBorrowHistory, getBorrows, returnBook }
 import type { CreateBorrowPayload } from "@/features/borrows/types/borrow.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 export interface Borrow {
   id: string;
@@ -41,8 +42,12 @@ export const useCreateBorrows = () => {
       });
       toast.success("Book borrowed successfully!");
     },
-    onError: () => {
-      toast.error("Failed to borrow book")
+    onError: (error: AxiosError<{ message: string }>) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to borrow book. Please try again.";
+
+      toast.error(errorMessage);
     }
   });
 };

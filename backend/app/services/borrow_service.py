@@ -69,7 +69,7 @@ class BorrowService:
       book.decrement_available()
       borrow = Borrow(
         user_id=user_id,
-        book_id=book_id,
+        book_id=book_id, 
         due_date=due_date
       )
 

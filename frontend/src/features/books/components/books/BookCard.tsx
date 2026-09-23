@@ -31,7 +31,7 @@ const BookCard = ({ book }: BookCardProps) => {
       </div>
       
       <div className="space-y-0.5 px-0.5">
-        <h3 className="text-xs font-bold text-foreground line-clamp-1 leading-tight group-hover:text-emerald-600 transition-colors">
+        <h3 className="text-xs font-bold text-foreground line-clamp-1 leading-tight group-hover:text-dark-brown transition-colors">
           {book.title}
         </h3>
         
