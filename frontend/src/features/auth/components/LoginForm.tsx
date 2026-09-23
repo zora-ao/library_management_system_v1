@@ -39,7 +39,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       login(res.token, res.user);
       if (onSuccess) onSuccess();
 
-      navigate("/dashboard");
+      navigate("/books");
       toast.success("Welcome Back!");
     } catch (err: any) {
       setServerError(
