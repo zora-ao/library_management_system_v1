@@ -10,22 +10,16 @@ import BookCard from "@/features/books/components/books/BookCard";
 import BookFilters from "@/features/books/components/books/BookFilters";
 import { Button } from "@/components/ui/button";
 import BookPagination from "@/features/books/components/books/BookCatalogPagination";
+import { useCategories } from "@/hooks/useCategories";
 
-const GENRES = [
-  "All",
-  "Sci-Fi",
-  "Fantasy",
-  "Software",
-  "Tech",
-  "Literature",
-  "History",
-  "Self-Help",
-];
 
 const ITEMS_PER_PAGE = 8;
 
 const BookCatalogPage = () => {
   const { data: books = [], isLoading, isError, error } = useBooks();
+  const { data: genres } = useCategories();
+
+  console.log(genres)
 
   // Filter & Search States
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,7 +27,7 @@ const BookCatalogPage = () => {
   const [availability, setAvailability] = useState("all");
   const [selectedGenre, setSelectedGenre] = useState("All");
 
-  // Pagination State
+
   const [currentPage, setCurrentPage] = useState(1);
 
   // Filter Logic
@@ -62,10 +56,10 @@ const BookCatalogPage = () => {
     return 0;
   });
 
-  // Popular Books (top 4 rated)
+  // Popular Books 
   const popularBooks = [...sortedBooks]
     .sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0))
-    .slice(0, 4);
+    .slice(0, 5);
 
   // Pagination Calculations for All Books
   const totalPages = Math.ceil(sortedBooks.length / ITEMS_PER_PAGE) || 1;
@@ -119,7 +113,7 @@ const BookCatalogPage = () => {
           <div className="pt-2">
             <Button
               size="sm"
-              className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-6 py-5 text-xs font-bold gap-2 shadow-sm transition-all hover:gap-3 cursor-pointer"
+              className="bg-primary hover:bg-primary rounded-full px-6 py-5 text-xs font-bold gap-2 shadow-sm transition-all hover:gap-3 cursor-pointer"
             >
               VIEW NOW <ArrowRight className="h-4 w-4" />
             </Button>
@@ -131,9 +125,9 @@ const BookCatalogPage = () => {
       </div>
 
       {/* Search Input */}
-      <div className="flex items-center gap-2 bg-slate-50/50 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs">
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-slate-200/80 shadow-2xs">
         <div className="relative flex-1 flex items-center">
-          <Search className="absolute left-4 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-4 w-4 h-4" />
           <input
             type="text"
             value={searchQuery}
@@ -170,7 +164,7 @@ const BookCatalogPage = () => {
               setCurrentPage(1);
             }}
             onClearFilters={handleClearFilters}
-            genres={GENRES}
+            genres={["All", ...(genres?.map(genre => genre.name) ?? [])]}
           />
         </div>
 
