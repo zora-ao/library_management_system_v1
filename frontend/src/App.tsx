@@ -27,13 +27,13 @@ const App = () => {
       <Route element={<ProtectedRoute />}>
         {/* Routes with authentication */}
         <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<div>Dashboard Content</div>} />
           <Route path="/books" element={<BookCatalogPage/>} />
           <Route path="/books/:id" element={<BookDetailsPage />} />
           <Route path="/my-borrows" element={<MyBorrowsPage />} />
           <Route path="/profile" element={<UsersProfile />} />
           {user?.role == "admin" && (
             <>
+              <Route path="/dashboard" element={<div>Dashboard Content</div>} />
               <Route path="/users" element={<AdminUsersPage />} />
               <Route path="/all-borrows" element={<AdminBorrowsPage />} />
               <Route path="/book-list" element={<BooksListPage />} />

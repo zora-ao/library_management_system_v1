@@ -31,18 +31,28 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
     navigate("/login");
   };
 
-  const navItems = [
-    { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { label: "Books Catalog", path: "/books", icon: BookOpen },
-    { label: "My Borrows", path: "/my-borrows", icon: BookmarkCheck },
-    ...(user?.role === "admin"
-      ? [
-          { label: "Borrowed Books", path: "/all-borrows", icon: BookmarkIcon },
-          { label: "Manage Users", path: "/users", icon: User },
-          { label: "Books List", path: "/book-list", icon: BookAIcon },
-        ]
-      : []),
-  ];
+  // Define navigation items directly per role
+  const getNavItems = () => {
+    if (user?.role === "student") {
+      return [
+        { label: "Books Catalog", path: "/books", icon: BookOpen },
+        { label: "My Borrows", path: "/my-borrows", icon: BookmarkCheck },
+      ];
+    }
+
+    if (user?.role === "admin" || user?.role === "librarian") {
+      return [
+        { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+        { label: "Borrowed Books", path: "/all-borrows", icon: BookmarkIcon },
+        { label: "Manage Users", path: "/users", icon: User },
+        { label: "Books List", path: "/book-list", icon: BookAIcon },
+      ];
+    }
+
+    return [];
+  };
+
+  const navItems = getNavItems();
 
   return (
     <div className="flex flex-col h-full">

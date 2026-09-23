@@ -33,7 +33,7 @@ const MyBorrowsPage = () => {
 
       {/* for tabs */}
       <Tabs defaultValue="active" className="w-full space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList variant="line" className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="active" className="gap-2">
             <BookOpen className="h-4 w-4" />
             Active Loans
@@ -46,6 +46,11 @@ const MyBorrowsPage = () => {
           <TabsTrigger value="history" className="gap-2">
             <History className="h-4 w-4" />
             Borrow History
+            {historyBorrows.length > 0 && (
+              <span className="ml-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                {historyBorrows.length}
+              </span>
+            )}
           </TabsTrigger>
         </TabsList>
 
