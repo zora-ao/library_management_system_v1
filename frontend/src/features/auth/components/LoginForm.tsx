@@ -39,7 +39,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       login(res.token, res.user);
       if (onSuccess) onSuccess();
 
-      navigate("/books");
+      if (res.user?.role == "admin" || res.user?.role == "librarian"){
+        navigate("/dashboard")
+      } else {
+        navigate("/books");
+      }
+      
       toast.success("Welcome Back!");
     } catch (err: any) {
       setServerError(
