@@ -3,6 +3,7 @@ import type { Book } from "../../types/book.types";
 import { BookOpen, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatAuthorName } from "@/utils/formatAuthorName";
 
 interface BooksTableProps {
   books: Book[];
@@ -53,7 +54,7 @@ const BooksTable = ({ books, onEdit, onDelete, isDeleting }: BooksTableProps) =>
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">{book.title}</TableCell>
-                <TableCell>{book.author}</TableCell>
+                <TableCell>{formatAuthorName(book.author)}</TableCell>
                 <TableCell>
                   {book.category_name ? (
                     <Badge variant="secondary" className="font-normal">

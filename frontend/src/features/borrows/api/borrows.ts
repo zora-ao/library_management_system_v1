@@ -1,34 +1,45 @@
 import { api } from "@/services/api";
 import type { Borrow, CreateBorrowPayload } from "../types/borrow.types";
 
-export const getAllBorrows = async(): Promise<Borrow[]> => {
-  const {data} = await api.get("/borrows/admin/all");
-
+export const getAllBorrows = async (): Promise<Borrow[]> => {
+  const { data } = await api.get("/borrows/admin/all");
   return Array.isArray(data) ? data : [];
-}
+};
 
-export const getBorrowHistory = async(): Promise<Borrow[]> => {
+export const getBorrowHistory = async (): Promise<Borrow[]> => {
   const { data } = await api.get("/borrows/history");
-
   return Array.isArray(data) ? data : data?.history || data?.data || [];
-}
+};
 
-export const getBorrows = async(): Promise<Borrow[]> => {
+export const getBorrows = async (): Promise<Borrow[]> => {
   const { data } = await api.get("/borrows/me");
-
-
   return Array.isArray(data) ? data : data?.borrowed_books || [];
 };
 
-
-export const createBorrow = async(payload: CreateBorrowPayload): Promise<Borrow> => {
+export const createBorrow = async (payload: CreateBorrowPayload): Promise<Borrow> => {
   const { data } = await api.post("/borrows", payload);
-
   return data.borrow || data;
 };
 
-export const returnBook =  async(borrowId: string): Promise<Borrow> => {
+export const returnBook = async (borrowId: string): Promise<Borrow> => {
   const { data } = await api.put(`/borrows/${borrowId}/return`);
+  return data.borrow || data;
+};
 
+
+export const approveBorrow = async (borrowId: string): Promise<Borrow> => {
+  const { data } = await api.put(`/borrows/admin/${borrowId}/approve-borrow`);
+  return data.borrow || data;
+};
+
+
+export const rejectBorrow = async (borrowId: string): Promise<Borrow> => {
+  const { data } = await api.put(`/borrows/admin/${borrowId}/reject-borrow`);
+  return data.borrow || data;
+};
+
+
+export const approveReturn = async (borrowId: string): Promise<Borrow> => {
+  const { data } = await api.put(`/borrows/admin/${borrowId}/approve-return`);
   return data.borrow || data;
 };

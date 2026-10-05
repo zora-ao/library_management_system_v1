@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Borrow } from "../types/borrow.types"
+import type { Borrow, BorrowStatus } from "../types/borrow.types";
 import { Book, Calendar, Clock, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,13 +13,58 @@ interface BorrowsTableProps {
   isHistoryView?: boolean;
 }
 
-const BorrowsTable = ({ borrows, onReturn, isReturning, returningId, isHistoryView = false }: BorrowsTableProps) => {
-
-
+const BorrowsTable = ({
+  borrows,
+  onReturn,
+  isReturning,
+  returningId,
+  isHistoryView = false,
+}: BorrowsTableProps) => {
   const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return "—";
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? "—" : date.toLocaleDateString();
+  };
+
+  const renderStatusBadge = (status: BorrowStatus, isOverdue: boolean) => {
+    if (isOverdue || status === "OVERDUE") {
+      return <Badge variant="destructive">Overdue</Badge>;
+    }
+
+    switch (status) {
+      case "PENDING_BORROW":
+        return (
+          <Badge variant="outline" className="border-amber-500 text-amber-700 bg-amber-50">
+            Pending Approval
+          </Badge>
+        );
+      case "BORROWED":
+        return (
+          <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+            Active / Borrowed
+          </Badge>
+        );
+      case "PENDING_RETURN":
+        return (
+          <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50">
+            Pending Return
+          </Badge>
+        );
+      case "RETURNED":
+        return (
+          <Badge variant="outline" className="border-slate-400 text-slate-600 bg-slate-50">
+            Returned
+          </Badge>
+        );
+      case "REJECTED":
+        return (
+          <Badge variant="outline" className="border-red-400 text-red-600 bg-red-50">
+            Request Rejected
+          </Badge>
+        );
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
   };
 
   return (
@@ -32,14 +77,15 @@ const BorrowsTable = ({ borrows, onReturn, isReturning, returningId, isHistoryVi
             <TableHead>Due Date</TableHead>
             {isHistoryView && <TableHead>Returned Date</TableHead>}
             <TableHead>Status</TableHead>
-            {!isHistoryView && (
-              <TableHead className="text-right">Action</TableHead>
-            )}
+            {!isHistoryView && <TableHead className="text-right">Action</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {borrows.map((borrow) => {
-            const isOverdue = borrow.status === "borrowed" && new Date(borrow.due_date) < new Date();
+            const isOverdue =
+              borrow.status === "BORROWED" &&
+              borrow.due_date !== null &&
+              new Date(borrow.due_date) < new Date();
 
             const isThisRowReturning = isReturning && returningId === borrow.id;
 
@@ -63,7 +109,7 @@ const BorrowsTable = ({ borrows, onReturn, isReturning, returningId, isHistoryVi
                         {borrow.book_title || "Unknown Book"}
                       </p>
                       {borrow.author && (
-                        <span className="truncate text-xs text-muted-foreground mt-1">
+                        <span className="truncate text-xs text-muted-foreground mt-1 block">
                           {formatAuthorName(borrow.author, 1)}
                         </span>
                       )}
@@ -91,23 +137,11 @@ const BorrowsTable = ({ borrows, onReturn, isReturning, returningId, isHistoryVi
                   </TableCell>
                 )}
 
-                <TableCell>
-                  {borrow.status === "returned" || borrow.returned_at ? (
-                    <Badge variant="outline" className="border-emerald-500 text-emerald-600 bg-emerald-50">
-                      Returned
-                    </Badge>
-                  ) : isOverdue ? (
-                    <Badge variant="destructive">Overdue</Badge>
-                  ) : (
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-                      Borrowed
-                    </Badge>
-                  )}
-                </TableCell>
+                <TableCell>{renderStatusBadge(borrow.status, isOverdue)}</TableCell>
 
                 {!isHistoryView && (
                   <TableCell className="text-right">
-                    {!borrow.returned_at && borrow.status !== "returned" ? (
+                    {borrow.status === "BORROWED" ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -116,20 +150,28 @@ const BorrowsTable = ({ borrows, onReturn, isReturning, returningId, isHistoryVi
                         className="gap-1.5 text-xs"
                       >
                         <RotateCcw className="h-3.5 w-3.5" />
-                        {isThisRowReturning ? "Returning..." : "Return"}
+                        {isThisRowReturning ? "Requesting..." : "Return"}
                       </Button>
+                    ) : borrow.status === "PENDING_BORROW" ? (
+                      <span className="text-xs text-muted-foreground italic">
+                        Awaiting Pickup
+                      </span>
+                    ) : borrow.status === "PENDING_RETURN" ? (
+                      <span className="text-xs text-muted-foreground italic">
+                        Awaiting Return Confirmation
+                      </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </TableCell>
                 )}
               </TableRow>
-            )
+            );
           })}
         </TableBody>
       </Table>
     </div>
-  )
-}
+  );
+};
 
-export default BorrowsTable
+export default BorrowsTable;
