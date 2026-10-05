@@ -148,7 +148,10 @@ class BookService:
         if not book or book.is_deleted:
             return False, "Book not found"
 
-        if Borrow.query.filter_by(book_id=book_id, status="borrowed").first():
+        active_borrow = Borrow.query.filter_by(book_id=book_id).filter(
+            Borrow.status.in_([Borrow.STATUS_PENDING_BORROW, Borrow.STATUS_BORROWED, Borrow.STATUS_PENDING_RETURN])
+        ).first()
+        if active_borrow:
             return False, "Cannot delete book, currently borrowed"
 
         book.is_deleted = True
