@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { type CategoryFormData, categorySchema, type Category } from "../../types/category.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
@@ -22,6 +23,7 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
   const deleteMutation = useDeleteCategory();
 
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
   const {
     register,
@@ -59,13 +61,20 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
     reset();
   };
 
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget.id, {
+      onSettled: () => setDeleteTarget(null)
+    });
+  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Manage Categories</DialogTitle>
-          <DialogDescription className="text-xs">
+          <DialogDescription>
             Add, update, or remove book categories.
           </DialogDescription>
         </DialogHeader>
@@ -78,7 +87,7 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
             {...register("name")}
           />
           {errors.name && (
-            <p className="text-[10px] text-destructive">{errors.name.message}</p>
+            <p className="text-xs text-destructive">{errors.name.message}</p>
           )}
         </div>
         <Button type="submit" size="sm" disabled={createMutation.isPending || updateMutation.isPending}>
@@ -124,7 +133,9 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                  onClick={() => deleteMutation.mutate(cat.id)}
+                  aria-label={`Delete ${cat.name}`}
+                  title="Delete category"
+                  onClick={() => setDeleteTarget(cat)}
                   disabled={deleteMutation.isPending}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -135,6 +146,16 @@ const CategoryModal = ({ isOpen, onClose }: CategoryModalProps) => {
         )}
       </div>
       </DialogContent>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deleteMutation.isPending}
+        onConfirm={handleDelete}
+      />
     </Dialog>
   )
 }

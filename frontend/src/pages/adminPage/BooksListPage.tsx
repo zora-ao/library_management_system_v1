@@ -5,7 +5,7 @@ import CategoryFilter from "@/features/books/components/categories/CategoryFilte
 import CategoryModal from "@/features/books/components/categories/CategoryModal";
 import { type Book } from "@/features/books/types/book.types";
 import { useBooks, useDeleteBooks } from "@/hooks/useBooks";
-import { Loader2, Plus } from "lucide-react";
+import { AlertCircle, Loader2, Plus } from "lucide-react";
 import { useState } from "react"
 
 const BooksListPage = () => {
@@ -32,7 +32,7 @@ const BooksListPage = () => {
     setSelectedBook(null);
   };
 
-  const filteredBooks = selectedCategoryId 
+  const filteredBooks = selectedCategoryId
     ? books.filter((book) => book.category_id === selectedCategoryId)
     : books;
 
@@ -46,38 +46,37 @@ const BooksListPage = () => {
 
   if (isError) {
     return (
-      <div className="m-6 rounded-md border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-        Error loading catalog: {error?.message || "Failed to fetch books"}
+      <div className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+        <span>Error loading catalog: {error?.message || "Failed to fetch books"}</span>
       </div>
     );
   }
 
-
-
   return (
-    <div className="space-y-6  p-6">
-      <div className="flex items-center justify-between border-b pb-4">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Book Catalog</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Book Catalog</h1>
           <p className="text-sm text-muted-foreground">
             Manage titles, stock levels, and catalog items.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => setIsCategoryModalOpen(true)}>
             Manage Categories
           </Button>
-          <Button onClick={() => setIsAddOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={() => setIsAddOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
             Add Book
           </Button>
         </div>
-      </div> 
+      </div>
 
       <CategoryFilter
         selectedCategoryId={selectedCategoryId}
         onSelectCategory={setSelectedCategoryId}
-      /> 
+      />
 
       <BooksTable
         books={filteredBooks}
