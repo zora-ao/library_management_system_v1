@@ -20,7 +20,7 @@ const CategoryFilter = ({ selectedCategoryId, onSelectCategory }: CategoryFilter
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 py-2">
+    <div className="flex flex-wrap items-center gap-2 py-2">
       <Button
         variant={selectedCategoryId === null ? "default" : "outline"}
         size="sm"

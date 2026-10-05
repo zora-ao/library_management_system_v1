@@ -6,6 +6,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -33,9 +34,10 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   useGetAllUsers,
-  useUpdateUserRole, // Make sure to export this hook or update user status mutation
+  useUpdateUserRole,
   useAuth,
 } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 import {
   Loader2,
   Search,
@@ -50,7 +52,6 @@ const UserTable: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { data: users = [], isLoading, isError } = useGetAllUsers();
   const mutationUpdateRole = useUpdateUserRole();
-  // const mutationUpdateStatus = useUpdateUserStatus(); // Hook to update active status
   const [search, setSearch] = useState("");
 
   // 1. Filter out the current logged-in admin from the list
@@ -74,150 +75,139 @@ const UserTable: React.FC = () => {
     mutationUpdateRole.mutate({ userId, role: newRole });
   };
 
-  // const handleToggleStatus = (userId: string, currentStatus: boolean) => {
-  //   mutationUpdateStatus.mutate({ userId, is_active: !currentStatus });
-  // };
-
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center text-xs font-medium text-stone-500">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin text-stone-700" />
-        Loading account registry...
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-600 font-medium">
-        <ShieldAlert className="h-4 w-4 shrink-0" />
-        Failed to load users. Please confirm you have administrator permissions.
+      <div className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+        <ShieldAlert className="h-4 w-4 mt-0.5 shrink-0" />
+        <span>
+          Failed to load users. Please confirm you have administrator permissions.
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-6 md:max-w-7xl mx-auto pb-12">
+    <div className="w-full space-y-6">
       {/* Header Title */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-stone-900">
+      <div className="border-b pb-4">
+        <h1 className="text-2xl font-semibold tracking-tight">
           User Management
-        </h2>
-        <p className="text-xs text-stone-500 mt-1">
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Manage system roles, account statuses, and system access rights.
         </p>
       </div>
 
       {/* Top Stat Containers */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="flex items-center justify-between rounded-xl border p-4 shadow-2xs bg-white/50">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider">
-              Total Users
-            </p>
-            <p className="text-2xl font-black ">{totalUsers}</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-primary text-white">
-            <Users className="h-5 w-5" />
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold tracking-tight">{totalUsers}</div>
+          </CardContent>
+        </Card>
 
-        <div className="flex items-center justify-between rounded-xl border p-4 shadow-2xs bg-white/50">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider">
-              Active Accounts
-            </p>
-            <p className="text-2xl font-black text-stone-900">{activeCount}</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border bg-primary text-white">
-            <UserCheck className="h-5 w-5" />
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold">Active Accounts</CardTitle>
+            <UserCheck className="h-4 w-4 text-success" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold tracking-tight">{activeCount}</div>
+          </CardContent>
+        </Card>
 
-        <div className="flex items-center justify-between rounded-xl border  p-4 shadow-2xs bg-white/50">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold text-red-500 uppercase tracking-wider">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-destructive">
               Deactivated / Inactive
-            </p>
-            <p className="text-2xl font-black text-stone-900">{inactiveCount}</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-500">
-            <UserX className="h-5 w-5" />
-          </div>
-        </div>
+            </CardTitle>
+            <UserX className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold tracking-tight">{inactiveCount}</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Table Container Card */}
-      <div className="rounded-xl border border-stone-200 bg-white shadow-2xs overflow-hidden">
+      <div className="rounded-lg border bg-card overflow-hidden">
         {/* Container Search Header */}
-        <div className="bg-primary p-4 border-b border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-4 ">
+        <div className="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-stone-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search by name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-white text-xs h-9 rounded-xl border-stone-200 focus:outline-none focus:border-stone-400"
+              className="h-10 pl-9"
             />
           </div>
-          <p className="text-xs text-white font-medium self-end sm:self-center">
+          <p className="text-xs text-muted-foreground sm:self-center">
             Showing {filteredUsers.length} of {totalUsers} users
           </p>
         </div>
 
         {/* User Data Table */}
         <Table>
-          <TableHeader className="bg-stone-50/8">
-            <TableRow className="hover:bg-transparent border-stone-100">
-              <TableHead className="text-xs font-bold uppercase text-foreground tracking-wider">
-                User
-              </TableHead>
-              <TableHead className="text-xs font-bold uppercase text-foreground tracking-wider">
-                Role
-              </TableHead>
-              <TableHead className="text-xs font-bold uppercase text-foreground tracking-wider">
-                Status
-              </TableHead>
-              <TableHead className="text-xs font-bold uppercase text-foreground tracking-wider">
-                Joined Date
-              </TableHead>
-              <TableHead className="text-xs font-bold uppercase text-foreground tracking-wider text-right pr-6">
-                Actions
-              </TableHead>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>User</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Joined Date</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {filteredUsers.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="h-32 text-center text-xs text-stone-400"
-                >
-                  No user accounts found matching your query.
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={5} className="h-32">
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <Users className="h-8 w-8 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        No users found
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {search
+                          ? "Try a different search term."
+                          : "No user accounts available."}
+                      </p>
+                    </div>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               filteredUsers.map((user) => (
-                <TableRow
-                  key={user.id}
-                  className="border-stone-100 hover:bg-gray-50 transition-colors"
-                >
+                <TableRow key={user.id}>
                   {/* User Profile Cell */}
                   <TableCell className="py-3">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9 border border-stone-200 shrink-0">
+                      <Avatar className="h-9 w-9 border border-border shrink-0">
                         <AvatarImage src={user.avatar_url || undefined} />
-                        <AvatarFallback className="bg-stone-100 text-stone-700 font-bold text-xs">
+                        <AvatarFallback className="bg-leather/20 text-leather font-medium text-xs">
                           {user.username?.slice(0, 2).toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-xs text-stone-900 truncate">
+                        <span className="font-medium text-sm text-foreground truncate">
                           {user.username}
                         </span>
-                        <span className="text-[11px] text-stone-500 truncate">
+                        <span className="text-xs text-muted-foreground truncate">
                           {user.email}
                         </span>
                       </div>
@@ -236,13 +226,13 @@ const UserTable: React.FC = () => {
                         if (val) handleRoleChange(String(user.id), val);
                       }}
                     >
-                      <SelectTrigger className="w-[110px] h-8 text-xs font-medium border-stone-200 bg-white">
+                      <SelectTrigger className="w-28 font-medium">
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-sm text-xs ">
-                        <SelectItem value="student" className="focus:rounded-none">Student</SelectItem>
-                        <SelectItem value="librarian" className="focus:rounded-none">Librarian</SelectItem>
-                        <SelectItem value="admin" className="focus:rounded-none">Admin</SelectItem>
+                      <SelectContent>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="librarian">Librarian</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -251,18 +241,19 @@ const UserTable: React.FC = () => {
                   <TableCell className="py-3">
                     <Badge
                       variant="outline"
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+                      className={cn(
+                        "border-transparent",
                         user.is_active
-                          ? "bg-white text-foreground border-primary"
-                          : "bg-red-50 text-red-600 border-red-200"
-                      }`}
+                          ? "bg-success/10 text-success"
+                          : "bg-destructive/10 text-destructive"
+                      )}
                     >
                       {user.is_active ? "Active" : "Deactivated"}
                     </Badge>
                   </TableCell>
 
                   {/* Date Joined Cell */}
-                  <TableCell className="py-3 text-xs text-stone-500 whitespace-nowrap">
+                  <TableCell className="py-3 text-sm text-muted-foreground whitespace-nowrap">
                     {user.created_at
                       ? new Date(user.created_at).toLocaleDateString("en-US", {
                           month: "short",
@@ -279,29 +270,20 @@ const UserTable: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-stone-400 hover:text-stone-700 rounded-lg"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
                         >
                           <MoreVertical className="h-4 w-4" />
                           <span className="sr-only">Open options</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-40 rounded-xl text-xs"
-                      >
-                        <DropdownMenuLabel className="text-[10px] text-stone-400 uppercase tracking-wider">
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
                           Account Control
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          // onClick={() =>
-                          //   handleToggleStatus(String(user.id), user.is_active)
-                          // }
-                          className={`cursor-pointer ${
-                            user.is_active
-                              ? "text-red-600 focus:text-red-600 focus:bg-red-50"
-                              : "text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50"
-                          }`}
+                          disabled
+                          className="text-muted-foreground"
                         >
                           {user.is_active ? "Deactivate User" : "Activate User"}
                         </DropdownMenuItem>

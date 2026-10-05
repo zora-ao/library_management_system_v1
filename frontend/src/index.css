@@ -1,26 +1,26 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource/poppins/400.css";
-@import "@fontsource/poppins/500.css";
-@import "@fontsource/poppins/600.css";
-@import "@fontsource/poppins/700.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-heading: "Poppins", sans-serif;
-  --font-sans: "Poppins", sans-serif;
+  --font-heading: "Inter", sans-serif;
+  --font-sans: "Inter", sans-serif;
 
   /* ================================
-     Custom Design System Colors
+     Status Colors
      ================================ */
 
-  --color-warm-gray: #f5f3f0;
-  --color-ivory: #fff8f0;
-  --color-caramel: #c08552;
-  --color-brown: #8c5a3c;
-  --color-dark-brown: #4b2e2b;
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-primary-hover: var(--primary-hover);
+  --color-leather: var(--leather);
+  --color-dark-brown: #241c18;
 
   /* ================================
      Shadcn Tokens
@@ -61,16 +61,25 @@
   --color-background: var(--background);
 
   /* ================================
-     Radius
+     Radius (2 / 6 / 8 / 12 px)
      ================================ */
 
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: 0.125rem;
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-xl: calc(var(--radius) * 1.5);
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ================================
+     Shadows
+     ================================ */
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.16);
 }
 
 :root {
@@ -78,97 +87,101 @@
      Base
      ================================ */
 
-  --background: #f5f3f0;
-  --foreground: #4b2e2b;
+  --background: #fbf9f6;
+  --foreground: #241c18;
 
   /* ================================
      Cards
      ================================ */
 
   --card: #ffffff;
-  --card-foreground: #4b2e2b;
+  --card-foreground: #241c18;
 
   /* ================================
      Popovers
      ================================ */
 
   --popover: #ffffff;
-  --popover-foreground: #4b2e2b;
+  --popover-foreground: #241c18;
 
   /* ================================
      Primary
      ================================ */
 
-  --primary: #c08552;
+  --primary: #7a5138;
   --primary-foreground: #ffffff;
+  --primary-hover: #68442f;
 
   /* ================================
      Secondary
      ================================ */
 
-  --secondary: #f3e3d2;
-  --secondary-foreground: #4b2e2b;
+  --secondary: #f4f0ec;
+  --secondary-foreground: #241c18;
 
   /* ================================
      Muted
      ================================ */
 
-  --muted: #ebe8e4;
-  --muted-foreground: #806b61;
+  --muted: #f4f0ec;
+  --muted-foreground: #6f6259;
 
   /* ================================
      Accent
      ================================ */
 
-  --accent: #f3e3d2;
-  --accent-foreground: #4b2e2b;
+  --accent: #a97850;
+  --accent-foreground: #241c18;
+  --leather: #a97850;
 
   /* ================================
-     Destructive
+     Status
      ================================ */
 
-  --destructive: #b84c4c;
+  --success: #557a55;
+  --warning: #a87935;
+  --destructive: #b45b52;
   --destructive-foreground: #ffffff;
 
   /* ================================
      Borders & Inputs
      ================================ */
 
-  --border: #ded9d3;
-  --input: #ded9d3;
-  --ring: #c08552;
+  --border: #e5dcd3;
+  --input: #e5dcd3;
+  --ring: #7a5138;
 
   /* ================================
      Charts
      ================================ */
 
-  --chart-1: #c08552;
-  --chart-2: #8c5a3c;
-  --chart-3: #4b2e2b;
-  --chart-4: #d9a674;
-  --chart-5: #ebe8e4;
+  --chart-1: #7a5138;
+  --chart-2: #a97850;
+  --chart-3: #557a55;
+  --chart-4: #a87935;
+  --chart-5: #e5dcd3;
 
-  --radius: 0.75rem;
+  --radius: 0.5rem;
 
   /* ================================
-     Sidebar
+     Sidebar (Espresso, per design system)
      ================================ */
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #4b2e2b;
+  --sidebar: #241c18;
+  --sidebar-foreground: #fbf9f6;
 
-  --sidebar-primary: #c08552;
+  --sidebar-primary: #7a5138;
   --sidebar-primary-foreground: #ffffff;
 
-  --sidebar-accent: #f5f0eb;
-  --sidebar-accent-foreground: #8c5a3c;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #fbf9f6;
 
-  --sidebar-border: #e1dcd6;
-  --sidebar-ring: #c08552;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #a97850;
 }
 
 /* =================================
-   Dark Mode
+   Dark Mode (untouched for now)
    ================================= */
 
 .dark {
@@ -272,11 +285,15 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
+  html {
+    @apply font-sans antialiased;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
   }
 
-  html {
-    @apply font-sans;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
   }
 }
