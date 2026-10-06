@@ -10,6 +10,12 @@ import {
   Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { EditProfileModal } from "@/features/auth/components/EditProfileModal";
 import { useBorrowHistory, useBorrows } from "@/hooks/useBorrows";
@@ -18,6 +24,7 @@ import { useBorrowHistory, useBorrows } from "@/hooks/useBorrows";
 export default function StudentProfile() {
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isLibraryCardOpen, setIsLibraryCardOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Fetch active borrows and history
@@ -95,6 +102,7 @@ export default function StudentProfile() {
 
                 <Button
                   variant="outline"
+                  onClick={() => setIsLibraryCardOpen(true)}
                   className="w-full border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-xs h-10 font-medium cursor-pointer"
                 >
                   <QrCode className="w-3.5 h-3.5 mr-2 text-slate-500" />
@@ -120,7 +128,7 @@ export default function StudentProfile() {
                   Student Number
                 </span>
                 <span className="text-sm font-semibold">
-                  {student?.student_number || "2023-10492"}
+                  {student?.student_number || "Not set"}
                 </span>
               </div>
 
@@ -129,7 +137,7 @@ export default function StudentProfile() {
                   Course / Major
                 </span>
                 <span className="text-sm font-semibold">
-                  {student?.course || "B.S. Computer Science"}
+                  {student?.course || "Not set"}
                 </span>
               </div>
 
@@ -138,7 +146,7 @@ export default function StudentProfile() {
                   Year Level
                 </span>
                 <span className="text-sm font-semibold">
-                  {student?.year_level || "Sophomore (2nd Year)"}
+                  {student?.year_level || "Not set"}
                 </span>
               </div>
 
@@ -147,7 +155,7 @@ export default function StudentProfile() {
                   Enrollment Status
                 </span>
                 <span className="text-sm font-semibold">
-                  {student?.enrollment_status || "Full-Time"}
+                  {student?.enrollment_status || "Not set"}
                 </span>
               </div>
             </div>
@@ -190,7 +198,7 @@ export default function StudentProfile() {
                     Phone Number
                   </span>
                   <span className="text-xs font-semibold">
-                    {user?.phone || "+1 (555) 123-4567"}
+                    {user?.phone || "Not set"}
                   </span>
                 </div>
               </div>
@@ -239,6 +247,87 @@ export default function StudentProfile() {
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
       />
+
+      {/* Library Card */}
+      <Dialog open={isLibraryCardOpen} onOpenChange={setIsLibraryCardOpen}>
+        <DialogContent className="sm:max-w-[380px] rounded-2xl p-0 overflow-hidden">
+          <div className="flex items-center justify-between bg-accent-foreground px-6 py-4 text-white">
+            <div>
+              <DialogTitle className="text-sm font-bold tracking-widest uppercase">
+                Library Card
+              </DialogTitle>
+              <DialogDescription className="text-[11px] text-slate-300">
+                Official member identification
+              </DialogDescription>
+            </div>
+            <QrCode className="w-8 h-8 text-white/80" />
+          </div>
+
+          <div className="px-6 py-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <img
+                src={
+                  user?.avatar_url ||
+                  "https://i.pinimg.com/236x/7f/14/88/7f1488d1276bd2a22354976d66845f6f.jpg?nii=t"
+                }
+                alt={user?.username || "Member avatar"}
+                className="w-12 h-12 rounded-full object-cover border border-slate-200 bg-slate-100"
+              />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-slate-900 truncate">
+                  {user?.username || "N/A"}
+                </p>
+                <p className="text-xs text-slate-500 capitalize">
+                  {user?.role || "student"} member
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-y-3 gap-x-4 border-t border-slate-100 pt-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
+                  Member ID
+                </span>
+                <span className="text-xs font-semibold text-slate-800">
+                  {user?.id ? String(user.id).slice(0, 8).toUpperCase() : "N/A"}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
+                  Member Since
+                </span>
+                <span className="text-xs font-semibold text-slate-800">
+                  {user?.created_at
+                    ? new Date(user.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
+                  University Email
+                </span>
+                <span className="text-xs font-semibold text-slate-800 break-all">
+                  {user?.email || "Not set"}
+                </span>
+              </div>
+              {student?.student_number && (
+                <div className="col-span-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
+                    Student Number
+                  </span>
+                  <span className="text-xs font-semibold text-slate-800">
+                    {student.student_number}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

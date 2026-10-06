@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from flask import Blueprint, request, jsonify
 from app.extensions import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -31,8 +33,8 @@ def google_auth():
 @jwt_required()
 def me():
 
-  user_id = int(get_jwt_identity())
   try:
+    user_id = UUID(str(get_jwt_identity()))
     user = AuthService.get_current_user(user_id)
     return jsonify({ "user": user.to_dict() }), 200
   except ValueError as e:

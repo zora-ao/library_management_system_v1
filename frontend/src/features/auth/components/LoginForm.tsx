@@ -12,6 +12,7 @@ import { Button } from "@base-ui/react/button";
 import { type LoginFormValues, loginSchema } from "../types/auth.schema";
 import { loginUser } from "../api/authApi";
 import { useAuth } from "@/hooks/useAuth";
+import { isAxiosError } from "axios";
 import { toast } from "sonner";
 
 interface LoginFormProps {
@@ -46,9 +47,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       }
 
       toast.success("Welcome Back!");
-    } catch (err: any) {
+    } catch (err) {
       setServerError(
-        err.response?.data?.message || "Invalid credentials. Please try again."
+        (isAxiosError(err) && err.response?.data?.message) ||
+          "Invalid credentials. Please try again."
       );
     }
   };

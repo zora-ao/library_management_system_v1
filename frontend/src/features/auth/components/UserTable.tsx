@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import {
   useGetAllUsers,
   useUpdateUserRole,
+  useUpdateUserActiveStatus,
   useAuth,
 } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ const UserTable: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { data: users = [], isLoading, isError } = useGetAllUsers();
   const mutationUpdateRole = useUpdateUserRole();
+  const mutationToggleActive = useUpdateUserActiveStatus();
   const [search, setSearch] = useState("");
 
   // 1. Filter out the current logged-in admin from the list
@@ -217,7 +219,7 @@ const UserTable: React.FC = () => {
                   {/* System Role Select Cell */}
                   <TableCell className="py-3">
                     <Select
-                      defaultValue={user.role}
+                      value={user.role}
                       disabled={
                         mutationUpdateRole.isPending &&
                         mutationUpdateRole.variables?.userId === String(user.id)
@@ -282,8 +284,21 @@ const UserTable: React.FC = () => {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          disabled
-                          className="text-muted-foreground"
+                          onClick={() =>
+                            mutationToggleActive.mutate({
+                              userId: String(user.id),
+                              isActive: !user.is_active,
+                            })
+                          }
+                          disabled={
+                            mutationToggleActive.isPending &&
+                            mutationToggleActive.variables?.userId === String(user.id)
+                          }
+                          className={
+                            user.is_active
+                              ? "text-destructive focus:text-destructive"
+                              : "text-success focus:text-success"
+                          }
                         >
                           {user.is_active ? "Deactivate User" : "Activate User"}
                         </DropdownMenuItem>

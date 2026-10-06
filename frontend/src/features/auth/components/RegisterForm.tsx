@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 
 import { type RegisterFormValues, registerSchema } from "../types/auth.schema";
 import { registerUser } from "../api/authApi";
+import { isAxiosError } from "axios";
 import { toast } from "sonner";
 
 interface RegisterFormProps {
@@ -37,9 +38,10 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
 
       navigate("/login");
       toast.success("Account created successfully!");
-    } catch (err: any) {
+    } catch (err) {
       setServerError(
-        err.response?.data?.message || "Registration failed. Please try again."
+        (isAxiosError(err) && err.response?.data?.message) ||
+          "Registration failed. Please try again."
       );
     }
   };

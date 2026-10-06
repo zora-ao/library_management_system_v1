@@ -33,7 +33,7 @@ export const submitReview = async(
 
 export const getBooks = async(categoryId?: string): Promise<Book[]> => {
   // Add category filter to the request if a category was selected 
-  const params = categoryId ? { category_id: categoryId } : {};
+  const params = categoryId ? { category_id: categoryId, limit: 1000 } : { limit: 1000 };
   const { data } = await api.get("/books", { params });
 
   return Array.isArray(data) ? data : data.books || [];
@@ -51,7 +51,7 @@ export const createBook = async( data: BookFormData ): Promise<BookResponse> => 
   formData.append("title", data.title);
   formData.append("author", data.author);
   if (data.isbn) formData.append("isbn", data.isbn);
-  if (data.category_name) formData.append("category", data.category_name);
+  if (data.category_name) formData.append("category_name", data.category_name);
   if (data.total_copies) formData.append("total_copies", String(data.total_copies));
   if (data.description) formData.append("description", data.description);
   if (data.pages) formData.append("pages", String(data.pages));

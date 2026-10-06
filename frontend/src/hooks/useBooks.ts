@@ -3,6 +3,7 @@ import { ReviewEntity } from "@/features/books/models/ReviewEntity";
 import type { BookFormData } from "@/features/books/types/book.schema";
 import { type Book } from "@/features/books/types/book.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 interface BookUpdateProps {
@@ -46,7 +47,7 @@ export const useSubmitReview = (bookId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["book-reviews", bookId] });
       queryClient.invalidateQueries({ queryKey: ["book-review-stats", bookId] });
-      queryClient.invalidateQueries({ queryKey: ["books", bookId] });
+      queryClient.invalidateQueries({ queryKey: ["book"] });
       queryClient.invalidateQueries({ queryKey: ["books"] });
     }
   })
@@ -82,8 +83,8 @@ export const useCreateBooks = () => {
       });
       toast.success("Book added successfully")
     },
-    onError: () => {
-      toast.error("Failed to add book")
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to add book")
     }
   })
 };
@@ -100,10 +101,13 @@ export const useUpdateBooks = () => {
       queryClient.invalidateQueries({
         queryKey: ["books"]
       });
+      queryClient.invalidateQueries({
+        queryKey: ["book"]
+      });
       toast.success("Book updated successfully")
     },
-    onError: () => {
-      toast.error("Failed to update book")
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to update book")
     }
   });
 };
@@ -119,8 +123,8 @@ export const useDeleteBooks = () => {
       });
       toast.success("Book deleted success")
     },
-    onError: () => {
-      toast.error("Failed to delete book")
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to delete book")
     }
   });
 };

@@ -50,7 +50,7 @@ class BorrowService:
         user_id = BorrowService._parse_uuid(user_id, "User ID")
         book_id = BorrowService._parse_uuid(book_id, "Book ID")
 
-        book = db.session.get(Book, book_id)
+        book = db.session.get(Book, book_id, with_for_update=True)
         if not book:
             raise ValueError("Book not found")
 
@@ -115,7 +115,7 @@ class BorrowService:
         if borrow.status != Borrow.STATUS_PENDING_BORROW:
             raise ValueError("Only pending requests can be approved for borrow")
 
-        book = db.session.get(Book, borrow.book_id)
+        book = db.session.get(Book, borrow.book_id, with_for_update=True)
         if not book or book.available_copies <= 0:
             raise ValueError("Book is out of stock and cannot be borrowed")
 
@@ -160,10 +160,14 @@ class BorrowService:
         if not borrow:
             raise ValueError("Borrow record not found")
 
-        if borrow.status != Borrow.STATUS_PENDING_RETURN:
+        if borrow.status not in (
+            Borrow.STATUS_PENDING_RETURN,
+            Borrow.STATUS_BORROWED,
+            Borrow.STATUS_OVERDUE,
+        ):
             raise ValueError("Borrow record is not pending return confirmation")
 
-        book = db.session.get(Book, borrow.book_id)
+        book = db.session.get(Book, borrow.book_id, with_for_update=True)
 
         try:
             borrow.status = Borrow.STATUS_RETURNED

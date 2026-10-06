@@ -19,9 +19,8 @@ const BookCatalogPage = () => {
   const { data: books = [], isLoading, isError, error } = useBooks();
   const { data: genres } = useCategories();
 
-  console.log(genres)
-
   // Filter & Search States
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSort, setSelectedSort] = useState("A-Z");
   const [availability, setAvailability] = useState("all");
@@ -29,6 +28,18 @@ const BookCatalogPage = () => {
 
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  const applySearch = () => {
+    setSearchQuery(searchInput);
+    setCurrentPage(1);
+  };
+
+  const scrollToAllBooks = () => {
+    document.getElementById("all-books")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
   // Filter Logic
   const filteredBooks = books.filter((book) => {
@@ -73,6 +84,7 @@ const BookCatalogPage = () => {
   };
 
   const handleClearFilters = () => {
+    setSearchInput("");
     setSearchQuery("");
     setSelectedSort("A-Z");
     setAvailability("all");
@@ -113,6 +125,7 @@ const BookCatalogPage = () => {
           <div className="pt-2">
             <Button
               size="sm"
+              onClick={scrollToAllBooks}
               className="bg-primary hover:bg-primary rounded-full px-6 py-5 text-xs font-bold gap-2 shadow-sm transition-all hover:gap-3 cursor-pointer"
             >
               VIEW NOW <ArrowRight className="h-4 w-4" />
@@ -130,16 +143,17 @@ const BookCatalogPage = () => {
           <Search className="absolute left-4 w-4 h-4" />
           <input
             type="text"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") applySearch();
             }}
             placeholder="Search books"
             className="w-full bg-transparent pl-11 pr-4 py-2.5 text-xs sm:text-sm text-foreground focus:outline-none placeholder:text-slate-400"
           />
         </div>
         <Button 
+          onClick={applySearch}
           className="text-white rounded-xl px-6 py-2.5 text-xs font-semibold gap-2 shadow-xs shrink-0 cursor-pointer"
         >
           <Search className="w-3.5 h-3.5" />
@@ -195,7 +209,7 @@ const BookCatalogPage = () => {
           </section>
 
           {/* All Books Section with Pagination */}
-          <section className="space-y-4">
+          <section className="space-y-4" id="all-books">
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">

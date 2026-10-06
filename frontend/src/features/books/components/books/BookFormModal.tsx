@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -26,9 +26,26 @@ interface BookFormModalProps {
 }
 
 const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden">
+        <BookFormContent book={book} onClose={onClose} />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface BookFormContentProps {
+  book?: Book | null;
+  onClose: () => void;
+}
+
+const BookFormContent = ({ book, onClose }: BookFormContentProps) => {
   const createBookMutation = useCreateBooks();
   const updateBookMutation = useUpdateBooks();
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    book?.image_url || null
+  );
 
   const isEditing = !!book;
 
@@ -37,48 +54,21 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
     handleSubmit,
     control,
     setValue,
-    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(bookSchema),
     defaultValues: {
-      title: "",
-      author: "",
-      isbn: "",
-      category_name: "",
-      description: "",
-      total_copies: 1,
-      pages: "",
+      title: book?.title || "",
+      author: book?.author || "",
+      isbn: book?.isbn || "",
+      category_name: book?.category_name || "",
+      description: book?.description || "",
+      total_copies: book?.total_copies ?? 1,
+      pages: book?.pages ? String(book.pages) : "",
       image: undefined,
     },
   });
 
-  useEffect(() => {
-    if (book) {
-      reset({
-        title: book.title || "",
-        author: book.author || "",
-        isbn: book.isbn || "",
-        category_name: book.category_name || "",
-        description: book.description || "",
-        total_copies: book.total_copies ?? 1,
-        pages: book.pages ? String(book.pages) : "",
-      });
-      setImagePreview(book.image_url || null);
-    } else {
-      reset({
-        title: "",
-        author: "",
-        isbn: "",
-        category_name: "",
-        description: "",
-        total_copies: 1,
-        pages: "",
-        image: undefined,
-      });
-      setImagePreview(null);
-    }
-  }, [book, reset, isOpen])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,8 +88,6 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
   };
 
   const handleClose = () => {
-    reset();
-    setImagePreview(null);
     onClose();
   };
 
@@ -116,8 +104,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[650px] p-0 overflow-hidden">
+    <>
         {/* Header */}
         <div className="bg-muted/40 px-6 pt-6 pb-4 border-b">
           <DialogTitle className="text-xl font-semibold tracking-tight">
@@ -306,8 +293,7 @@ const BookFormModal = ({ isOpen, onClose, book }: BookFormModalProps) => {
             </Button>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </>
   );
 };
 

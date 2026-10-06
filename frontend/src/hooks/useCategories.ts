@@ -1,6 +1,7 @@
 import { createCategory, deleteCategory, getCategories, updateCategory } from "@/features/books/api/categories";
 import type { CategoryFormData } from "@/features/books/types/category.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 
@@ -25,8 +26,8 @@ export const useCreateCategory = () => {
       toast.success("Category created successfully");
     },
 
-    onError: () => {
-      toast.error("Failed to add category");
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to add category");
     }
   });
 };
@@ -45,8 +46,8 @@ export const useUpdateCategory = () => {
       toast.success("Category updated successfully");
     },
 
-    onError: () => {
-      toast.error("Failed to update category");
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to update category");
     }
   });
 };
@@ -63,8 +64,8 @@ export const useDeleteCategory = () => {
       toast.success("Category deleted successfully");
     },
 
-    onError: () => {
-      toast.error("Failed to delete category");
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to delete category");
     }
   })
 
