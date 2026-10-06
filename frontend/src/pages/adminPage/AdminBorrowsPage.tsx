@@ -37,7 +37,7 @@ const AdminBorrowsPage = () => {
 
       const pending = borrows.filter((b) => b.status === "PENDING_BORROW");
       const active = borrows.filter(
-        (b) => b.status === "BORROWED" || (!b.returned_at && b.status !== "PENDING_BORROW")
+        (b) => b.status === "BORROWED" || b.status === "PENDING_RETURN"
       );
       const returned = borrows.filter(
         (b) => b.status === "RETURNED" || !!b.returned_at

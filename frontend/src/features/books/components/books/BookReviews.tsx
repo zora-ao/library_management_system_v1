@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetBookReviews, useSubmitReview } from "@/hooks/useBooks"
+import { AxiosError } from "axios";
 import { Loader2, Star } from "lucide-react";
 import React, { useState } from "react";
 
@@ -17,6 +18,12 @@ const BookReviews = ({ bookId }: BookReviewsProps) => {
   const { data: reviews = [], isLoading, isError } = useGetBookReviews(bookId);
 
   const { mutate: addReview, isPending: isSubmitting, error: submitError } = useSubmitReview(bookId);
+
+  const submitErrorMessage = submitError
+    ? (submitError as AxiosError<{ message: string }>).response?.data?.message ||
+      submitError.message ||
+      "Failed to post review."
+    : null;
 
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -108,7 +115,7 @@ const BookReviews = ({ bookId }: BookReviewsProps) => {
         {/* handle error */}
         {(validationError || submitError) && (
             <p className="text-xs text-destructive">
-              {validationError || submitError?.message || "Failed to post review."}
+              {validationError || submitErrorMessage}
             </p>
           )}
         

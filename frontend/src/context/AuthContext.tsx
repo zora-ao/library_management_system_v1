@@ -1,52 +1,41 @@
 import type { User } from "@/features/auth/types/auth.types";
-import React, { createContext, useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
-
-interface AuthContextType {
-  user: User | null;
-  setUser: Dispatch<SetStateAction<User | null>>;
-  updateUser: (user: User) => void;
-  token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (token: string, user: User) => void;
-  logout: () => void;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import React, { useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { AuthContext } from "./auth-context";
 
 interface AuthProviderProps {
   children: ReactNode
 }
 
+const readSession = (): { token: string | null; user: User | null } => {
+  const storedToken = localStorage.getItem("token");
+  const storedUser = localStorage.getItem("user");
+
+  if (!storedToken || !storedUser) {
+    return { token: null, user: null };
+  }
+
+  try {
+    return { token: storedToken, user: JSON.parse(storedUser) as User };
+  } catch (error) {
+    console.error("Failed to get session: ", error);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    return { token: null, user: null };
+  }
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(() => readSession().user);
+  const [token, setToken] = useState<string | null>(() => readSession().token);
+  const queryClient = useQueryClient();
+
+  const isLoading = false;
 
   const updateUser = (updatedUser: User) => {
     localStorage.setItem("user", JSON.stringify(updatedUser));
     setUser(updatedUser);
   };
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (storedToken && storedUser){
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to get session: ", error);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setUser(null);
-        setToken(null);
-      }
-    }
-
-    setIsLoading(false);
-  }, []);
 
   const login = (newToken: string, newUser: User) => {
     localStorage.setItem("token", newToken);
@@ -60,6 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem("user");
     setToken(null);
     setUser(null);
+    queryClient.clear();
   };
 
   return (

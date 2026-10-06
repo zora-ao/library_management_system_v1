@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useGetBookById, useGetBookReviewStats } from "@/hooks/useBooks";
+import { useState } from "react";
 import { 
   ArrowLeft, 
   Bookmark, 
@@ -15,10 +16,13 @@ import BookReviews from "@/features/books/components/books/BookReviews";
 import { useCreateBorrows } from "@/hooks/useBorrows";
 import BookRecommendations from "@/features/books/components/books/BookRecommendations";
 import AuthorOtherBooks from "@/features/books/components/books/AuthorOtherBooks";
+import { useAuth } from "@/hooks/useAuth";
 
 const BookDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const { data: book, isLoading, isError, error } = useGetBookById(id);
   const { data: stats } = useGetBookReviewStats(id);
@@ -62,7 +66,9 @@ const BookDetailsPage = () => {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink>
-              <Link to="/dashboard">Home</Link>
+              <Link to={user?.role === "student" ? "/books" : "/dashboard"}>
+                Home
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -121,13 +127,23 @@ const BookDetailsPage = () => {
             </span>
           </div>
 
-          <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-4 max-w-2xl">
+          <p
+            className={`text-xs md:text-sm text-muted-foreground leading-relaxed max-w-2xl ${
+              showFullDescription ? "" : "line-clamp-4"
+            }`}
+          >
             {book.description || "No overview available for this title."}
           </p>
 
-          <button className="text-xs text-primary font-semibold hover:underline block pt-1">
-            View More
-          </button>
+          {book.description && book.description.length > 160 && (
+            <button
+              type="button"
+              onClick={() => setShowFullDescription((prev) => !prev)}
+              className="text-xs text-primary font-semibold hover:underline block pt-1"
+            >
+              {showFullDescription ? "View Less" : "View More"}
+            </button>
+          )}
 
           <div className="flex items-center gap-3 pt-4">
             <Button 

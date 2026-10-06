@@ -21,13 +21,15 @@ const GLogin = () => {
 
       login(data.access_token, data.user);
 
-      navigate("/dashboard")
+      if (data.user?.role === "admin" || data.user?.role === "librarian") {
+        navigate("/dashboard");
+      } else {
+        navigate("/books");
+      }
 
-      console.log(data)
-    
       return data;
     } catch (error) {
-      console.error("Failed to login");
+      console.error("Failed to login", error);
     }
   }
 
@@ -35,7 +37,7 @@ const GLogin = () => {
     <div className="flex flex-col items-center gap-4 p-4 rounded-sm">
       <GoogleLogin
         onSuccess={handleGoogleSuccess}
-        onError={() => console.log("Google Login Failed")}
+        onError={() => console.error("Google Login Failed")}
       />
     </div>
   )

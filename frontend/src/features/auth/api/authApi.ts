@@ -43,9 +43,9 @@ export const registerUser = async(credentials: RegisterCredentials): Promise<Aut
 };
 
 export const getCurrentUser = async(): Promise<User> => {
-  const res = await api.get<User>("/auth/me");
+  const res = await api.get<{ user: User }>("/auth/me");
 
-  return res.data;
+  return res.data.user;
 }
 
 export const getAllUsers = async(): Promise<User[]> => {
@@ -56,6 +56,12 @@ export const getAllUsers = async(): Promise<User[]> => {
 
 export const updateUserRole = async({userId, role}: {userId: string, role: string}): Promise<User> => {
   const res = await api.put(`/users/${userId}/role`, {role});
+
+  return res.data;
+}
+
+export const updateUserActiveStatus = async({userId, isActive}: {userId: string, isActive: boolean}): Promise<User> => {
+  const res = await api.put(`/users/${userId}/active`, {is_active: isActive});
 
   return res.data;
 }

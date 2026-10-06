@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.middleware.auth import admin_required
 from app.models import User, Student
 from app.extensions import db
@@ -15,6 +15,7 @@ def update_current_user():
   user = User.query.get_or_404(user_id)
   data = request.form
   avatar_file = request.files.get("avatar")
+  old_avatar_url = None
 
   if "username" in data:
     existing_user = User.query.filter(User.username == data["username"], User.id != user_id).first()
@@ -70,33 +71,32 @@ def update_current_user():
     if "year_level" in data:
             user.student.year_level = data.get("year_level", "").strip() or None
 
-    if avatar_file:
-      allowed_types = {
-          "image/jpeg",
-          "image/png",
-          "image/webp",
-      }
+  if avatar_file:
+    allowed_types = {
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    }
 
-      if avatar_file.mimetype not in allowed_types:
-          return jsonify({
-              "message": "Only JPEG, PNG, and WebP images are allowed"
-          }), 400
+    if avatar_file.mimetype not in allowed_types:
+        return jsonify({
+            "message": "Only JPEG, PNG, and WebP images are allowed"
+        }), 400
 
-      old_avatar_url = user.avatar_url
+    old_avatar_url = user.avatar_url
 
-      avatar_url = upload_avatar(avatar_file)
+    avatar_url = upload_avatar(avatar_file)
 
-      if not avatar_url:
-          return jsonify({
-              "message": "Failed to upload avatar"
-          }), 500
+    if not avatar_url:
+        return jsonify({
+            "message": "Failed to upload avatar"
+        }), 500
 
-      user.avatar_url = avatar_url
+    user.avatar_url = avatar_url
 
-            
   db.session.commit()
 
-  if avatar_file and old_avatar_url:
+  if old_avatar_url and old_avatar_url != user.avatar_url:
     delete_avatar(old_avatar_url)
 
   return jsonify({
@@ -114,6 +114,30 @@ def get_users():
 
   return jsonify([user.to_dict() for user in users]), 200
 
+# admin or librarian for activating / deactivating an account
+@users_bp.put("<uuid:id>/active")
+@admin_required()
+def set_user_active(id):
+  data = request.get_json() or {}
+  is_active = data.get("is_active")
+
+  if not isinstance(is_active, bool):
+    return jsonify({
+      "message": "is_active must be a boolean"
+    }), 400
+
+  if str(get_jwt_identity()) == str(id):
+    return jsonify({
+      "message": "You cannot change your own account status"
+    }), 403
+
+  target_user = User.query.get_or_404(id)
+  target_user.is_active = is_active
+
+  db.session.commit()
+
+  return jsonify(target_user.to_dict()), 200
+
 # only applicable for librarian or admin
 @users_bp.put("<uuid:id>/role")
 @admin_required()
@@ -126,7 +150,21 @@ def update_user_role(id):
       "message": "Invalid role"
     }), 400
 
+  actor_role = get_jwt().get("role", "").lower()
+  actor_id = str(get_jwt_identity())
+
+  if actor_id == str(id):
+    return jsonify({
+      "message": "You cannot change your own role"
+    }), 403
+
   target_user = User.query.get_or_404(id)
+
+  if actor_role != "admin" and (new_role == "admin" or target_user.role == "admin"):
+    return jsonify({
+      "message": "Only admins can grant or change the admin role"
+    }), 403
+
   target_user.role = new_role
 
   db.session.commit()

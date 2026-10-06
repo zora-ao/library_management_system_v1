@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +18,11 @@ interface EditProfileModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) {
+interface EditProfileFormProps {
+  onOpenChange: (open: boolean) => void;
+}
+
+function EditProfileForm({ onOpenChange }: EditProfileFormProps) {
   const { user } = useAuth();
   const { mutate: updateUserProfile, isPending: isSubmitting } = useUpdateUserProfile();
 
@@ -34,20 +38,6 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
   });
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-
-  useEffect(() => {
-    if (user && open) {
-      setFormData({
-        username: user.username || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        studentNumber: student?.student_number || "",
-        course: student?.course || "",
-        yearLevel: student?.year_level || "",
-      });
-      setAvatarFile(null);
-    }
-  }, [user, open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -79,19 +69,15 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
       submitData.append("avatar", avatarFile);
     }
 
-    updateUserProfile(submitData as any, {
+    updateUserProfile(submitData, {
       onSuccess: () => {
         onOpenChange(false);
-      },
-      onError: (error: any) => {
-        console.error("Update failed:", error?.response?.data?.message || error.message);
       },
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] rounded-2xl">
+    <>
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
@@ -231,6 +217,15 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
             </Button>
           </DialogFooter>
         </form>
+    </>
+  );
+}
+
+export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[480px] rounded-2xl">
+        <EditProfileForm onOpenChange={onOpenChange} />
       </DialogContent>
     </Dialog>
   );

@@ -30,7 +30,7 @@ class Book(BaseEntity): # Inheritance
     self.title = title
     self.author = author
     self._total_copies = total_copies
-    self._available_copies = total_copies if available_copies is not None else available_copies
+    self._available_copies = available_copies if available_copies is not None else total_copies
     self.isbn = isbn
     self.category_id = category_id
     self.description = description
@@ -62,7 +62,7 @@ class Book(BaseEntity): # Inheritance
       raise ValueError("Total copies must be 1 or greater")
 
     diff = new_total - self._total_copies
-    if self._total_copies + diff < 0:
+    if self._available_copies + diff < 0:
       raise ValueError("Cannot reduce copies below currently borrowed count")
 
     self._total_copies = new_total
@@ -77,7 +77,7 @@ class Book(BaseEntity): # Inheritance
 
   def increment_available(self):
     # this will increment the available copies when someone return a book
-    if self._available_copies > self._total_copies:
+    if self._available_copies >= self._total_copies:
       raise ValueError("All copies are already returned")
 
     self._available_copies += 1

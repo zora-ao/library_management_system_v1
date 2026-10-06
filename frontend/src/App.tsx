@@ -9,6 +9,7 @@ import BookCatalogPage from "./pages/usersPage/BookCatalogPage"
 import MyBorrowsPage from "./pages/usersPage/MyBorrowsPage"
 import AdminBorrowsPage from "./pages/adminPage/AdminBorrowsPage"
 import AdminUsersPage from "./pages/adminPage/AdminUsersPage"
+import AdminDashboardPage from "./pages/adminPage/AdminDashboardPage"
 import BookDetailsPage from "./pages/usersPage/BookDetailsPage"
 import UsersProfile from "./pages/usersPage/UsersProfile"
 
@@ -31,9 +32,9 @@ const App = () => {
           <Route path="/books/:id" element={<BookDetailsPage />} />
           <Route path="/my-borrows" element={<MyBorrowsPage />} />
           <Route path="/profile" element={<UsersProfile />} />
-          {user?.role == "admin" && (
+          {(user?.role === "admin" || user?.role === "librarian") && (
             <>
-              <Route path="/dashboard" element={<div>Dashboard Content</div>} />
+              <Route path="/dashboard" element={<AdminDashboardPage />} />
               <Route path="/users" element={<AdminUsersPage />} />
               <Route path="/all-borrows" element={<AdminBorrowsPage />} />
               <Route path="/book-list" element={<BooksListPage />} />

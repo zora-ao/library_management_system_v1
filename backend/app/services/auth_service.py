@@ -25,7 +25,7 @@ class AuthService:
     # find or create the user
     user = User.query.filter(
       (User.email == email) | (User.google_id == google_id)
-    ).filter()
+    ).first()
 
     if not user:
       user = User(
