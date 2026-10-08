@@ -19,4 +19,14 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // shadcn/ui components colocate their cva variant exports (e.g. buttonVariants,
+    // badgeVariants, tabsListVariants) with the component itself. These files are
+    // managed by the shadcn CLI and regenerated on `shadcn add`, so exempt them
+    // rather than refactoring the variant exports out by hand.
+    files: ['src/components/ui/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

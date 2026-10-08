@@ -9,7 +9,7 @@ from app.services.book_service import BookService
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
 
 # get related books by category or author books
-@books_bp.get("<uuid:id>/related")
+@books_bp.get("/<uuid:id>/related")
 @jwt_required()
 def get_related_books(id):
   try:
