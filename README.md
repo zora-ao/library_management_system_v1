@@ -1,4 +1,4 @@
-# 📚 Library Management System
+# Library Management System
 
 A full-stack Library Management System built with:
 
