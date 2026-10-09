@@ -1,4 +1,5 @@
 from app.models.base import BaseEntity
+from app.models.schemas import UserDict
 from app.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -38,7 +39,7 @@ class User(BaseEntity): # Inheritance
     self.avatar_url = avatar_url
     self.phone = phone
 
-    # users who signup/login don't need to input password
+    # users who signup/login with google don't need to input password
     if password:
       self.password = password
 
@@ -63,9 +64,9 @@ class User(BaseEntity): # Inheritance
     return self.role.lower() in ['admin', 'librarian']
 
   # polymorphism
-  def to_dict(self):
+  def to_dict(self) -> UserDict:
     return {
-        "id": self.id,
+        "id": str(self.id) if self.id else None,
         "username": self.username,
         "email": self.email,
         "role": self.role,

@@ -1,5 +1,6 @@
 from app.extensions import db
 from app.models.base import BaseEntity
+from app.models.schemas import StudentDict
 from sqlalchemy.dialects.postgresql import UUID
 
 
@@ -40,10 +41,10 @@ class Student(BaseEntity):
         back_populates="student"
     )
 
-    def to_dict(self):
+    def to_dict(self) -> StudentDict:
         return {
-            "id": self.id,
-            "user_id": self.user_id,
+            "id": str(self.id) if self.id else None,
+            "user_id": str(self.user_id) if self.user_id else None,
             "student_number": self.student_number,
             "course": self.course,
             "year_level": self.year_level,

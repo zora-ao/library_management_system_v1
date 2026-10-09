@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.base import BaseEntity
+from app.models.schemas import BorrowDict
 from app.extensions import db
 
 
@@ -47,7 +48,7 @@ class Borrow(BaseEntity):
         self.returned_at = datetime.now(timezone.utc)
         self.status = self.STATUS_RETURNED
 
-    def to_dict(self):
+    def to_dict(self) -> BorrowDict:
         return {
             "id": str(self.id) if self.id else None,
             "user_id": str(self.user_id) if self.user_id else None,

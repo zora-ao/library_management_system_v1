@@ -1,4 +1,5 @@
 from app.models.base import BaseEntity
+from app.models.schemas import CategoryDict
 from app.extensions import db
 
 class Category(BaseEntity): # inheritance 
@@ -26,8 +27,8 @@ class Category(BaseEntity): # inheritance
     self._name = value.strip().title()
 
   # polymorphism
-  def to_dict(self):
+  def to_dict(self) -> CategoryDict:
     return {
-      "id": self.id,
+      "id": str(self.id) if self.id else None,
       "name": self.name
     }
