@@ -25,18 +25,23 @@ export const Footer = ({
         <div className="w-full space-y-2 flex">
           <div className="w-[300px] flex items-center gap-2 text-primary">
             <BookOpen className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="text-sm font-semibold">{libraryName}</span>
+            <span className="text-sm font-semibold leading-5 tracking-tight">{libraryName}</span>
           </div>
-          <p className="pl-30 text-sm w-full leading-relaxed text-muted-foreground">
+          <p className="pl-30 w-full text-sm font-normal leading-5 text-muted-foreground">
             Discover books, manage borrowing, and keep your library connected.
           </p>
           <nav>
-            <Link to="/about" className="pr-4 text-primary">About</Link>
+            <Link
+              to="/about"
+              className="pr-4 text-sm font-medium leading-5 text-primary transition-colors hover:text-primary-hover"
+            >
+              About
+            </Link>
           </nav>
         </div>
       </div>
       <div className="mt-0 border-t border-border pt-4">
-        <p className="text-xs text-center leading-relaxed text-muted-foreground">
+        <p className="text-center text-xs font-medium leading-5 text-muted-foreground">
           © {year} {libraryName}. All rights reserved.
         </p>
       </div>

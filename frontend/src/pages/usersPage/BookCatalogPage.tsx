@@ -4,7 +4,6 @@ import { LoadingState } from "@/components/ui/loading-spinner";
 import {
   ArrowRight,
   Search,
-  BookOpen,
 } from "lucide-react";
 import BookCard from "@/features/books/components/books/BookCard";
 import BookFilters from "@/features/books/components/books/BookFilters";
@@ -107,29 +106,24 @@ const BookCatalogPage = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12 px-0 sm:px-0">
       {/* Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-black text-white p-8 md:px-5 flex items-center justify-between shadow-md">
-        <div className="space-y-3 z-10 max-w-lg">
-          <span className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-semibold tracking-wider uppercase text-purple-100 border border-white/10">
-            CURATED SELECTION
-          </span>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight uppercase">
-            MOST READ BOOKS THESE MONTHS
-          </h1>
-          <p className="text-xs md:text-sm text-purple-100/80 leading-relaxed">
-            View trending books in this month and explore recommended reads curated by librarians.
-          </p>
-          <div className="pt-2">
-            <Button
-              size="sm"
-              onClick={scrollToAllBooks}
-              className="bg-primary hover:bg-primary rounded-full px-6 py-5 text-xs font-bold gap-2 shadow-sm transition-all hover:gap-3 cursor-pointer"
-            >
-              VIEW NOW <ArrowRight className="h-4 w-4" />
-            </Button>
+      <div className="rounded-xl border border-sidebar-border bg-sidebar p-6 text-sidebar-foreground shadow-md md:p-8">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl space-y-2">
+            <h1 className="text-2xl font-semibold leading-tight tracking-tight uppercase sm:text-3xl md:text-[32px]">
+              MOST READ BOOKS THESE MONTHS
+            </h1>
+            <p className="text-xs leading-relaxed text-sidebar-foreground/75 md:text-sm">
+              View trending books in this month and explore recommended reads curated by librarians.
+            </p>
           </div>
-        </div>
-        <div className="hidden lg:flex relative shrink-0 items-center justify-center pr-8 opacity-40">
-          <BookOpen className="w-48 h-48 text-purple-200 stroke-[1.2]" />
+
+          <Button
+            size="sm"
+            onClick={scrollToAllBooks}
+            className="self-start shrink-0 gap-2 rounded-lg bg-primary px-6 py-5 text-xs font-bold shadow-sm transition-all hover:gap-3 hover:bg-primary-hover md:self-auto"
+          >
+            VIEW NOW <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
