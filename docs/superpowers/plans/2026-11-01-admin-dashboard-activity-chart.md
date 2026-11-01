@@ -125,7 +125,7 @@ git diff --check
 
 Expected: chart-focused tests pass; any unrelated pre-existing failures are identified by exact file and error. The chart changes introduce no new lint, type, build, or whitespace failures.
 
-- [ ] **Step 6: Commit dashboard integration and documentation**
+- [x] **Step 6: Commit dashboard integration and documentation**
 
 ```powershell
 git add frontend/src/pages/adminPage/AdminDashboardPage.tsx frontend/src/pages/adminPage/AdminDashboardPage.test.tsx docs/superpowers/specs/2026-11-01-admin-dashboard-activity-chart-design.md docs/superpowers/plans/2026-11-01-admin-dashboard-activity-chart.md
