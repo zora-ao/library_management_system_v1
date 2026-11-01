@@ -10,6 +10,7 @@ import urllib3.util.connection as urllib3_connection
 from app.models import User, Student
 from app.extensions import db
 from flask_jwt_extended import create_access_token
+from app.security_state import get_auth_epoch
 
 # Prefer IPv4 for outbound HTTPS calls (e.g. Google OAuth cert fetches) so
 # broken local IPv6 routes do not stall token verification for 60-100 seconds.
@@ -61,6 +62,17 @@ _GOOGLE_AUTH_REQUEST = _CachedGoogleRequest()
 
 
 class AuthService:
+
+  @staticmethod
+  def issue_access_token(user):
+    return create_access_token(
+      identity=str(user.id),
+      additional_claims={
+        "role": user.role,
+        "username": user.username,
+        "auth_epoch": get_auth_epoch(),
+      },
+    )
 
   @staticmethod
   def change_password(user_id, current_password, new_password):
@@ -174,10 +186,7 @@ class AuthService:
       raise PermissionError("Account is deactivated")
     
     # issue the jwt token
-    access_token = create_access_token(
-        identity=str(user.id),
-        additional_claims={"role": user.role, "username": user.username}
-      )
+    access_token = AuthService.issue_access_token(user)
 
     return {
       "access_token": access_token,
@@ -194,10 +203,7 @@ class AuthService:
     if not user.is_active:
       raise PermissionError("Account is deactivated")
 
-    access_token = create_access_token(
-      identity=str(user.id),
-      additional_claims={"role": user.role, "username": user.username}
-    )
+    access_token = AuthService.issue_access_token(user)
 
     return {
       "token": access_token,
