@@ -30,3 +30,8 @@ class Config:
 
   # OAuth — token verification only needs the client ID
   GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
+  BACKUP_TOKEN_SIGNING_KEY = os.getenv("BACKUP_TOKEN_SIGNING_KEY")
+  BACKUP_SAFETY_TOKEN_MAX_AGE_SECONDS = 900
+  BACKUP_RESTORE_TOKEN_MAX_AGE_SECONDS = 900
+

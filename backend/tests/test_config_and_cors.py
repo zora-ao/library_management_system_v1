@@ -23,6 +23,17 @@ class ConfigAndCorsTests(unittest.TestCase):
         self.assertEqual(connect_args.get("connect_timeout"), 10)
         self.assertEqual(connect_args.get("keepalives"), 1)
 
+    def test_config_sets_short_lived_backup_operation_tokens(self):
+        self.assertTrue(hasattr(config_module.Config, "BACKUP_TOKEN_SIGNING_KEY"))
+        self.assertEqual(
+            config_module.Config.BACKUP_SAFETY_TOKEN_MAX_AGE_SECONDS,
+            900,
+        )
+        self.assertEqual(
+            config_module.Config.BACKUP_RESTORE_TOKEN_MAX_AGE_SECONDS,
+            900,
+        )
+
     def test_cached_google_request_reuses_cached_get_response(self):
         mock_session = MagicMock()
         raw_response = MagicMock()
