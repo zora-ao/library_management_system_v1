@@ -125,9 +125,6 @@ const AdminDashboardPage = () => {
       <header className="space-y-7">
         <div className="flex items-center justify-between gap-4 text-sm font-bold uppercase tracking-[0.06em] text-muted-foreground sm:text-base">
           <span>Overview</span>
-          <span className="hidden font-normal normal-case tracking-normal sm:inline">
-            {new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(now)}
-          </span>
         </div>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>

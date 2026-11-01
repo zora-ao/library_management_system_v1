@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { CalendarDays, CheckCircle2, Clock3, Inbox, Search } from "lucide-react";
+import { CheckCircle2, Clock3, Inbox, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import FilterSelect from "@/components/ui/FilterSelect";
 import { LoadingState } from "@/components/ui/loading-spinner";
 import BorrowRequestsTable from "@/features/borrows/components/BorrowRequestsTable";
 import BorrowRequestDetailsSheet from "@/features/borrows/components/BorrowRequestDetailsSheet";
@@ -66,7 +67,6 @@ export default function BorrowRequestsPage() {
     <div className="space-y-7 pb-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:text-sm">Borrow Requests</p><h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Borrow Requests</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">Review student requests, reserve available books, and confirm physical pickup before a loan begins.</p></div>
-        <div className="flex items-center gap-2 rounded-full border border-border/70 bg-card px-4 py-2 text-sm text-muted-foreground shadow-sm sm:text-base"><CalendarDays className="size-4" />{new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date())}</div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-3">
@@ -84,7 +84,16 @@ export default function BorrowRequestsPage() {
         <div className="flex flex-col gap-3 border-b border-border p-5 lg:flex-row lg:items-center">
           <div className="relative flex-1"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search student, book, or request ID" className="h-10 bg-control pl-9 text-sm sm:text-base md:text-base" /></div>
           <Input aria-label="Request date" type="date" value={date === "all" ? "" : date} onChange={(event) => { setDate(event.target.value || "all"); setPage(1); }} className="h-10 bg-control text-sm sm:text-base md:text-base lg:w-44" />
-          <select aria-label="Request ordering" value={order} onChange={(event) => { setOrder(event.target.value as BorrowRequestOrder); setPage(1); }} className="h-10 rounded-lg border border-input bg-control px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring sm:text-base"><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select>
+          <FilterSelect
+            label="Request ordering"
+            value={order}
+            onChange={(val) => { setOrder(val as BorrowRequestOrder); setPage(1); }}
+            className="w-full sm:w-[150px]"
+            options={[
+              { value: "oldest", label: "Oldest first" },
+              { value: "newest", label: "Newest first" },
+            ]}
+          />
         </div>
         {isError ? <div className="flex min-h-64 flex-col items-center justify-center gap-3 p-6 text-center"><p className="font-semibold text-destructive">Could not load borrow requests</p><p className="text-sm text-muted-foreground">{error?.message || "Please try again."}</p><Button variant="outline" onClick={() => refetch()}>Try again</Button></div> : <BorrowRequestsTable rows={rows} tab={activeTab} page={page} onPageChange={setPage} onOpen={openRow} />}
       </section>

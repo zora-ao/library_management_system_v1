@@ -47,7 +47,6 @@ export default function BookCatalogPage() {
           <fieldset className="booky-availability"><legend>AVAILABILITY</legend>{[["all", "All books"], ["available", "Available now"]].map(([value, label]) => <label key={value}><input type="radio" name="availability" checked={availability === value} onChange={() => { setAvailability(value); setCurrentPage(1); }} />{label}</label>)}</fieldset>
           <div className="booky-genres"><h3>GENRES</h3>{["All", ...genres].map(name => <button key={name} type="button" aria-pressed={genre === name} className={genre === name ? "is-active" : ""} onClick={() => { setGenre(name); setCurrentPage(1); }}><span>{name === "All" ? "All genres" : name}</span><span>{name === "All" ? books.length : books.filter(b => b.category_name === name).length}</span></button>)}</div>
         </div>
-        <div className="booky-help"><h3>A little help finding a book?</h3><p>Visit the library desk for recommendations and support.</p><button type="button">Ask your librarian&nbsp; ↗</button></div>
       </aside>
       <div className="booky-results">
         {isLoading ? <LoadingState containerClassName="h-96" label="Loading catalog" /> : isError ? <div className="booky-empty" role="alert"><h2>We couldn’t load the catalog.</h2><p>Please try again in a moment.</p><Button type="button" onClick={() => void refetch()}>Try again</Button></div> : <>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +15,7 @@ import "./catalog.css";
 
 export default function CatalogLayout() {
   const { user, logout } = useAuth();
+  const [borrowsHovered, setBorrowsHovered] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isBooks = /^\/books(?:\/[^/]+)?\/?$/.test(pathname);
@@ -41,19 +43,56 @@ export default function CatalogLayout() {
       className={`booky ${isDetails ? "booky-detail-shell" : ""} ${isBorrows ? "booky-borrows-shell" : ""} ${isFavorites ? "booky-favorites-shell" : ""} ${isAbout ? "booky-about-shell" : ""} ${isProfile ? "booky-profile-shell" : ""}`}
     >
       <header className="booky-header">
-        <Link to="/books" className="booky-brand" aria-label="Booky home">
-          <span className="booky-mark">
-            <img src="/catalog/brand.svg" alt="" />
-          </span>
-          <span>Booky</span>
+        <Link to="/books" className="booky-brand" aria-label="Pahina home">
+          <img src="/Logo.png" alt="Pahina logo" className="h-10 w-10 object-contain shrink-0" />
+          <span>Pahina</span>
         </Link>
         <nav className="booky-nav" aria-label="Main navigation">
           <Link to="/books" aria-current={isBooks ? "page" : undefined}>
             Books
           </Link>
-          <Link to="/my-borrows" aria-current={isBorrows ? "page" : undefined}>
-            My Borrows
-          </Link>
+          <div
+            className="booky-nav-item-dropdown"
+            onMouseEnter={() => setBorrowsHovered(true)}
+            onMouseLeave={() => setBorrowsHovered(false)}
+          >
+            <Link
+              to="/my-borrows"
+              aria-current={isBorrows ? "page" : undefined}
+              className="booky-nav-link"
+              aria-haspopup="true"
+              aria-expanded={borrowsHovered}
+            >
+              <span>My Borrows</span>
+              <ChevronDown
+                size={14}
+                className={`booky-nav-chevron ${borrowsHovered ? "is-open" : ""}`}
+                aria-hidden="true"
+              />
+            </Link>
+            <div
+              className={`booky-nav-dropdown-menu ${borrowsHovered ? "is-open" : ""}`}
+              role="menu"
+              aria-label="My Borrows sub-navigation"
+            >
+              <Link
+                to="/my-borrows?tab=active"
+                role="menuitem"
+                className="booky-nav-dropdown-link"
+                onClick={() => setBorrowsHovered(false)}
+              >
+                Active Borrows
+              </Link>
+              <Link
+                to="/my-borrows?tab=history"
+                role="menuitem"
+                className="booky-nav-dropdown-link"
+                onClick={() => setBorrowsHovered(false)}
+              >
+                Borrowing History
+              </Link>
+            </div>
+          </div>
           <Link to="/my-favorites" aria-current={isFavorites ? "page" : undefined}>
             My Favorites
           </Link>

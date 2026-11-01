@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, useGetAllUsers } from "@/hooks/useAuth";
 import { Button } from "../ui/button";
 import {
   BookmarkCheck,
@@ -12,7 +12,7 @@ import {
   LogOut,
   RotateCcw,
   Settings,
-  User
+  User,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -48,6 +48,10 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   const [submenuOpenOverride, setSubmenuOpenOverride] = useState<Record<string, boolean>>({});
 
   const isAdmin = user?.role === "admin";
+  const isStaff = user?.role === "admin" || user?.role === "librarian";
+  const { data: allUsers = [] } = useGetAllUsers({ enabled: isStaff });
+  const librarianCount = allUsers.filter((u) => u.role === "librarian").length;
+  const studentCount = allUsers.filter((u) => u.role === "student").length;
 
   const handleLogout = async () => {
     await logout();
@@ -82,7 +86,15 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
       ];
 
       if (isAdmin) {
-        staffItems.push({ label: "Users", path: "/users", icon: User });
+        staffItems.push({
+          label: "Users",
+          path: "/users",
+          icon: User,
+          children: [
+            { label: "Librarians", path: "/users/librarian", count: librarianCount },
+            { label: "Students", path: "/users/student", count: studentCount },
+          ],
+        });
       }
 
       staffItems.push({ label: "Settings", path: "/profile", icon: Settings });
@@ -108,12 +120,10 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
         )}
       >
         <div className={cn("flex items-center gap-3 overflow-hidden", collapsed && "mx-auto")}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold">
-            <BookOpen className="h-5 w-5" />
-          </div>
+          <img src="/Logo.png" alt="Pahina logo" className="h-10 w-10 shrink-0 object-contain" />
           {!collapsed && (
             <span className="font-semibold text-lg whitespace-nowrap tracking-tight text-sidebar-foreground">
-              Booky
+              Pahina
             </span>
           )}
         </div>
@@ -158,16 +168,18 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
 
           if (hasChildren) {
             const submenuOpen = isSubmenuOpen(item.path);
+            const isParentActive = location.pathname.startsWith(item.path);
+
             return (
-              <div key={item.path}>
+              <div key={item.path} className="space-y-1">
                 <div className="relative">
                   <NavLink
-                    to={item.path}
+                    to={item.children?.[0]?.path ?? item.path}
                     onClick={onItemClick}
                     className={({ isActive }) =>
                       cn(
-                        "flex items-center gap-3 rounded-full px-3 py-3 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset pr-9",
-                        isActive
+                        "flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset pr-9",
+                        isActive || isParentActive
                           ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
                           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )
@@ -183,7 +195,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                     }
                     aria-label={submenuOpen ? `Collapse ${item.label} menu` : `Expand ${item.label} menu`}
                     aria-expanded={submenuOpen}
-                    className={cn("absolute inset-y-0 right-1 my-auto flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring", location.pathname.startsWith(item.path) ? "text-sidebar-primary-foreground" : "text-sidebar-foreground")}
+                    className="absolute inset-y-0 right-1 my-auto flex h-7 w-7 items-center justify-center rounded-full text-sidebar-foreground transition-colors hover:bg-black/10 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
                   >
                     <ChevronDown
                       className={cn("h-4 w-4 transition-transform duration-200", submenuOpen && "rotate-180")}
@@ -192,7 +204,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                 </div>
 
                 {submenuOpen && (
-                  <ul className="mt-1 ml-3 space-y-1 border-l border-sidebar-border pl-3">
+                  <ul className="mt-1 ml-5 space-y-1 border-l border-sidebar-border pl-3">
                     {item.children?.map((child) => (
                       <li key={child.path}>
                         <NavLink
@@ -200,7 +212,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                           onClick={onItemClick}
                           className={({ isActive }) =>
                             cn(
-                              "flex items-center justify-between gap-2 rounded-full px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
+                              "flex items-center justify-between gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
                               isActive
                                 ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
                                 : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -211,8 +223,8 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                           {child.count !== undefined && (
                             <span
                               className={cn(
-                                "rounded-full px-2 py-0.5 text-xs font-medium",
-                                "bg-sidebar-accent text-sidebar-foreground"
+                                "rounded-full px-2 py-0.5 text-[11px] font-medium",
+                                "bg-sidebar-accent text-sidebar-foreground/70"
                               )}
                             >
                               {child.count}
@@ -230,15 +242,15 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           return (
             <NavLink
               key={item.path}
-              to={item.path}
+              to={item.children?.[0]?.path ?? item.path}
               onClick={onItemClick}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-full px-3 py-3 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
-                  isActive
+                  "flex items-center gap-3 rounded-full px-3 py-2.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
+                  isActive || location.pathname.startsWith(item.path)
                     ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
                     : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  collapsed && "justify-center px-0"
+                  collapsed && "size-10 justify-center p-0 mx-auto rounded-xl"
                 )
               }
               title={collapsed ? item.label : undefined}

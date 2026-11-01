@@ -75,6 +75,130 @@
   border-radius: 999px;
   background: var(--primary);
 }
+
+/* My Borrows Navigation Dropdown */
+.booky-nav-item-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.booky-nav-item-dropdown .booky-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  position: relative;
+  color: var(--muted-foreground);
+  font-size: 15px;
+  font-weight: 600;
+  transition: color 150ms ease;
+  cursor: pointer;
+}
+
+.booky-nav-item-dropdown:hover .booky-nav-link,
+.booky-nav-item-dropdown .booky-nav-link:hover {
+  color: var(--foreground);
+}
+
+.booky-nav-item-dropdown .booky-nav-link[aria-current]::after {
+  content: "";
+  position: absolute;
+  height: 3px;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.booky-nav-chevron {
+  transition: transform 180ms ease, opacity 180ms ease;
+  opacity: 0.7;
+}
+
+.booky-nav-item-dropdown:hover .booky-nav-chevron,
+.booky-nav-chevron.is-open {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+.booky-nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% - 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  min-width: 175px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: var(--elevation-lg);
+  backdrop-filter: blur(var(--glass-blur));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease, visibility 150ms ease;
+}
+
+/* Invisible bridge so mouse moving from link to dropdown doesn't lose hover */
+.booky-nav-dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
+.booky-nav-item-dropdown:hover .booky-nav-dropdown-menu,
+.booky-nav-dropdown-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.booky-nav-dropdown-link {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: background-color 150ms ease, color 150ms ease;
+  white-space: nowrap;
+}
+
+.booky-nav-dropdown-link:hover {
+  background-color: var(--accent);
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+@media (max-width: 860px) {
+  .booky-nav-item-dropdown .booky-nav-link[aria-current]::after {
+    bottom: 0;
+  }
+  .booky-nav-dropdown-menu {
+    top: 100%;
+    left: 0;
+    transform: translateY(4px);
+  }
+  .booky-nav-item-dropdown:hover .booky-nav-dropdown-menu,
+  .booky-nav-dropdown-menu.is-open {
+    transform: translateY(0);
+  }
+}
+
 .booky-account {
   display: flex;
   align-items: center;
