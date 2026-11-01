@@ -35,14 +35,14 @@ describe("BorrowingActivityChart", () => {
   });
 
   it("shows the full local date and correct singular and plural labels in the tooltip", () => {
-    const tooltipProps = {
+    const tooltipProps: BorrowingActivityTooltipProps = {
       active: true,
       label: "Oct 26",
       payload: [
-        { dataKey: "loans", name: "Loans", value: 1, payload: activity[0] },
-        { dataKey: "returns", name: "Returns", value: 2, payload: activity[0] },
+        { dataKey: "loans", value: 1, payload: activity[0] },
+        { dataKey: "returns", value: 2, payload: activity[0] },
       ],
-    } as BorrowingActivityTooltipProps;
+    };
 
     render(<BorrowingActivityTooltip {...tooltipProps} />);
 

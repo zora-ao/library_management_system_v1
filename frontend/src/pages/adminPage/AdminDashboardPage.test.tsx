@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -43,7 +43,7 @@ describe("AdminDashboardPage card surfaces", () => {
     expect(screen.getByText("Approved and ready")).toHaveClass("text-sm", "sm:text-base");
     expect(screen.getByText("Student / Book").parentElement).toHaveClass("text-sm", "sm:text-base");
     expect(screen.getByRole("link", { name: /Review requests/ })).toHaveClass("text-sm", "sm:text-base");
-    expect(screen.getByText("Loans").parentElement).toHaveClass("text-sm", "sm:text-base");
+    expect(screen.getByText("Loans", { selector: "span" }).parentElement).toHaveClass("text-sm", "sm:text-base");
     expect(screen.getByText("Library overview")).toHaveClass("text-sm", "sm:text-base");
   });
 
@@ -64,5 +64,13 @@ describe("AdminDashboardPage card surfaces", () => {
     expect(action).toHaveClass("inline-flex", "whitespace-nowrap");
     expect(row).toHaveClass("grid-cols-[minmax(210px,2fr)_minmax(120px,1fr)_minmax(82px,auto)_minmax(140px,auto)]");
     expect(header).toHaveClass("grid-cols-[minmax(210px,2fr)_minmax(120px,1fr)_minmax(82px,auto)_minmax(140px,auto)]");
+  });
+
+  it("renders seven days of loans and returns in an interactive accessible chart", () => {
+    render(<MemoryRouter><AdminDashboardPage /></MemoryRouter>);
+
+    expect(screen.getByRole("img", { name: "Loans and returns over the last 7 days" })).toBeInTheDocument();
+    const activityTable = screen.getByRole("table", { name: "Borrowing activity data" });
+    expect(within(activityTable).getAllByRole("row")).toHaveLength(8);
   });
 });
