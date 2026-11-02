@@ -32,7 +32,13 @@ function safeDownloadFilename(disposition?: string): string {
     ? decodeURIComponent(encoded)
     : ordinary?.[1] ?? ordinary?.[2] ?? DEFAULT_BACKUP_FILENAME;
   candidate = candidate.split(/[\\/]/).pop()?.trim() || DEFAULT_BACKUP_FILENAME;
-  return candidate.replace(/[\u0000-\u001f\u007f]/g, "") || DEFAULT_BACKUP_FILENAME;
+  const printable = Array.from(candidate)
+    .filter((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return codePoint >= 32 && codePoint !== 127;
+    })
+    .join("");
+  return printable || DEFAULT_BACKUP_FILENAME;
 }
 
 

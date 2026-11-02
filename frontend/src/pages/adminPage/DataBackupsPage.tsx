@@ -28,7 +28,6 @@ export default function DataBackupsPage() {
       });
     return () => {
       active = false;
-      setSafetyToken("");
     };
   }, []);
 

@@ -35,6 +35,7 @@ describe("database backup API", () => {
     ['attachment; filename="pahina backup.pahina-backup"', "pahina backup.pahina-backup"],
     ["attachment; filename=pahina-backup.pahina-backup", "pahina-backup.pahina-backup"],
     ['attachment; filename="../unsafe.pahina-backup"', "unsafe.pahina-backup"],
+    ['attachment; filename="bad\u0000name.pahina-backup"', "badname.pahina-backup"],
   ])("downloads a blob and safely parses %s", async (disposition, expectedFilename) => {
     const blob = new Blob(["encrypted"]);
     mocks.post.mockResolvedValue({
