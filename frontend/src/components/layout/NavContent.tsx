@@ -1,4 +1,4 @@
-import { useAuth, useGetAllUsers } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "../ui/button";
 import {
   BookmarkCheck,
@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  DatabaseBackup,
   LayoutDashboard,
   Layers3,
   LogOut,
@@ -48,10 +49,6 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   const [submenuOpenOverride, setSubmenuOpenOverride] = useState<Record<string, boolean>>({});
 
   const isAdmin = user?.role === "admin";
-  const isStaff = user?.role === "admin" || user?.role === "librarian";
-  const { data: allUsers = [] } = useGetAllUsers({ enabled: isStaff });
-  const librarianCount = allUsers.filter((u) => u.role === "librarian").length;
-  const studentCount = allUsers.filter((u) => u.role === "student").length;
 
   const handleLogout = async () => {
     await logout();
@@ -90,10 +87,11 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           label: "Users",
           path: "/users",
           icon: User,
-          children: [
-            { label: "Librarians", path: "/users/librarian", count: librarianCount },
-            { label: "Students", path: "/users/student", count: studentCount },
-          ],
+        });
+        staffItems.push({
+          label: "Data Backups",
+          path: "/backups",
+          icon: DatabaseBackup,
         });
       }
 
@@ -254,6 +252,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
                 )
               }
               title={collapsed ? item.label : undefined}
+              aria-label={collapsed ? item.label : undefined}
             >
               <Icon className="h-5 w-5 shrink-0" />
               {!collapsed && <span>{item.label}</span>}

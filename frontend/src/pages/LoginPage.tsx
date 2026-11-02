@@ -1,8 +1,12 @@
 import LoginForm from "@/features/auth/components/LoginForm";
 import GLogin from "@/features/auth/components/GLogin";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
-const LoginPage = () => (
+const LoginPage = () => {
+  const [searchParams] = useSearchParams();
+  const restored = searchParams.get("restored") === "1";
+
+  return (
   <main className="min-h-svh bg-background p-4 text-foreground sm:p-6">
     <div className="mx-auto grid min-h-[calc(100svh-3rem)] max-w-[1232px] gap-10 lg:grid-cols-[552fr_632fr] lg:gap-12">
       <section
@@ -46,6 +50,11 @@ const LoginPage = () => (
           <p className="mt-[6px] text-sm leading-[1.4] text-muted-foreground">
             Sign in to pick up where you left off.
           </p>
+          {restored && (
+            <p role="status" className="mt-4 rounded-xl border border-success/30 bg-success-soft p-3 text-sm text-success">
+              Database restored. Sign in again to continue.
+            </p>
+          )}
           <div className="mt-[37px]">
             <LoginForm />
           </div>
@@ -71,6 +80,7 @@ const LoginPage = () => (
       </section>
     </div>
   </main>
-);
+  );
+};
 
 export default LoginPage;
