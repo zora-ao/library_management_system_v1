@@ -19,7 +19,7 @@ vi.mock("@react-oauth/google", () => ({
 }));
 
 describe("LoginPage & RegisterPage Figma + Admin Theme Design", () => {
-  it("renders LoginPage with Booky branding, theme-aware bg-background/text-heading tokens, and English Google CTA", () => {
+  it("renders LoginPage with Pahina branding, theme-aware bg-background/text-heading tokens, and English Google CTA", () => {
     const { container } = render(
       <MemoryRouter>
         <LoginPage />
@@ -29,7 +29,7 @@ describe("LoginPage & RegisterPage Figma + Admin Theme Design", () => {
     const main = container.querySelector("main");
     expect(main?.className).toContain("bg-background");
 
-    expect(screen.getByText("Booky")).toBeInTheDocument();
+    expect(screen.getByText("Pahina")).toBeInTheDocument();
     expect(screen.queryByText("Booksy")).not.toBeInTheDocument();
 
     const welcomeHeading = screen.getByRole("heading", { name: /welcome back/i });
@@ -42,11 +42,11 @@ describe("LoginPage & RegisterPage Figma + Admin Theme Design", () => {
     expect(passwordInput).toHaveAttribute("placeholder", "••••••••••••");
 
     expect(screen.getByText("Sign in with Google")).toBeInTheDocument();
-    expect(screen.getByText(/new to booky\?/i)).toBeInTheDocument();
-    expect(screen.getByText("Booky · Library Management System")).toBeInTheDocument();
+    expect(screen.getByText(/new to Pahina\?/i)).toBeInTheDocument();
+    expect(screen.getByText("Pahina · Library Management System")).toBeInTheDocument();
   });
 
-  it("renders RegisterPage with matching Booky branding and theme-aware tokens", () => {
+  it("renders RegisterPage with matching Pahina branding and theme-aware tokens", () => {
     const { container } = render(
       <MemoryRouter>
         <RegisterPage />
@@ -56,7 +56,7 @@ describe("LoginPage & RegisterPage Figma + Admin Theme Design", () => {
     const main = container.querySelector("main");
     expect(main?.className).toContain("bg-background");
 
-    expect(screen.getByText("Booky")).toBeInTheDocument();
+    expect(screen.getByText("Pahina")).toBeInTheDocument();
     expect(screen.queryByText("Booksy")).not.toBeInTheDocument();
 
     const registerHeading = screen.getByRole("heading", { name: /create your account/i });
@@ -66,6 +66,6 @@ describe("LoginPage & RegisterPage Figma + Admin Theme Design", () => {
     expect(campusCaption.className).not.toContain("text-center");
 
     expect(screen.getByText("Sign in with Google")).toBeInTheDocument();
-    expect(screen.getByText("Booky · Library Management System")).toBeInTheDocument();
+    expect(screen.getByText("Pahina · Library Management System")).toBeInTheDocument();
   });
 });
