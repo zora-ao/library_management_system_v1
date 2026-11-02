@@ -91,7 +91,9 @@ describe("database backup API", () => {
     expect(body).toBeInstanceOf(FormData);
     expect(body.get("backup")).toBe(file);
     expect(body.get("passphrase")).toBe("private-passphrase");
-    expect(mocks.post.mock.calls[0]).toHaveLength(2);
+    expect(mocks.post.mock.calls[0][2]).toEqual({
+      headers: { "Content-Type": undefined },
+    });
   });
 
   it("restores with the exact multipart fields in one request", async () => {
@@ -122,6 +124,8 @@ describe("database backup API", () => {
       step_up_credential: "google-credential",
     });
     expect(body.get("backup")).toBe(file);
-    expect(mocks.post.mock.calls[0]).toHaveLength(2);
+    expect(mocks.post.mock.calls[0][2]).toEqual({
+      headers: { "Content-Type": undefined },
+    });
   });
 });

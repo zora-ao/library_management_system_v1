@@ -99,6 +99,14 @@ class BackupService:
 
   @staticmethod
   def capabilities() -> ToolCapabilities:
+    signing_key = current_app.config.get("BACKUP_TOKEN_SIGNING_KEY")
+    if not signing_key:
+      return ToolCapabilities(available=False, reason="Backup token signing is not configured")
+    if signing_key == current_app.config.get("JWT_SECRET_KEY"):
+      return ToolCapabilities(
+        available=False,
+        reason="Backup token signing key must differ from JWT signing key",
+      )
     return check_capabilities(BackupService._postgres_config())
 
   @staticmethod
@@ -136,21 +144,37 @@ class BackupService:
       raise BackupServiceError(capabilities.reason or "Database backups are unavailable")
 
     dump_path = workspace / "database.dump"
+    before = (
+      BackupService._schema_revisions(),
+      BackupService._table_counts(),
+      BackupService._active_admin_count(),
+    )
     create_custom_dump(BackupService._postgres_config(), dump_path)
+    after = (
+      BackupService._schema_revisions(),
+      BackupService._table_counts(),
+      BackupService._active_admin_count(),
+    )
+    if before != after:
+      dump_path.unlink(missing_ok=True)
+      raise BackupServiceError("Database changed while the backup was being created")
     dump_bytes = dump_path.stat().st_size
+    if dump_bytes > BackupService._envelope_policy().max_bytes:
+      dump_path.unlink(missing_ok=True)
+      raise BackupServiceError("Database backup exceeds the configured size limit")
     dump_digest = _sha256_file(dump_path)
     created_at = datetime.now(timezone.utc)
     manifest = BackupManifest(
       format_version=1,
       application=APPLICATION_ID,
       created_at=created_at.isoformat().replace("+00:00", "Z"),
-      schema_revisions=BackupService._schema_revisions(),
+      schema_revisions=before[0],
       postgres_server_version=capabilities.server_version or "unknown",
       postgres_client_version=capabilities.pg_dump_version or "unknown",
       dump_sha256=dump_digest,
       dump_bytes=dump_bytes,
-      table_counts=BackupService._table_counts(),
-      active_admin_count=BackupService._active_admin_count(),
+      table_counts=before[1],
+      active_admin_count=before[2],
     )
     filename = f"pahina-backup-{created_at.strftime('%Y%m%dT%H%M%SZ')}.pahina-backup"
     encrypted_path = workspace / filename

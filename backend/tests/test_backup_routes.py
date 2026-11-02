@@ -26,6 +26,7 @@ class BackupRouteTests(unittest.TestCase):
             JWT_SECRET_KEY="route-test-secret-that-is-at-least-thirty-two-bytes",
             BACKUP_TOKEN_SIGNING_KEY="route-backup-signing-key",
             BACKUP_MAX_BYTES=1024 * 1024,
+            MAX_CONTENT_LENGTH=1024 * 1024 + 1024,
             BACKUP_SAFETY_TOKEN_MAX_AGE_SECONDS=900,
             BACKUP_RESTORE_TOKEN_MAX_AGE_SECONDS=900,
         )
@@ -101,6 +102,14 @@ class BackupRouteTests(unittest.TestCase):
         self.assertEqual(admin.status_code, 200)
         self.assertEqual(admin.headers["Cache-Control"], "no-store")
         self.assertTrue(admin.get_json()["available"])
+
+    def test_oversized_multipart_is_rejected_before_upload_parsing(self):
+        response = self.client.post(
+            "/api/admin/backups/inspect",
+            headers=self.headers(),
+            data=b"x" * (1024 * 1024 + 2048),
+        )
+        self.assertEqual(response.status_code, 413)
 
     @patch("app.blueprints.backups.routes.verify_step_up")
     @patch("app.blueprints.backups.routes.BackupService.create_backup")

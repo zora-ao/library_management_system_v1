@@ -33,6 +33,10 @@ class ConfigAndCorsTests(unittest.TestCase):
             config_module.Config.BACKUP_RESTORE_TOKEN_MAX_AGE_SECONDS,
             900,
         )
+        self.assertGreater(
+            config_module.Config.MAX_CONTENT_LENGTH,
+            config_module.Config.BACKUP_MAX_BYTES,
+        )
 
     def test_cached_google_request_reuses_cached_get_response(self):
         mock_session = MagicMock()

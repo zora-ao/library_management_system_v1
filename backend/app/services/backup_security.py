@@ -25,6 +25,8 @@ def _serializer() -> URLSafeTimedSerializer:
   signing_key = current_app.config.get("BACKUP_TOKEN_SIGNING_KEY")
   if not signing_key:
     raise RuntimeError("Backup token signing is not configured")
+  if signing_key == current_app.config.get("JWT_SECRET_KEY"):
+    raise RuntimeError("Backup token signing key must differ from JWT signing key")
   return URLSafeTimedSerializer(
     signing_key,
     salt="pahina-backup-operations-v1",

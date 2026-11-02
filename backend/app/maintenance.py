@@ -36,12 +36,14 @@ def install_maintenance_guard(app) -> None:
 
   @app.before_request
   def require_shared_maintenance_access():
-    if not request.path.startswith("/api") or request.endpoint == RESTORE_ENDPOINT:
+    if not request.path.startswith("/api"):
       return None
     try:
       state = db.session.get(SystemSecurityState, 1)
       if state is None or state.maintenance_mode:
         return _maintenance_response()
+      if request.endpoint == RESTORE_ENDPOINT:
+        return None
       acquired = db.session.execute(
         text("SELECT pg_try_advisory_xact_lock_shared(:lock_key)"),
         {"lock_key": MAINTENANCE_LOCK_KEY},

@@ -71,16 +71,21 @@ class MaintenanceGuardTests(unittest.TestCase):
 
     @patch("app.maintenance.db.session.execute")
     @patch("app.maintenance.db.session.get")
-    def test_restore_and_non_api_paths_bypass_shared_guard(self, get_state, execute):
+    def test_restore_checks_persistent_flag_but_bypasses_shared_lock(self, get_state, execute):
         client = self.make_app().test_client()
+        get_state.return_value = MagicMock(maintenance_mode=False)
 
         restore = client.post("/api/admin/backups/restore")
         outside = client.get("/outside-api")
 
         self.assertEqual(restore.status_code, 200)
         self.assertEqual(outside.status_code, 200)
-        get_state.assert_not_called()
+        get_state.assert_called_once()
         execute.assert_not_called()
+
+        get_state.return_value = MagicMock(maintenance_mode=True)
+        blocked = client.post("/api/admin/backups/restore")
+        self.assertEqual(blocked.status_code, 503)
 
     @patch("app.maintenance.db.session.execute")
     @patch("app.maintenance.db.session.get")

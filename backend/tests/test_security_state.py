@@ -142,6 +142,12 @@ class SecurityStateTests(unittest.TestCase):
             self.assertIsNone(state.restore_started_at)
             self.assertEqual(state.auth_epoch, old_epoch)
 
+    def test_second_restore_cannot_claim_maintenance(self):
+        with self.app.app_context():
+            begin_restore_maintenance()
+            with self.assertRaisesRegex(RuntimeError, "already in progress"):
+                begin_restore_maintenance()
+
 
 if __name__ == "__main__":
     unittest.main()

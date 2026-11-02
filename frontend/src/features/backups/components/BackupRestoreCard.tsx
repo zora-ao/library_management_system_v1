@@ -91,8 +91,14 @@ export function BackupRestoreCard({ enabled, googleAccount, safetyToken }: Backu
       logout();
       navigate("/login?restored=1", { replace: true });
     } catch (caught) {
-      setStatus("ready");
-      setError(errorMessage(caught));
+      setStatus("idle");
+      setInspection(null);
+      setFile(null);
+      setPassphrase("");
+      setConfirmation("");
+      setError(`${errorMessage(caught)} Sign in again before attempting another restore.`);
+      logout();
+      navigate("/login", { replace: true });
     } finally {
       setStepUp({ method: googleAccount ? "google" : "password", credential: "" });
       setDialogOpen(false);

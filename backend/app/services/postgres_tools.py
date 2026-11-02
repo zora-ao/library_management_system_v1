@@ -101,13 +101,16 @@ def _run(
   config: PostgresToolConfig,
   args: list[str],
   operation: str,
+  *,
+  discard_stdout: bool = False,
 ) -> subprocess.CompletedProcess:
   parts = _connection_parts(config.database_url)
   try:
     result = subprocess.run(
       args,
       env=_libpq_environment(parts),
-      capture_output=True,
+      stdout=subprocess.DEVNULL if discard_stdout else subprocess.PIPE,
+      stderr=subprocess.PIPE,
       text=True,
       timeout=config.timeout_seconds,
       check=False,
@@ -214,6 +217,7 @@ def validate_custom_dump(config: PostgresToolConfig, dump_path: Path) -> None:
     config,
     [_binary(config, "pg_restore"), "--list", str(dump_path)],
     "Backup validation",
+    discard_stdout=True,
   )
 
 

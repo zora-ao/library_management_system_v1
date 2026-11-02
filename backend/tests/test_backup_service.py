@@ -33,6 +33,8 @@ class BackupServiceTests(unittest.TestCase):
             BACKUP_SCRYPT_N=32768,
             BACKUP_SCRYPT_R=8,
             BACKUP_SCRYPT_P=1,
+            BACKUP_TOKEN_SIGNING_KEY="backup-service-signing-key",
+            JWT_SECRET_KEY="different-jwt-signing-key",
         )
         db.init_app(self.app)
         with self.app.app_context():
@@ -83,6 +85,15 @@ class BackupServiceTests(unittest.TestCase):
             result = BackupService.capabilities()
         self.assertEqual(result, self.capabilities())
         check.assert_called_once()
+
+    @patch("app.services.backup_service.check_capabilities")
+    def test_capabilities_require_a_separate_backup_signing_key(self, check):
+        with self.app.app_context():
+            self.app.config["BACKUP_TOKEN_SIGNING_KEY"] = None
+            self.assertFalse(BackupService.capabilities().available)
+            self.app.config["BACKUP_TOKEN_SIGNING_KEY"] = self.app.config["JWT_SECRET_KEY"]
+            self.assertFalse(BackupService.capabilities().available)
+        check.assert_not_called()
 
     @patch("app.services.backup_service.check_capabilities")
     @patch("app.services.backup_service.create_custom_dump")

@@ -76,7 +76,9 @@ export async function inspectBackup(input: InspectInput): Promise<InspectResult>
   const body = new FormData();
   body.append("backup", input.file);
   body.append("passphrase", input.passphrase);
-  const { data } = await api.post<InspectResult>("/admin/backups/inspect", body);
+  const { data } = await api.post<InspectResult>("/admin/backups/inspect", body, {
+    headers: { "Content-Type": undefined },
+  });
   return data;
 }
 
@@ -95,6 +97,7 @@ export async function restoreBackup(
   const { data } = await api.post<{ message: string }>(
     "/admin/backups/restore",
     body,
+    { headers: { "Content-Type": undefined } },
   );
   return data;
 }

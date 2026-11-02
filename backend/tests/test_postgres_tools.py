@@ -76,6 +76,7 @@ class PostgresToolsTests(unittest.TestCase):
         restore_custom_dump(self.config, dump)
 
         validate_args = run.call_args_list[0].args[0]
+        self.assertEqual(run.call_args_list[0].kwargs["stdout"], subprocess.DEVNULL)
         restore_args = run.call_args_list[1].args[0]
         self.assertEqual(validate_args[1:], ["--list", str(dump)])
         self.assertEqual(

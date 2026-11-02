@@ -28,6 +28,16 @@ def prevent_backup_response_caching(response):
   return response
 
 
+@backups_bp.before_request
+def reject_oversized_backup_request():
+  maximum = current_app.config.get("MAX_CONTENT_LENGTH") or (
+    current_app.config.get("BACKUP_MAX_BYTES", 262_144_000) + 1_048_576
+  )
+  if request.content_length is not None and request.content_length > maximum:
+    return jsonify({"message": "Backup request exceeds the configured size limit"}), 413
+  return None
+
+
 def _current_user_id() -> UUID:
   return UUID(str(get_jwt_identity()))
 

@@ -4,6 +4,7 @@ from uuid import UUID
 
 from flask import jsonify
 from flask_jwt_extended import get_jwt_identity
+from sqlalchemy import update
 
 from app.extensions import db
 from app.models.system_security_state import SystemSecurityState
@@ -29,9 +30,20 @@ def rotate_auth_epoch() -> str:
 
 
 def begin_restore_maintenance() -> None:
-  state = _security_state()
-  state.maintenance_mode = True
-  state.restore_started_at = datetime.now(timezone.utc)
+  result = db.session.execute(
+    update(SystemSecurityState)
+    .where(
+      SystemSecurityState.id == 1,
+      SystemSecurityState.maintenance_mode.is_(False),
+    )
+    .values(
+      maintenance_mode=True,
+      restore_started_at=datetime.now(timezone.utc),
+    )
+  )
+  if result.rowcount != 1:
+    db.session.rollback()
+    raise RuntimeError("Database restore is already in progress")
   db.session.commit()
 
 
