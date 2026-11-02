@@ -11,6 +11,7 @@ from app.extensions import db, migrate, jwt
 from app.middleware.errors import error_bp
 from app.config import Config
 from app.security_state import configure_jwt_security
+from app.maintenance import install_maintenance_guard
 
 
 def create_app():
@@ -43,6 +44,8 @@ def create_app():
   app.register_blueprint(borrows_bp)
   app.register_blueprint(category_bp)
   app.register_blueprint(users_bp)
+
+  install_maintenance_guard(app)
 
   # JSON error handlers (404/500/DB rollback) — must be registered after blueprints
   app.register_blueprint(error_bp)
