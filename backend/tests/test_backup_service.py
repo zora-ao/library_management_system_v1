@@ -187,6 +187,55 @@ class BackupServiceTests(unittest.TestCase):
             BackupService.inspect_backup(encrypted, PASSPHRASE, self.workspace)
         validate.assert_not_called()
 
+    @patch("app.services.backup_service.finalize_restore_security")
+    @patch("app.services.backup_service.restore_custom_dump")
+    @patch("app.services.backup_service.exclusive_maintenance_lock")
+    @patch("app.services.backup_service.begin_restore_maintenance")
+    def test_restore_sets_maintenance_then_restores_and_finalizes(
+        self, begin, exclusive, restore, finalize
+    ):
+        inspected = type("Inspected", (), {
+            "path": self.workspace / "ready.dump",
+            "file_digest": "f" * 64,
+        })()
+        with self.app.app_context():
+            BackupService.restore_backup(inspected, "f" * 64)
+        begin.assert_called_once()
+        exclusive.assert_called_once()
+        restore.assert_called_once()
+        finalize.assert_called_once()
+
+    @patch("app.services.backup_service.clear_restore_maintenance")
+    @patch("app.services.backup_service.restore_custom_dump", side_effect=RuntimeError("native failed"))
+    @patch("app.services.backup_service.exclusive_maintenance_lock")
+    @patch("app.services.backup_service.begin_restore_maintenance")
+    def test_native_failure_clears_maintenance(
+        self, _begin, _exclusive, _restore, clear
+    ):
+        inspected = type("Inspected", (), {
+            "path": self.workspace / "ready.dump",
+            "file_digest": "f" * 64,
+        })()
+        with self.app.app_context(), self.assertRaisesRegex(RuntimeError, "native failed"):
+            BackupService.restore_backup(inspected, "f" * 64)
+        clear.assert_called_once()
+
+    @patch("app.services.backup_service.clear_restore_maintenance")
+    @patch("app.services.backup_service.finalize_restore_security", side_effect=RuntimeError("finalize failed"))
+    @patch("app.services.backup_service.restore_custom_dump")
+    @patch("app.services.backup_service.exclusive_maintenance_lock")
+    @patch("app.services.backup_service.begin_restore_maintenance")
+    def test_finalization_failure_stays_fail_closed(
+        self, _begin, _exclusive, _restore, _finalize, clear
+    ):
+        inspected = type("Inspected", (), {
+            "path": self.workspace / "ready.dump",
+            "file_digest": "f" * 64,
+        })()
+        with self.app.app_context(), self.assertRaisesRegex(RuntimeError, "finalize failed"):
+            BackupService.restore_backup(inspected, "f" * 64)
+        clear.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

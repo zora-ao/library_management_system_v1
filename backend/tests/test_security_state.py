@@ -6,7 +6,14 @@ from flask_jwt_extended import JWTManager, decode_token, jwt_required
 
 from app.extensions import db
 from app.models import SystemSecurityState, User
-from app.security_state import configure_jwt_security, get_auth_epoch, rotate_auth_epoch
+from app.security_state import (
+    begin_restore_maintenance,
+    clear_restore_maintenance,
+    configure_jwt_security,
+    finalize_restore_security,
+    get_auth_epoch,
+    rotate_auth_epoch,
+)
 from app.services.auth_service import AuthService
 
 
@@ -108,6 +115,32 @@ class SecurityStateTests(unittest.TestCase):
             self.assertNotEqual(new_epoch, old_epoch)
             self.assertEqual(get_auth_epoch(), new_epoch)
             self.assertEqual(SystemSecurityState.query.count(), 1)
+
+    def test_restore_maintenance_lifecycle_is_persistent_and_rotates_epoch(self):
+        with self.app.app_context():
+            old_epoch = get_auth_epoch()
+            begin_restore_maintenance()
+            state = db.session.get(SystemSecurityState, 1)
+            self.assertTrue(state.maintenance_mode)
+            self.assertIsNotNone(state.restore_started_at)
+
+            finalize_restore_security()
+            db.session.expire_all()
+            state = db.session.get(SystemSecurityState, 1)
+            self.assertFalse(state.maintenance_mode)
+            self.assertIsNone(state.restore_started_at)
+            self.assertNotEqual(state.auth_epoch, old_epoch)
+
+    def test_restore_maintenance_can_be_cleared_without_rotating_epoch(self):
+        with self.app.app_context():
+            old_epoch = get_auth_epoch()
+            begin_restore_maintenance()
+            clear_restore_maintenance()
+            db.session.expire_all()
+            state = db.session.get(SystemSecurityState, 1)
+            self.assertFalse(state.maintenance_mode)
+            self.assertIsNone(state.restore_started_at)
+            self.assertEqual(state.auth_epoch, old_epoch)
 
 
 if __name__ == "__main__":

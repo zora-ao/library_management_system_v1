@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from uuid import UUID
 
 from flask import jsonify
@@ -23,6 +24,29 @@ def get_auth_epoch() -> str:
 def rotate_auth_epoch() -> str:
   state = _security_state()
   state.auth_epoch = str(uuid.uuid4())
+  db.session.commit()
+  return state.auth_epoch
+
+
+def begin_restore_maintenance() -> None:
+  state = _security_state()
+  state.maintenance_mode = True
+  state.restore_started_at = datetime.now(timezone.utc)
+  db.session.commit()
+
+
+def clear_restore_maintenance() -> None:
+  state = _security_state()
+  state.maintenance_mode = False
+  state.restore_started_at = None
+  db.session.commit()
+
+
+def finalize_restore_security() -> str:
+  state = _security_state()
+  state.auth_epoch = str(uuid.uuid4())
+  state.maintenance_mode = False
+  state.restore_started_at = None
   db.session.commit()
   return state.auth_epoch
 

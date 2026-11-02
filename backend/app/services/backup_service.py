@@ -7,7 +7,13 @@ from flask import current_app
 from sqlalchemy import func, select, text
 
 from app.extensions import db
+from app.maintenance import exclusive_maintenance_lock
 from app.models import User
+from app.security_state import (
+  begin_restore_maintenance,
+  clear_restore_maintenance,
+  finalize_restore_security,
+)
 from app.services.backup_envelope import (
   BackupManifest,
   EnvelopePolicy,
@@ -19,6 +25,7 @@ from app.services.postgres_tools import (
   ToolCapabilities,
   check_capabilities,
   create_custom_dump,
+  restore_custom_dump,
   validate_custom_dump,
 )
 
@@ -41,6 +48,10 @@ class BackupServiceError(RuntimeError):
 
 
 class BackupCompatibilityError(BackupServiceError):
+  pass
+
+
+class RestoreFinalizationError(BackupServiceError):
   pass
 
 
@@ -188,3 +199,44 @@ class BackupService:
       file_digest=_sha256_file(encrypted_path),
       manifest=manifest,
     )
+
+  @staticmethod
+  def restore_backup(inspected: InspectedBackup, expected_digest: str) -> None:
+    if inspected.file_digest != expected_digest:
+      raise BackupCompatibilityError("Backup selection changed before restore")
+
+    begin_restore_maintenance()
+    native_succeeded = False
+    try:
+      database_url = current_app.config.get("SQLALCHEMY_DATABASE_URI") or ""
+      with exclusive_maintenance_lock(database_url):
+        restore_custom_dump(BackupService._postgres_config(), inspected.path)
+        native_succeeded = True
+
+        db.session.remove()
+        db.engine.dispose()
+        last_error = None
+        for _attempt in range(3):
+          try:
+            finalize_restore_security()
+            return
+          except Exception as exc:
+            last_error = exc
+            db.session.rollback()
+            db.session.remove()
+
+        current_app.logger.critical(
+          "backup_restore_finalization_failed",
+          extra={"event": "backup_restore_finalization_failed"},
+        )
+        raise RestoreFinalizationError(str(last_error)) from last_error
+    except Exception:
+      if not native_succeeded:
+        try:
+          clear_restore_maintenance()
+        except Exception:
+          current_app.logger.critical(
+            "backup_restore_maintenance_clear_failed",
+            extra={"event": "backup_restore_maintenance_clear_failed"},
+          )
+      raise
