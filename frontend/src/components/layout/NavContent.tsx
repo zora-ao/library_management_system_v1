@@ -17,10 +17,19 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+
+const PROFILE_MENU_CLOSE_DELAY_MS = 150;
 
 interface NavContentProps {
   collapsed?: boolean;
@@ -47,12 +56,49 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   const location = useLocation();
   // Per-item override: absent key = follow the active route
   const [submenuOpenOverride, setSubmenuOpenOverride] = useState<Record<string, boolean>>({});
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isAdmin = user?.role === "admin";
+  const isStaff = isAdmin || user?.role === "librarian";
+
+  const cancelProfileMenuClose = () => {
+    if (profileMenuCloseTimeout.current !== null) {
+      clearTimeout(profileMenuCloseTimeout.current);
+      profileMenuCloseTimeout.current = null;
+    }
+  };
+
+  const openProfileMenu = () => {
+    cancelProfileMenuClose();
+    setProfileMenuOpen(true);
+  };
+
+  const scheduleProfileMenuClose = () => {
+    cancelProfileMenuClose();
+    profileMenuCloseTimeout.current = setTimeout(() => {
+      setProfileMenuOpen(false);
+      profileMenuCloseTimeout.current = null;
+    }, PROFILE_MENU_CLOSE_DELAY_MS);
+  };
+
+  useEffect(() => () => cancelProfileMenuClose(), []);
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
+  };
+
+  const handleSettings = () => {
+    setProfileMenuOpen(false);
+    onItemClick?.();
+    navigate("/profile");
+  };
+
+  const handleProfileLogout = async () => {
+    setProfileMenuOpen(false);
+    onItemClick?.();
+    await handleLogout();
   };
 
   // Define navigation items directly per role
@@ -95,7 +141,6 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
         });
       }
 
-      staffItems.push({ label: "Settings", path: "/profile", icon: Settings });
       return staffItems;
     }
 
@@ -268,7 +313,67 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
             {user?.role === "admin" ? "Administrator" : "Librarian"}
           </p>
         )}
-        {!collapsed && user && (
+        {isStaff && user && (
+          <DropdownMenu
+            open={profileMenuOpen}
+            onOpenChange={(open) => {
+              cancelProfileMenuClose();
+              setProfileMenuOpen(open);
+            }}
+          >
+            <DropdownMenuTrigger
+              aria-label={`Account menu for ${user.username}`}
+              onMouseEnter={openProfileMenu}
+              onMouseLeave={scheduleProfileMenuClose}
+              onFocus={openProfileMenu}
+              className={cn(
+                "flex w-full items-center rounded-md text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+                collapsed ? "justify-center p-1" : "gap-3 px-3 py-2",
+              )}
+            >
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage src={user.avatar_url} alt={user.username} />
+                <AvatarFallback className="bg-leather/20 text-leather font-medium text-xs">
+                  {user.username?.slice(0, 2).toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+              {!collapsed && (
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-sidebar-foreground">{user.username}</p>
+                  <p className="truncate text-xs capitalize text-muted-foreground">
+                    {isAdmin ? "Administrator" : "Library staff"}
+                  </p>
+                </div>
+              )}
+              {!collapsed && (
+                <ChevronDown
+                  className={cn("size-4 shrink-0 transition-transform", profileMenuOpen && "rotate-180")}
+                  aria-hidden="true"
+                />
+              )}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side={collapsed ? "right" : "top"}
+              align={collapsed ? "end" : "start"}
+              sideOffset={8}
+              className="w-48"
+              onMouseEnter={cancelProfileMenuClose}
+              onMouseLeave={scheduleProfileMenuClose}
+            >
+              <DropdownMenuItem onClick={handleSettings}>
+                <Settings aria-hidden="true" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onClick={() => void handleProfileLogout()}>
+                <LogOut aria-hidden="true" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        {!isStaff && !collapsed && user && (
           <NavLink
             to="/profile"
             className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-sidebar-accent transition-colors"
@@ -281,26 +386,26 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
             </Avatar>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-sidebar-foreground truncate">{user.username}</p>
-              <p className="text-xs capitalize text-muted-foreground truncate">
-                {user.role === "admin" ? "Administrator" : user.role === "librarian" ? "Library staff" : user.email}
-              </p>
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
             </div>
           </NavLink>
         )}
 
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-          className={cn(
-            "w-full h-10 justify-start gap-3 rounded-md px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
-            collapsed && "justify-center px-0"
-          )}
-          title={collapsed ? "Logout" : undefined}
-          aria-label="Logout"
-        >
-          <LogOut className="size-4 shrink-0" />
-          {!collapsed && <span>Logout</span>}
-        </Button>
+        {!isStaff && (
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className={cn(
+              "w-full h-10 justify-start gap-3 rounded-md px-3 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
+              collapsed && "justify-center px-0"
+            )}
+            title={collapsed ? "Logout" : undefined}
+            aria-label="Logout"
+          >
+            <LogOut className="size-4 shrink-0" />
+            {!collapsed && <span>Logout</span>}
+          </Button>
+        )}
       </div>
     </div>
   );
