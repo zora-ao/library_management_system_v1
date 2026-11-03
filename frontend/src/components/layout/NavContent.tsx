@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type React from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -28,8 +28,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-
-const PROFILE_MENU_CLOSE_DELAY_MS = 150;
 
 interface NavContentProps {
   collapsed?: boolean;
@@ -56,33 +54,9 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   const location = useLocation();
   // Per-item override: absent key = follow the active route
   const [submenuOpenOverride, setSubmenuOpenOverride] = useState<Record<string, boolean>>({});
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const profileMenuCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isAdmin = user?.role === "admin";
   const isStaff = isAdmin || user?.role === "librarian";
-
-  const cancelProfileMenuClose = () => {
-    if (profileMenuCloseTimeout.current !== null) {
-      clearTimeout(profileMenuCloseTimeout.current);
-      profileMenuCloseTimeout.current = null;
-    }
-  };
-
-  const openProfileMenu = () => {
-    cancelProfileMenuClose();
-    setProfileMenuOpen(true);
-  };
-
-  const scheduleProfileMenuClose = () => {
-    cancelProfileMenuClose();
-    profileMenuCloseTimeout.current = setTimeout(() => {
-      setProfileMenuOpen(false);
-      profileMenuCloseTimeout.current = null;
-    }, PROFILE_MENU_CLOSE_DELAY_MS);
-  };
-
-  useEffect(() => () => cancelProfileMenuClose(), []);
 
   const handleLogout = async () => {
     await logout();
@@ -90,13 +64,11 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
   };
 
   const handleSettings = () => {
-    setProfileMenuOpen(false);
     onItemClick?.();
     navigate("/profile");
   };
 
   const handleProfileLogout = async () => {
-    setProfileMenuOpen(false);
     onItemClick?.();
     await handleLogout();
   };
@@ -314,18 +286,12 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           </p>
         )}
         {isStaff && user && (
-          <DropdownMenu
-            open={profileMenuOpen}
-            onOpenChange={(open) => {
-              cancelProfileMenuClose();
-              setProfileMenuOpen(open);
-            }}
-          >
+          <DropdownMenu>
             <DropdownMenuTrigger
               aria-label={`Account menu for ${user.username}`}
-              onMouseEnter={openProfileMenu}
-              onMouseLeave={scheduleProfileMenuClose}
-              onFocus={openProfileMenu}
+              openOnHover
+              delay={0}
+              closeDelay={150}
               className={cn(
                 "flex w-full items-center rounded-md text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                 collapsed ? "justify-center p-1" : "gap-3 px-3 py-2",
@@ -347,7 +313,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
               )}
               {!collapsed && (
                 <ChevronDown
-                  className={cn("size-4 shrink-0 transition-transform", profileMenuOpen && "rotate-180")}
+                  className="size-4 shrink-0"
                   aria-hidden="true"
                 />
               )}
@@ -357,8 +323,6 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
               align={collapsed ? "end" : "start"}
               sideOffset={8}
               className="w-48"
-              onMouseEnter={cancelProfileMenuClose}
-              onMouseLeave={scheduleProfileMenuClose}
             >
               <DropdownMenuItem onClick={handleSettings}>
                 <Settings aria-hidden="true" />

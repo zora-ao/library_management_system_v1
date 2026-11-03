@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NavContent } from "./NavContent";
@@ -21,8 +22,8 @@ vi.mock("@/hooks/useAuth", () => ({
 
 describe("admin sidebar navigation", () => {
   afterEach(() => {
-    cleanup();
     vi.useRealTimers();
+    cleanup();
     vi.restoreAllMocks();
     authState.role = "admin";
     authState.logout.mockReset();
@@ -93,27 +94,31 @@ describe("admin sidebar navigation", () => {
     expect(screen.getByRole("menuitem", { name: "Logout" })).toBeInTheDocument();
   });
 
-  it("keeps the menu open while moving from the profile trigger into the menu", () => {
-    vi.useFakeTimers();
+  it("keeps the menu open while moving from the profile trigger into the menu", async () => {
+    const user = userEvent.setup();
     render(<MemoryRouter><NavContent /></MemoryRouter>);
 
     const accountMenu = screen.getByRole("button", { name: "Account menu for Alex Admin" });
-    fireEvent.mouseEnter(accountMenu);
-    const menu = screen.getByRole("menu");
+    await user.hover(accountMenu);
+    const menu = await screen.findByRole("menu");
 
-    fireEvent.mouseLeave(accountMenu);
-    fireEvent.mouseEnter(menu);
-    act(() => vi.advanceTimersByTime(151));
+    await user.unhover(accountMenu);
+    await user.hover(menu);
+    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 220)));
 
     expect(screen.getByRole("menuitem", { name: "Settings" })).toBeInTheDocument();
   });
 
-  it("opens the account menu with keyboard focus", () => {
+  it("opens the account menu with keyboard activation", async () => {
+    const user = userEvent.setup();
     render(<MemoryRouter><NavContent /></MemoryRouter>);
+    const accountMenu = screen.getByRole("button", { name: "Account menu for Alex Admin" });
 
-    fireEvent.focus(screen.getByRole("button", { name: "Account menu for Alex Admin" }));
+    accountMenu.focus();
+    expect(accountMenu).toHaveFocus();
+    await user.keyboard("{Enter}");
 
-    expect(screen.getByRole("menuitem", { name: "Settings" })).toBeInTheDocument();
+    expect(await screen.findByRole("menuitem", { name: "Settings" })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "Logout" })).toBeInTheDocument();
   });
 
@@ -156,20 +161,60 @@ describe("admin sidebar navigation", () => {
     });
   });
 
-  it("clears a pending hover-close timer when unmounted", () => {
-    vi.useFakeTimers();
-    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
-    const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
-    const { unmount } = render(<MemoryRouter><NavContent /></MemoryRouter>);
+  it("stays closed when Escape returns focus to the account trigger", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter><NavContent /></MemoryRouter>);
+    const accountMenu = screen.getByRole("button", { name: "Account menu for Alex Admin" });
+    const settle = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 80)));
+
+    await act(async () => accountMenu.focus());
+    await settle();
+    await user.keyboard("{ArrowDown}");
+    await settle();
+    expect(screen.getByRole("menuitem", { name: "Settings" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await settle();
+
+    await waitFor(() => {
+      expect(screen.queryByRole("menuitem", { name: "Settings" })).not.toBeInTheDocument();
+    });
+    expect(accountMenu).toHaveFocus();
+  });
+
+  it("keeps the menu closed after selecting Settings", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <NavContent />
+        <LocationProbe />
+      </MemoryRouter>,
+    );
+    const accountMenu = screen.getByRole("button", { name: "Account menu for Alex Admin" });
+    const settle = () => act(() => new Promise<void>((resolve) => setTimeout(resolve, 80)));
+
+    await user.click(accountMenu);
+    await settle();
+    await user.click(screen.getByRole("menuitem", { name: "Settings" }));
+    await settle();
+
+    expect(screen.getByRole("status", { name: "Current path" })).toHaveTextContent("/profile");
+    await waitFor(() => {
+      expect(screen.queryByRole("menuitem", { name: "Settings" })).not.toBeInTheDocument();
+    });
+  });
+
+  it("closes after the pointer leaves both the profile trigger and menu", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter><NavContent /></MemoryRouter>);
     const accountMenu = screen.getByRole("button", { name: "Account menu for Alex Admin" });
 
-    fireEvent.mouseEnter(accountMenu);
-    fireEvent.mouseLeave(accountMenu);
-    const profileTimerIndex = setTimeoutSpy.mock.calls.findIndex(([, delay]) => delay === 150);
-    expect(profileTimerIndex).toBeGreaterThanOrEqual(0);
-    const profileTimer = setTimeoutSpy.mock.results[profileTimerIndex]?.value;
+    await user.hover(accountMenu);
+    const menu = await screen.findByRole("menu");
+    await user.unhover(accountMenu);
+    await user.hover(menu);
+    await user.unhover(menu);
+    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 220)));
 
-    unmount();
-    expect(clearTimeoutSpy).toHaveBeenCalledWith(profileTimer);
+    expect(screen.queryByRole("menuitem", { name: "Settings" })).not.toBeInTheDocument();
   });
 });
