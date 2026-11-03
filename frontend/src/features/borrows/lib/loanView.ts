@@ -1,7 +1,7 @@
 import type { Borrow } from "@/features/borrows/types/borrow.types";
 
 export type LoanWorkspaceMode = "active" | "history";
-export type ActiveLoanFilter = "all" | "overdue" | "due-today" | "borrowed" | "return-requested";
+export type ActiveLoanFilter = "all" | "overdue" | "due-today" | "borrowed";
 export type ReturnOutcomeFilter = "all" | "on-time" | "late";
 export type LoanSort = "due-asc" | "due-desc" | "returned-desc" | "returned-asc";
 

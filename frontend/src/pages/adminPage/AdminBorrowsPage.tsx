@@ -54,7 +54,6 @@ const AdminBorrowsPage = () => {
         if (activeFilter === "overdue" && !isLoanOverdue(borrow, today)) return false;
         if (activeFilter === "due-today" && !isSameLocalDay(borrow.due_date, today)) return false;
         if (activeFilter === "borrowed" && borrow.status !== "BORROWED") return false;
-        if (activeFilter === "return-requested" && borrow.status !== "PENDING_RETURN") return false;
         if (dateFilter === "today" && !isSameLocalDay(borrow.due_date, today)) return false;
         if (dateFilter === "overdue" && !isLoanOverdue(borrow, today)) return false;
       } else {
@@ -141,7 +140,6 @@ const AdminBorrowsPage = () => {
                   { value: "overdue", label: "Overdue" },
                   { value: "due-today", label: "Due today" },
                   { value: "borrowed", label: "Borrowed" },
-                  { value: "return-requested", label: "Return requested" },
                 ]}
               />
             ) : (

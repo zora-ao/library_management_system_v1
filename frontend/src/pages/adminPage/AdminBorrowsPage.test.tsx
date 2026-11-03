@@ -128,6 +128,19 @@ describe("AdminBorrowsPage", () => {
     expect(screen.queryByText("Ignored Request")).not.toBeInTheDocument();
   });
 
+  it("removes Return requested from the active status filter while preserving pending-return loans", () => {
+    renderPage();
+
+    const statusFilter = screen.getByRole("combobox", { name: "Loan status" });
+    expect(within(statusFilter).getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "All active loans",
+      "Overdue",
+      "Due today",
+      "Borrowed",
+    ]);
+    expect(screen.getByText("Bea Cruz")).toBeInTheDocument();
+  });
+
   it("switches to return history and filters it by student or book", async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     renderPage();
