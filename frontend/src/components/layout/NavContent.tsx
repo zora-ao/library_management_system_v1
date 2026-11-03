@@ -92,7 +92,7 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
           children: [
             { label: "Pending", path: "/borrow-requests/pending" },
             { label: "For Pickup", path: "/borrow-requests/pickup" },
-            { label: "History", path: "/borrow-requests/history" },
+            { label: "Rejected", path: "/borrow-requests/rejected" },
           ],
         },
         { label: "Loans & Returns", path: "/all-borrows/active", icon: RotateCcw },

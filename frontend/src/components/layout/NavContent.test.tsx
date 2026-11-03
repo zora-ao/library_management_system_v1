@@ -52,7 +52,8 @@ describe("admin sidebar navigation", () => {
     fireEvent.click(borrowRequestsToggle);
     expect(screen.getByRole("link", { name: /Pending/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /For Pickup/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /History/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Rejected" })).toHaveAttribute("href", "/borrow-requests/rejected");
+    expect(screen.queryByRole("link", { name: /History/i })).not.toBeInTheDocument();
   });
 
   it("keeps Data Backups available by name when collapsed", () => {
