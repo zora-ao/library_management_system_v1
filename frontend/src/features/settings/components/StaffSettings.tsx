@@ -90,7 +90,7 @@ export function StaffSettings() {
         <form id="profile-settings-form" onSubmit={handleSave} className={`${cardClass} space-y-6`}>
           <div className="flex items-center gap-2">
             <UserRound className="size-5 text-primary" />
-            <div><h2 className="text-lg font-semibold sm:text-xl">Profile details</h2><p className="text-sm text-muted-foreground sm:text-base">{user.role === "student" ? "Your member identity across Booky." : "Your staff identity across Booky."}</p></div>
+            <div><h2 className="text-lg font-semibold sm:text-xl">Profile details</h2><p className="text-sm text-muted-foreground sm:text-base">{user.role === "student" ? "Your member identity across Pahina." : "Your staff identity across Pahina."}</p></div>
           </div>
           <div className="flex flex-col gap-5 border-y border-border py-5 sm:flex-row sm:items-center">
             <Avatar className="size-20">
@@ -123,7 +123,7 @@ export function StaffSettings() {
 
         <div className="space-y-6">
           <section className={`${cardClass} space-y-5`}>
-            <div className="flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold sm:text-xl">Appearance</h2><p className="mt-1 text-sm text-muted-foreground sm:text-base">Choose how Booky looks on this device.</p></div>{theme === "dark" ? <Moon className="size-5 text-primary" /> : <Sun className="size-5 text-primary" />}</div>
+            <div className="flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold sm:text-xl">Appearance</h2><p className="mt-1 text-sm text-muted-foreground sm:text-base">Choose how Pahina looks on this device.</p></div>{theme === "dark" ? <Moon className="size-5 text-primary" /> : <Sun className="size-5 text-primary" />}</div>
             <ThemeChoice theme={theme} onChange={setTheme} />
           </section>
           <section className={`${cardClass} space-y-5`}>

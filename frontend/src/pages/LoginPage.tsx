@@ -14,7 +14,9 @@ const LoginPage = () => {
         className="flex flex-col rounded-[24px] border border-[var(--glass-border)] bg-card/65 px-6 py-8 shadow-[var(--glass-shadow)] backdrop-blur-[var(--glass-blur)] sm:px-[39px] lg:min-h-[752px]"
       >
         <div className="flex items-center gap-3">
-          <img src="/Logo.png" alt="Pahina logo" className="h-10 w-10 shrink-0 object-contain" />
+          <span className="flex size-10 items-center justify-center rounded-[11px] bg-[#f3cd63] text-primary-foreground shadow-2xs dark:bg-primary">
+            <img src="/pahina-logo.svg" alt="" width="40" height="40" />
+          </span>
           <span className="text-[25px] font-bold leading-[1.4] tracking-tight text-foreground">Pahina</span>
         </div>
         <h1

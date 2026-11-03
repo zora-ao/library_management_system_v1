@@ -135,7 +135,9 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
         )}
       >
         <div className={cn("flex items-center gap-3 overflow-hidden", collapsed && "mx-auto")}>
-          <img src="/Logo.png" alt="Pahina logo" className="h-10 w-10 shrink-0 object-contain" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold">
+            <img src="/pahina-logo.svg" alt="" width="40" height="40" />
+          </div>
           {!collapsed && (
             <span className="font-semibold text-lg whitespace-nowrap tracking-tight text-sidebar-foreground">
               Pahina

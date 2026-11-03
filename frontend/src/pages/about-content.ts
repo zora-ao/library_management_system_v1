@@ -51,9 +51,9 @@ export const developers: Developer[] = [
 ];
 
 export const aboutContent = {
-  eyebrow: "ABOUT BOOKY",
+  eyebrow: "ABOUT PAHINA",
   title: ["Your campus library,", "a little closer."],
-  description: "Booky makes it easier to discover books, keep track of your borrows, and save the titles you want to read next—all in one place.",
+  description: "Pahina makes it easier to discover books, keep track of your borrows, and save the titles you want to read next—all in one place.",
   featuresTitle: "A simpler way to use your library",
   features: [
     { title: "Find your next read", description: "Browse the catalog, search for a title, and check book details and availability." },

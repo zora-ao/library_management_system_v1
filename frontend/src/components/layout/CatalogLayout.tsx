@@ -44,7 +44,9 @@ export default function CatalogLayout() {
     >
       <header className="booky-header">
         <Link to="/books" className="booky-brand" aria-label="Pahina home">
-          <img src="/Logo.png" alt="Pahina logo" className="h-10 w-10 object-contain shrink-0" />
+          <span className="booky-mark">
+            <img src="/pahina-logo.svg" alt="" width="40" height="40" />
+          </span>
           <span>Pahina</span>
         </Link>
         <nav className="booky-nav" aria-label="Main navigation">
@@ -143,7 +145,7 @@ export default function CatalogLayout() {
       </main>
       {!isDetails && !isBorrows && !isFavorites && !isAbout && !isProfile && (
         <footer className="booky-footer">
-          <span>Booky&nbsp; / &nbsp;Your campus library, a little closer.</span>
+          <span>Pahina&nbsp; / &nbsp;Your campus library, a little closer.</span>
           <span>Discover. Borrow. Grow.</span>
         </footer>
       )}
