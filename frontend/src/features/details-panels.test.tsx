@@ -15,7 +15,7 @@ const borrow: Borrow = {
   book_id: "book-1",
   book_title: "The Midnight Library",
   book_image: null,
-  author: "Matt Haig",
+  author: "Matt Hai g",
   book_available_copies: 2,
   borrowed_at: "2026-10-01T00:00:00Z",
   due_date: "2026-10-15T00:00:00Z",

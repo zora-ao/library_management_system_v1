@@ -1,0 +1,50 @@
+flowchart TD
+  start(["Open Pahina authentication page"])
+  choice{"Choose authentication action"}
+  start --> choice
+
+  choice -->|"Register"| registerForm["Validate username, email,<br/>password, and confirmation in React"]
+  registerForm --> registerPost["POST /api/auth/register"]
+  registerPost --> registerValid{"Required values present and<br/>username/email not already used?"}
+  registerValid -->|"No"| registerError["Return validation/conflict error"]
+  registerValid -->|"Yes"| createAccount["Create User with role student<br/>and associated Student row"]
+  createAccount --> commitRegistration["Commit transaction"]
+  commitRegistration --> loginPage["Navigate to login page"]
+
+  choice -->|"Password login"| passwordPost["POST /api/auth/login<br/>normalized email + password"]
+  passwordPost --> credentials{"User exists and<br/>password hash matches?"}
+  credentials -->|"No"| loginError["Return invalid credentials error"]
+  credentials -->|"Yes"| activePassword{"Account active?"}
+  activePassword -->|"No"| inactiveError["Return 403 deactivated account"]
+  activePassword -->|"Yes"| issueJwt
+
+  choice -->|"Google sign-in"| googleWidget["Google Identity Services<br/>returns ID credential"]
+  googleWidget --> googlePost["POST /api/auth/google"]
+  googlePost --> verifyGoogle["Verify audience, signature, clock skew,<br/>email, subject, and email_verified"]
+  verifyGoogle --> googleValid{"Credential valid?"}
+  googleValid -->|"No"| googleError["Return Google authentication error"]
+  googleValid -->|"Yes"| resolveGoogle["Find by google_id and email;<br/>reject conflicting identities"]
+  resolveGoogle --> existingGoogle{"Matching account exists?"}
+  existingGoogle -->|"No"| createGoogle["Create student User + Student row"]
+  existingGoogle -->|"Yes, email account unlinked"| linkGoogle["Attach google_id to existing account"]
+  existingGoogle -->|"Yes, already linked"| activeGoogle
+  createGoogle --> activeGoogle{"Account active?"}
+  linkGoogle --> activeGoogle
+  activeGoogle -->|"No"| inactiveError
+  activeGoogle -->|"Yes"| issueJwt["Issue four-hour JWT with user id,<br/>role, username, and auth_epoch"]
+
+  issueJwt --> storeSession["Store JWT and serialized user<br/>in browser localStorage/AuthContext"]
+  storeSession --> roleRoute{"Role is admin or librarian?"}
+  roleRoute -->|"Yes"| dashboard["Navigate to /dashboard"]
+  roleRoute -->|"No"| catalog["Navigate to /books"]
+
+  storeSession --> laterRequest["Later API request:<br/>Axios adds Bearer JWT"]
+  laterRequest --> tokenCheck["Verify JWT signature/expiry;<br/>load User and SystemSecurityState"]
+  tokenCheck --> tokenCurrent{"User active, role unchanged,<br/>and auth_epoch current?"}
+  tokenCurrent -->|"Yes"| protectedApi["Allow protected endpoint"]
+  tokenCurrent -->|"No"| unauthorized["Return 401; interceptor clears token<br/>and redirects to /login"]
+
+  storeSession --> logout["Logout clears local session and query cache;<br/>calls Google logout helper"]
+
+  note["No refresh-token workflow is implemented."]
+  note -.-> laterRequest

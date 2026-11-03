@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingState } from "@/components/ui/loading-spinner";
@@ -21,13 +21,21 @@ const periodOptions = [{ value: "all", label: "All time" }, { value: "month", la
 export default function MyBorrowsPage() {
   const active = useBorrows();
   const history = useBorrowHistory();
-  const [tab, setTab] = useState("active");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const paramTab = searchParams.get("tab");
+  const tab = paramTab === "history" ? "history" : "active";
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [period, setPeriod] = useState("all");
-  const [sort, setSort] = useState("due");
+  const [sort, setSort] = useState(() => (tab === "history" ? "returned" : "due"));
   const [now, setNow] = useState(() => new Date());
   useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 60000); return () => window.clearInterval(timer); }, []);
+  useEffect(() => {
+    setQuery("");
+    setStatus("all");
+    setPeriod("all");
+    setSort(tab === "history" ? "returned" : "due");
+  }, [tab]);
   const isHistory = tab === "history";
   const current = isHistory ? history : active;
   const records = current.data ?? [];
@@ -46,7 +54,7 @@ export default function MyBorrowsPage() {
     <div className="borrows-summary">{cards.map(card => <section key={card.label} className={`borrows-stat ${card.kind}`} aria-label={card.label}>
       <h2>{card.label}</h2><strong>{card.source.isLoading || card.source.isError ? "—" : String(card.value).padStart(2, "0")}</strong><p>{card.note}</p>
     </section>)}</div>
-    <Tabs value={tab} onValueChange={value => { setTab(value); setQuery(""); setSort(value === "history" ? "returned" : "due"); }} className="borrows-tabs">
+    <Tabs value={tab} onValueChange={value => { setSearchParams(value === "history" ? { tab: "history" } : { tab: "active" }); }} className="borrows-tabs">
       <TabsList variant="line" className="borrows-tab-list">
         <TabsTrigger value="active">Active Borrows{active.data && ` (${active.data.length})`}</TabsTrigger>
         <TabsTrigger value="history">Borrowing History{history.data && ` (${history.data.length})`}</TabsTrigger>

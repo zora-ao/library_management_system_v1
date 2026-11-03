@@ -2,6 +2,7 @@
 import { AxiosError } from "axios";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { LoadingState } from "@/components/ui/loading-spinner";
 import { useGetBookReviews, useSubmitReview } from "@/hooks/useBooks";
@@ -33,7 +34,18 @@ export default function BookReviews({ bookId }: { bookId: string }) {
       {(validation || error) && <p id="review-error" className="details-review-error" role="alert">{validation || errorMessage || "Failed to post review."}</p>}
       <div className="details-review-submit"><Button type="submit" disabled={isPending}>{isPending ? "Posting…" : "Submit review"}</Button><p>Your review helps other students choose their next read.</p></div>
     </form>
-    <div className="details-community-heading"><h3>Community reviews</h3><label><span className="sr-only">Sort reviews</span><select value={order} onChange={event => setOrder(event.target.value as "newest" | "oldest")}><option value="newest">Most recent ↓</option><option value="oldest">Oldest first ↑</option></select></label></div>
+    <div className="details-community-heading">
+      <h3>Community reviews</h3>
+      <Select value={order} onValueChange={(val) => { if (val) setOrder(val as "newest" | "oldest"); }}>
+        <SelectTrigger aria-label="Sort reviews" className="h-8 w-36 rounded-lg text-xs bg-control/80 border-input">
+          <SelectValue placeholder="Sort reviews" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="newest">Most recent ↓</SelectItem>
+          <SelectItem value="oldest">Oldest first ↑</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
     <div className="details-review-list">{reviews.length === 0 ? <p className="details-empty">No feedback yet. Be the first to share your thoughts!</p> : sortReviews(reviews, order).map(review => <article key={review.id} className="details-review-card"><span className="details-review-avatar" aria-hidden="true">{review.userName.trim().split(/\s+/).map(part => part[0]).slice(0,2).join("").toUpperCase() || "R"}</span><div className="details-review-body"><header><div><h4>{review.userName}</h4><span className="details-review-stars" role="img" aria-label={`${review.rating} out of 5 stars`}>{[1,2,3,4,5].map(n => <Star key={n} size={13} aria-hidden="true" fill={n <= review.rating ? "currentColor" : "none"} />)}</span></div><time dateTime={review.createdAt.toISOString()}>{review.formattedDate}</time></header><p>{review.comment}</p></div></article>)}</div>
   </section>;
 }

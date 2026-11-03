@@ -10,10 +10,10 @@ const RegisterPage = () => (
         className="flex flex-col rounded-[24px] border border-[var(--glass-border)] bg-card/65 px-6 py-8 shadow-[var(--glass-shadow)] backdrop-blur-[var(--glass-blur)] sm:px-[39px] lg:min-h-[752px]"
       >
         <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-[11px] bg-[#f3cd63] text-primary-foreground shadow-2xs dark:bg-primary">
-            <img src="/images/login/booky-book.svg" alt="" width="22" height="22" />
+          <span className="flex size-10 items-center justify-center rounded-[11px] bg-transparent text-primary-foreground shadow-2xs">
+            <img src="/Logo.png" alt="" width="40" height="40" />
           </span>
-          <span className="text-[25px] font-bold leading-[1.4] tracking-tight text-foreground">Booky</span>
+          <span className="text-[25px] font-bold leading-[1.4] tracking-tight text-foreground">Pahina</span>
         </div>
         <h1
           id="register-welcome"
@@ -68,7 +68,7 @@ const RegisterPage = () => (
           </p>
         </div>
         <p className="mt-12 text-center text-[11px] text-muted-foreground lg:mt-[38px]">
-          Booky · Library Management System
+          Pahina · Library Management System
         </p>
       </section>
     </div>

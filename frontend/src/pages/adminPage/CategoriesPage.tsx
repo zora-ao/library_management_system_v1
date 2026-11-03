@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { AlertCircle, Eye, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import FilterSelect from "@/components/ui/FilterSelect";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,23 @@ const CategoriesPage = () => {
 
     <section className="min-h-[590px] overflow-hidden rounded-3xl border border-border/70 bg-card shadow-[var(--glass-shadow)] backdrop-blur-xl">
         <div className="border-b border-border p-5"><h2 className="text-xl font-semibold sm:text-2xl">All categories</h2><p className="mt-1 text-sm text-muted-foreground sm:text-base">Keep category names clear and consistent.</p></div>
-        <div className="grid gap-3 border-b border-border p-5 sm:grid-cols-[1fr_180px]"><label className="relative"><span className="sr-only">Search categories</span><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input type="search" aria-label="Search categories" className="h-10 bg-control pl-9 text-sm sm:text-base" placeholder="Search categories" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></label><select aria-label="Sort categories" className="h-10 rounded-lg border border-input bg-control px-3 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-ring sm:text-base" value={sort} onChange={(event) => { setSort(event.target.value as CategorySort); setPage(1); }}><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="most-books">Most books</option></select></div>
+        <div className="grid gap-3 border-b border-border p-5 sm:grid-cols-[1fr_180px]">
+          <label className="relative">
+            <span className="sr-only">Search categories</span>
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input type="search" aria-label="Search categories" className="h-10 bg-control pl-9 text-sm sm:text-base" placeholder="Search categories" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} />
+          </label>
+          <FilterSelect
+            label="Sort categories"
+            value={sort}
+            onChange={(event) => { setSort(event as CategorySort); setPage(1); }}
+            options={[
+              { value: "name-asc", label: "Name A–Z" },
+              { value: "name-desc", label: "Name Z–A" },
+              { value: "most-books", label: "Most books" },
+            ]}
+          />
+        </div>
         {categoryQuery.isLoading ? <LoadingState label="Loading categories" containerClassName="min-h-72" /> : categoryQuery.isError ? <div className="flex min-h-64 gap-2 p-6 text-sm text-destructive sm:text-base"><AlertCircle className="size-4" />Could not load categories.</div> : filtered.length === 0 ? <p className="flex min-h-64 items-center justify-center p-6 text-sm text-muted-foreground sm:text-base">No categories found.</p> : <>
           <div className="overflow-x-auto">
             <Table className="min-w-[720px] text-sm sm:text-base">

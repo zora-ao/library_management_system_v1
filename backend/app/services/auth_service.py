@@ -10,6 +10,7 @@ import urllib3.util.connection as urllib3_connection
 from app.models import User, Student
 from app.extensions import db
 from flask_jwt_extended import create_access_token
+from app.security_state import get_auth_epoch
 
 # Prefer IPv4 for outbound HTTPS calls (e.g. Google OAuth cert fetches) so
 # broken local IPv6 routes do not stall token verification for 60-100 seconds.
@@ -63,6 +64,46 @@ _GOOGLE_AUTH_REQUEST = _CachedGoogleRequest()
 class AuthService:
 
   @staticmethod
+  def issue_access_token(user):
+    return create_access_token(
+      identity=str(user.id),
+      additional_claims={
+        "role": user.role,
+        "username": user.username,
+        "auth_epoch": get_auth_epoch(),
+      },
+    )
+
+  @staticmethod
+  def verify_google_credential(token):
+    google_client_id = current_app.config["GOOGLE_CLIENT_ID"]
+
+    if not google_client_id:
+      raise RuntimeError("Google OAuth is not configured")
+
+    try:
+      id_info = id_token.verify_oauth2_token(
+        token,
+        _GOOGLE_AUTH_REQUEST,
+        google_client_id,
+        clock_skew_in_seconds=10,
+      )
+    except (ValueError, GoogleAuthError) as exc:
+      current_app.logger.warning(
+        "Google ID token verification failed: %s",
+        exc
+      )
+      raise ValueError("Invalid Google credential") from exc
+
+    if not id_info.get("email") or not id_info.get("sub"):
+      raise ValueError("Google credential is missing required account information")
+
+    if not id_info.get("email_verified", False):
+      raise ValueError("Google account email is not verified")
+
+    return id_info
+
+  @staticmethod
   def change_password(user_id, current_password, new_password):
     user = db.session.get(User, user_id)
 
@@ -96,32 +137,9 @@ class AuthService:
 
   @staticmethod
   def google_auth(token):
-    google_client_id = current_app.config["GOOGLE_CLIENT_ID"]
-
-    if not google_client_id:
-      raise RuntimeError("Google OAuth is not configured")
-
     # Google Identity Services returns an OAuth 2.0 ID token, not a
     # Firebase Authentication token.
-    try:
-      id_info = id_token.verify_oauth2_token(
-        token,
-        _GOOGLE_AUTH_REQUEST,
-        google_client_id,
-        clock_skew_in_seconds=10,
-      )
-    except (ValueError, GoogleAuthError) as exc:
-      current_app.logger.warning(
-        "Google ID token verification failed: %s",
-        exc
-      )
-      raise ValueError("Invalid Google credential") from exc
-
-    if not id_info.get("email") or not id_info.get("sub"):
-      raise ValueError("Google credential is missing required account information")
-
-    if not id_info.get("email_verified", False):
-      raise ValueError("Google account email is not verified")
+    id_info = AuthService.verify_google_credential(token)
 
     email = id_info["email"].strip().lower()
     google_id = id_info["sub"]
@@ -174,10 +192,7 @@ class AuthService:
       raise PermissionError("Account is deactivated")
     
     # issue the jwt token
-    access_token = create_access_token(
-        identity=str(user.id),
-        additional_claims={"role": user.role, "username": user.username}
-      )
+    access_token = AuthService.issue_access_token(user)
 
     return {
       "access_token": access_token,
@@ -194,10 +209,7 @@ class AuthService:
     if not user.is_active:
       raise PermissionError("Account is deactivated")
 
-    access_token = create_access_token(
-      identity=str(user.id),
-      additional_claims={"role": user.role, "username": user.username}
-    )
+    access_token = AuthService.issue_access_token(user)
 
     return {
       "token": access_token,

@@ -36,13 +36,24 @@ describe("borrow request view model", () => {
       makeBorrow({ id: "pending-old", created_at: "2026-10-19T10:00:00" }),
       makeBorrow({ id: "pickup-new", status: "READY_FOR_PICKUP", approved_at: "2026-10-20T11:00:00" }),
       makeBorrow({ id: "pickup-old", status: "READY_FOR_PICKUP", approved_at: "2026-10-20T09:00:00" }),
-      makeBorrow({ id: "history-old", status: "REJECTED", created_at: "2026-10-18T09:00:00" }),
-      makeBorrow({ id: "history-new", status: "BORROWED", borrowed_at: "2026-10-20T12:00:00" }),
+      makeBorrow({ id: "rejected-new", status: "REJECTED", created_at: "2026-10-20T12:00:00" }),
+      makeBorrow({ id: "rejected-old", status: "REJECTED", created_at: "2026-10-18T09:00:00" }),
+      makeBorrow({ id: "borrowed", status: "BORROWED", borrowed_at: "2026-10-20T13:00:00" }),
+      makeBorrow({ id: "overdue", status: "OVERDUE", borrowed_at: "2026-10-19T13:00:00" }),
+      makeBorrow({ id: "pending-return", status: "PENDING_RETURN", borrowed_at: "2026-10-18T13:00:00" }),
+      makeBorrow({ id: "returned", status: "RETURNED", returned_at: "2026-10-20T14:00:00" }),
     ];
 
     expect(classifyBorrowRequests(rows, "pending").map((row) => row.id)).toEqual(["pending-old", "pending-new"]);
     expect(classifyBorrowRequests(rows, "pickup").map((row) => row.id)).toEqual(["pickup-old", "pickup-new"]);
-    expect(classifyBorrowRequests(rows, "history").map((row) => row.id)).toEqual(["history-new", "history-old"]);
+    expect(classifyBorrowRequests(rows, "rejected").map((row) => row.id)).toEqual(["rejected-new", "rejected-old"]);
+  });
+
+  it("filters rejected requests by their request creation date", () => {
+    const row = makeBorrow({ status: "REJECTED", created_at: "2026-10-20T08:15:00" });
+
+    expect(filterBorrowRequests([row], "", "2026-10-20")).toEqual([row]);
+    expect(filterBorrowRequests([row], "", "2026-10-19")).toEqual([]);
   });
 
   it("searches identity, book metadata, UUID, and stable reference", () => {

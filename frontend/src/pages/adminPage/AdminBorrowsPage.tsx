@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import FilterSelect from "@/components/ui/FilterSelect";
 import { LoadingState } from "@/components/ui/loading-spinner";
 import AdminBorrowsTable from "@/features/borrows/components/AdminBorrowsTable";
 import LoanDetailsDialog from "@/features/borrows/components/LoanDetailsDialog";
@@ -53,7 +54,6 @@ const AdminBorrowsPage = () => {
         if (activeFilter === "overdue" && !isLoanOverdue(borrow, today)) return false;
         if (activeFilter === "due-today" && !isSameLocalDay(borrow.due_date, today)) return false;
         if (activeFilter === "borrowed" && borrow.status !== "BORROWED") return false;
-        if (activeFilter === "return-requested" && borrow.status !== "PENDING_RETURN") return false;
         if (dateFilter === "today" && !isSameLocalDay(borrow.due_date, today)) return false;
         if (dateFilter === "overdue" && !isLoanOverdue(borrow, today)) return false;
       } else {
@@ -106,7 +106,6 @@ const AdminBorrowsPage = () => {
     <div className="w-full space-y-7 pb-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:text-sm">Loans &amp; Returns</p><h1 className="booky-heading mt-3 text-2xl sm:text-3xl">Loans &amp; Returns</h1><p className="mt-2 text-sm text-muted-foreground sm:text-base">Track borrowed books, follow up on due dates, and record returns.</p></div>
-        <time className="text-xs text-muted-foreground sm:text-sm">{new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "2-digit", year: "numeric" }).format(today)}</time>
       </header>
 
       <section className="grid w-full gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Loan summary">
@@ -130,13 +129,62 @@ const AdminBorrowsPage = () => {
 
         <div className="grid gap-3 border-b border-border p-5 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_180px_150px_190px]">
           <label className="relative"><span className="sr-only">Search loans</span><Search className="absolute left-3 top-3.5 size-4 text-muted-foreground" /><Input type="search" className="h-11 border-0 bg-control pl-10 text-sm sm:text-base md:text-base" placeholder="Search student, book title, or loan ID" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-          {mode === "active" ? (
-            <select aria-label="Loan status" className="booky-input text-sm font-semibold sm:text-base" value={activeFilter} onChange={(event) => setActiveFilter(event.target.value as ActiveLoanFilter)}><option value="all">All active loans</option><option value="overdue">Overdue</option><option value="due-today">Due today</option><option value="borrowed">Borrowed</option><option value="return-requested">Return requested</option></select>
-          ) : (
-            <select aria-label="Return outcome" className="booky-input text-sm font-semibold sm:text-base" value={outcomeFilter} onChange={(event) => setOutcomeFilter(event.target.value as ReturnOutcomeFilter)}><option value="all">All returns</option><option value="on-time">On time</option><option value="late">Returned late</option></select>
-          )}
-          <select aria-label="Date filter" className="booky-input text-sm font-semibold sm:text-base" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}><option value="all">{mode === "active" ? "Due date" : "Return date"}</option><option value="today">Today</option>{mode === "active" && <option value="overdue">Overdue</option>}</select>
-          <select aria-label="Sort loans" className="booky-input text-sm font-semibold sm:text-base" value={sort} onChange={(event) => setSort(event.target.value as LoanSort)}>{mode === "active" ? <><option value="due-asc">Due date: earliest</option><option value="due-desc">Due date: latest</option></> : <><option value="returned-desc">Newest first</option><option value="returned-asc">Oldest first</option></>}</select>
+          <div>
+            {mode === "active" ? (
+              <FilterSelect
+                label="Loan status"
+                value={activeFilter}
+                onChange={(val) => setActiveFilter(val as ActiveLoanFilter)}
+                options={[
+                  { value: "all", label: "All active loans" },
+                  { value: "overdue", label: "Overdue" },
+                  { value: "due-today", label: "Due today" },
+                  { value: "borrowed", label: "Borrowed" },
+                ]}
+              />
+            ) : (
+              <FilterSelect
+                label="Return outcome"
+                value={outcomeFilter}
+                onChange={(val) => setOutcomeFilter(val as ReturnOutcomeFilter)}
+                options={[
+                  { value: "all", label: "All returns" },
+                  { value: "on-time", label: "On time" },
+                  { value: "late", label: "Returned late" },
+                ]}
+              />
+            )}
+          </div>
+          <div>
+            <FilterSelect
+              label="Date filter"
+              value={dateFilter}
+              onChange={(val) => setDateFilter(val)}
+              options={[
+                { value: "all", label: mode === "active" ? "Due date" : "Return date" },
+                { value: "today", label: "Today" },
+                ...(mode === "active" ? [{ value: "overdue", label: "Overdue" }] : []),
+              ]}
+            />
+          </div>
+          <div>
+            <FilterSelect
+              label="Sort loans"
+              value={sort}
+              onChange={(val) => setSort(val as LoanSort)}
+              options={
+                mode === "active"
+                  ? [
+                      { value: "due-asc", label: "Due date: earliest" },
+                      { value: "due-desc", label: "Due date: latest" },
+                    ]
+                  : [
+                      { value: "returned-desc", label: "Newest first" },
+                      { value: "returned-asc", label: "Oldest first" },
+                    ]
+              }
+            />
+          </div>
         </div>
 
         <AdminBorrowsTable borrows={visibleLoans} mode={mode} today={today} onViewDetails={setDetailsBorrow} onRecordReturn={beginReturn} isProcessing={returnMutation.isPending} processingId={(returnMutation.variables as string | undefined) ?? null} />

@@ -119,7 +119,7 @@ describe("StaffSettings", () => {
     expect(screen.getByRole("heading", { name: "Profile details" })).toHaveClass("text-lg", "sm:text-xl");
     expect(screen.getByRole("heading", { name: "Appearance" })).toHaveClass("text-lg", "sm:text-xl");
     expect(screen.getByRole("heading", { name: "Password & security" })).toHaveClass("text-lg", "sm:text-xl");
-    expect(screen.getByText("Your staff identity across Booky.")).toHaveClass("text-sm", "sm:text-base");
+    expect(screen.getByText("Your staff identity across Pahina.")).toHaveClass("text-sm", "sm:text-base");
     expect(screen.getByText("JPEG, PNG or WebP. Maximum 2 MB.")).toHaveClass("text-xs", "sm:text-sm");
     expect(screen.getByText("Display name")).toHaveClass("text-sm", "sm:text-base");
     expect(screen.getByLabelText("Display name")).toHaveClass("text-sm", "sm:text-base");

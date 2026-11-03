@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from app.blueprints.auth.routes import auth_bp
+from app.blueprints.backups.routes import backups_bp
 from app.blueprints.books.routes import books_bp
 from app.blueprints.borrows.routes import borrows_bp
 from app.blueprints.category.routes import category_bp
@@ -10,6 +11,8 @@ from app.blueprints.users.routes import users_bp
 from app.extensions import db, migrate, jwt
 from app.middleware.errors import error_bp
 from app.config import Config
+from app.security_state import configure_jwt_security
+from app.maintenance import install_maintenance_guard
 
 
 def create_app():
@@ -29,18 +32,23 @@ def create_app():
       "http://127.0.0.1:5173",
       "https://library-management-system-libra.vercel.app",
     ],
+    expose_headers=["X-Backup-Safety-Token", "Content-Disposition"],
   )
 
   db.init_app(app)
   migrate.init_app(app, db)
   jwt.init_app(app)
+  configure_jwt_security(jwt)
   
   # Register the blueprints
   app.register_blueprint(auth_bp)
+  app.register_blueprint(backups_bp)
   app.register_blueprint(books_bp)
   app.register_blueprint(borrows_bp)
   app.register_blueprint(category_bp)
   app.register_blueprint(users_bp)
+
+  install_maintenance_guard(app)
 
   # JSON error handlers (404/500/DB rollback) — must be registered after blueprints
   app.register_blueprint(error_bp)

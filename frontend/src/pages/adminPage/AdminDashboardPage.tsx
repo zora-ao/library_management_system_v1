@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { ArrowRight, CalendarDays, RotateCcw, UserRoundCog } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import BorrowingActivityChart from "./BorrowingActivityChart";
 
 const DAY_MS = 86_400_000;
 
@@ -104,7 +105,6 @@ const AdminDashboardPage = () => {
 
   const firstName = user?.username?.trim().split(/\s+/)[0] || "there";
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";
-  const maxActivity = Math.max(1, ...dashboard.activity.flatMap((item) => [item.loans, item.returns]));
   const overviewItems = [
     ...(isAdmin ? [{ value: users.length, label: "Total users" }] : []),
     { value: books.length, label: "Book titles" },
@@ -125,9 +125,6 @@ const AdminDashboardPage = () => {
       <header className="space-y-7">
         <div className="flex items-center justify-between gap-4 text-sm font-bold uppercase tracking-[0.06em] text-muted-foreground sm:text-base">
           <span>Overview</span>
-          <span className="hidden font-normal normal-case tracking-normal sm:inline">
-            {new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(now)}
-          </span>
         </div>
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -216,16 +213,8 @@ const AdminDashboardPage = () => {
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-muted/70 px-3 py-2"><CalendarDays className="size-3" />7 days</span>
             </div>
           </div>
-          <div className="mt-5 grid h-48 grid-cols-7 items-end gap-2 border-b border-border px-2 sm:gap-4">
-            {dashboard.activity.map((item) => (
-              <div key={item.date.toISOString()} className="flex h-full min-w-0 flex-col items-center justify-end">
-                <div className="flex h-36 items-end gap-1">
-                  <div className="w-2.5 rounded-t-full bg-foreground sm:w-4 sm:rounded-t" style={{ height: `${Math.max(item.loans ? 12 : 0, (item.loans / maxActivity) * 100)}%` }} title={`${item.loans} loans`} />
-                  <div className="w-2.5 rounded-t bg-primary sm:w-4" style={{ height: `${Math.max(item.returns ? 12 : 0, (item.returns / maxActivity) * 100)}%` }} title={`${item.returns} returns`} />
-                </div>
-                <span className="mt-2 truncate text-xs text-muted-foreground sm:text-sm">{item.label}</span>
-              </div>
-            ))}
+          <div className="mt-5 min-w-0">
+            <BorrowingActivityChart activity={dashboard.activity} />
           </div>
         </section>
 

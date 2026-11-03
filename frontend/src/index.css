@@ -337,3 +337,101 @@
 @media (prefers-reduced-motion: reduce) {
   .booky-button { transition: none; }
 }
+
+
+/* UI Filter Select (Matches Student Page Dropdown Filter) */
+.ui-filter-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 40px;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--input);
+  border-radius: 12px;
+  background: var(--control);
+  font-family: var(--font-sans);
+  color: var(--foreground);
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 150ms ease;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.ui-filter-select:hover {
+  background: var(--accent);
+}
+
+.ui-filter-select:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.ui-filter-select-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  transition: transform 150ms ease, color 150ms ease;
+}
+
+.ui-filter-select[data-popup-open] .ui-filter-select-icon {
+  transform: rotate(180deg);
+  color: var(--foreground);
+}
+
+.ui-filter-select-positioner {
+  z-index: 60;
+  width: var(--anchor-width);
+  min-width: 160px;
+  outline: none;
+}
+
+.ui-filter-select-popup {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--popover);
+  box-shadow: var(--elevation-lg);
+  font-family: var(--font-sans);
+  color: var(--popover-foreground);
+  max-height: var(--available-height, 320px);
+  overflow-y: auto;
+}
+
+.ui-filter-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+
+.ui-filter-select-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.ui-filter-select-option[data-selected] {
+  background: var(--muted);
+  font-weight: 700;
+}
+
+.ui-filter-select-option[data-highlighted] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
