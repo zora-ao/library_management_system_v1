@@ -31,6 +31,9 @@ describe("LoginPage & RegisterPage Figma + Admin Theme Design", () => {
 
     expect(screen.getByText("Pahina")).toBeInTheDocument();
     expect(screen.queryByText("Booksy")).not.toBeInTheDocument();
+    const loginLogo = container.querySelector('img[src="/Logo.png"]');
+    expect(loginLogo).toBeInTheDocument();
+    expect(loginLogo?.parentElement).toHaveClass("bg-transparent");
 
     const welcomeHeading = screen.getByRole("heading", { name: /welcome back/i });
     expect(welcomeHeading.className).toContain("text-heading");
@@ -58,6 +61,9 @@ describe("LoginPage & RegisterPage Figma + Admin Theme Design", () => {
 
     expect(screen.getByText("Pahina")).toBeInTheDocument();
     expect(screen.queryByText("Booksy")).not.toBeInTheDocument();
+    const registerLogo = container.querySelector('img[src="/Logo.png"]');
+    expect(registerLogo).toBeInTheDocument();
+    expect(registerLogo?.parentElement).toHaveClass("bg-transparent");
 
     const registerHeading = screen.getByRole("heading", { name: /create your account/i });
     expect(registerHeading.className).toContain("text-heading");

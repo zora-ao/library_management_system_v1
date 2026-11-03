@@ -39,7 +39,7 @@
   place-items: center;
   width: 40px;
   height: 40px;
-  background: var(--primary);
+  background: transparent;
   border-radius: 11px;
 }
 .booky-nav {

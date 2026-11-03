@@ -35,12 +35,15 @@ describe("admin sidebar navigation", () => {
   };
 
   it("renders Users as a direct link and keeps the Borrow Requests submenu", () => {
-    render(
+    const { container } = render(
       <MemoryRouter initialEntries={["/dashboard"]}>
         <NavContent />
       </MemoryRouter>,
     );
 
+    const sidebarLogo = container.querySelector('img[src="/Logo.png"]');
+    expect(sidebarLogo).toBeInTheDocument();
+    expect(sidebarLogo?.parentElement).toHaveClass("bg-transparent");
     expect(screen.getByRole("link", { name: "Users" })).toHaveAttribute("href", "/users");
     expect(screen.queryByRole("button", { name: /Users menu/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Librarians/i })).not.toBeInTheDocument();

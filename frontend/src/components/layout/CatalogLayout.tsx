@@ -45,7 +45,7 @@ export default function CatalogLayout() {
       <header className="booky-header">
         <Link to="/books" className="booky-brand" aria-label="Pahina home">
           <span className="booky-mark">
-            <img src="/pahina-logo.svg" alt="" width="40" height="40" />
+            <img src="/Logo.png" alt="" width="40" height="40" />
           </span>
           <span>Pahina</span>
         </Link>
