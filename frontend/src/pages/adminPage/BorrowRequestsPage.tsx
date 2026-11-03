@@ -23,7 +23,7 @@ import { useAdminBorrows, useApproveBorrow, useConfirmBorrowPickup, useRejectBor
 const tabs: { value: BorrowRequestTab; label: string }[] = [
   { value: "pending", label: "Pending" },
   { value: "pickup", label: "For Pickup" },
-  { value: "history", label: "History" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 export default function BorrowRequestsPage() {
@@ -35,7 +35,7 @@ export default function BorrowRequestsPage() {
   const pickup = useConfirmBorrowPickup();
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("all");
-  const [order, setOrder] = useState<BorrowRequestOrder>(() => activeTab === "history" ? "newest" : "oldest");
+  const [order, setOrder] = useState<BorrowRequestOrder>(() => activeTab === "rejected" ? "newest" : "oldest");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Borrow | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -47,9 +47,9 @@ export default function BorrowRequestsPage() {
     if (!activeTab) return [];
     const classified = classifyBorrowRequests(borrows, activeTab);
     const filtered = filterBorrowRequests(classified, search, date);
-    const dateFor = activeTab === "pickup" ? (row: Borrow) => row.approved_at ?? row.created_at :
-      activeTab === "history" ? (row: Borrow) => row.returned_at ?? row.borrowed_at ?? row.created_at :
-      (row: Borrow) => row.created_at;
+    const dateFor = activeTab === "pickup"
+      ? (row: Borrow) => row.approved_at ?? row.created_at
+      : (row: Borrow) => row.created_at;
     return sortBorrowRequests(filtered, order, dateFor);
   }, [activeTab, borrows, date, order, search]);
 
@@ -79,7 +79,7 @@ export default function BorrowRequestsPage() {
 
       <section className="overflow-hidden rounded-3xl border border-border/70 bg-card shadow-[var(--glass-shadow)] backdrop-blur-xl">
         <div className="border-b border-border px-5 pt-5">
-          <nav className="flex gap-6" aria-label="Borrow request views">{tabs.map((item) => <Link key={item.value} to={`/borrow-requests/${item.value}`} onClick={() => { setPage(1); setOrder(item.value === "history" ? "newest" : "oldest"); }} className={`border-b-2 pb-3 text-sm font-semibold transition-colors sm:text-base ${activeTab === item.value ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>{item.label}</Link>)}</nav>
+          <nav className="flex gap-6" aria-label="Borrow request views">{tabs.map((item) => <Link key={item.value} to={`/borrow-requests/${item.value}`} onClick={() => { setPage(1); setOrder(item.value === "rejected" ? "newest" : "oldest"); }} className={`border-b-2 pb-3 text-sm font-semibold transition-colors sm:text-base ${activeTab === item.value ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>{item.label}</Link>)}</nav>
         </div>
         <div className="flex flex-col gap-3 border-b border-border p-5 lg:flex-row lg:items-center">
           <div className="relative flex-1"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search student, book, or request ID" className="h-10 bg-control pl-9 text-sm sm:text-base md:text-base" /></div>
