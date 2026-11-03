@@ -1,20 +1,9 @@
 import type { Borrow } from "../types/borrow.types";
 
-export type BorrowRequestTab = "pending" | "pickup" | "history";
+export type BorrowRequestTab = "pending" | "pickup" | "rejected";
 export type BorrowRequestOrder = "oldest" | "newest";
 
-const HISTORY_STATUSES = new Set<Borrow["status"]>([
-  "BORROWED",
-  "PENDING_RETURN",
-  "RETURNED",
-  "REJECTED",
-  "OVERDUE",
-]);
-
 const timestamp = (value?: string | null) => value ? new Date(value).getTime() : 0;
-
-const activityDate = (borrow: Borrow) =>
-  borrow.returned_at ?? borrow.borrowed_at ?? borrow.approved_at ?? borrow.created_at;
 
 export const getBorrowReference = (borrow: Borrow) =>
   `REQ-${borrow.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
@@ -39,7 +28,7 @@ export const classifyBorrowRequests = (rows: Borrow[], tab: BorrowRequestTab) =>
       (row) => row.approved_at ?? row.created_at,
     );
   }
-  return sortBorrowRequests(rows.filter((row) => HISTORY_STATUSES.has(row.status)), "newest", activityDate);
+  return sortBorrowRequests(rows.filter((row) => row.status === "REJECTED"), "newest");
 };
 
 export const toLocalDateKey = (value?: string | Date | null) => {

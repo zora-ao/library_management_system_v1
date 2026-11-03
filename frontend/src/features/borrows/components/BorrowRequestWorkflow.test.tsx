@@ -39,6 +39,11 @@ describe("borrow request workflow components", () => {
     expect(screen.getByText("No books are waiting for pickup")).toBeInTheDocument();
   });
 
+  it("explains when there are no rejected requests", () => {
+    render(<BorrowRequestsTable rows={[]} tab="rejected" onOpen={vi.fn()} />);
+    expect(screen.getByText("No rejected requests")).toBeInTheDocument();
+  });
+
   it("uses theme-aware table header, row, and footer surfaces", () => {
     const { container } = render(<BorrowRequestsTable rows={[borrow]} tab="pending" onOpen={vi.fn()} />);
 

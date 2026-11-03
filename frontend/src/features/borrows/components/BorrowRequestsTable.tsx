@@ -19,7 +19,7 @@ const labels: Record<Borrow["status"], string> = {
 const emptyCopy: Record<BorrowRequestTab, string> = {
   pending: "No borrow requests need review",
   pickup: "No books are waiting for pickup",
-  history: "No request history yet",
+  rejected: "No rejected requests",
 };
 
 interface BorrowRequestsTableProps {
