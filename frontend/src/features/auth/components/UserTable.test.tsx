@@ -112,6 +112,7 @@ describe("admin users workspace", () => {
     const roleDialog = screen.getByRole("dialog", { name: "Change user role" });
     const roleSelect = within(roleDialog).getByRole("combobox", { name: "Account role" });
     expect(roleSelect).toHaveTextContent("Student");
+    expect(roleSelect).toHaveClass("data-[size=default]:h-11");
     expect(within(roleDialog).getByRole("button", { name: "Save role" })).toBeDisabled();
 
     roleSelect.focus();
