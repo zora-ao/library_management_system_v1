@@ -2,6 +2,7 @@ import unittest
 
 from flask import Flask
 
+from app.blueprints.auth.routes import auth_bp
 from app.extensions import db
 from app.models import Student, User
 from app.services.auth_service import AuthService
@@ -147,6 +148,134 @@ class RegistrationServiceTests(unittest.TestCase):
         self.assertEqual(str(raised.exception), "Username or email already exists")
         self.assertEqual(User.query.count(), 1)
         self.assertEqual(Student.query.count(), 1)
+
+
+class RegistrationRouteTests(unittest.TestCase):
+    def setUp(self):
+        self.app = Flask(__name__)
+        self.app.config.update(
+            TESTING=True,
+            PROPAGATE_EXCEPTIONS=False,
+            SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
+            SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        )
+        db.init_app(self.app)
+        self.app.register_blueprint(auth_bp)
+        self.context = self.app.app_context()
+        self.context.push()
+        db.create_all()
+        self.client = self.app.test_client()
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        db.engine.dispose()
+        self.context.pop()
+
+    def test_register_route_returns_400_for_each_invalid_field(self):
+        cases = (
+            (
+                {
+                    "username": "Alice",
+                    "email": "alice-at-example.com",
+                    "password": "password",
+                },
+                "Enter a valid email address",
+            ),
+            (
+                {
+                    "username": "Al",
+                    "email": "alice@example.com",
+                    "password": "password",
+                },
+                "Username must be between 3 and 100 characters",
+            ),
+            (
+                {
+                    "username": "Alice",
+                    "email": "alice@example.com",
+                    "password": "1234567",
+                },
+                "Password must be at least 8 characters",
+            ),
+            (
+                {
+                    "username": 123,
+                    "email": "alice@example.com",
+                    "password": "password",
+                },
+                "Username, email, and password must be strings",
+            ),
+        )
+
+        for payload, expected_message in cases:
+            with self.subTest(payload=payload):
+                response = self.client.post("/api/auth/register", json=payload)
+
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.get_json(), {"message": expected_message})
+                self.assertEqual(User.query.count(), 0)
+                self.assertEqual(Student.query.count(), 0)
+
+    def test_register_route_rejects_non_object_json(self):
+        requests = (
+            {"json": []},
+            {"json": "registration"},
+            {"data": "null", "content_type": "application/json"},
+            {"data": "{", "content_type": "application/json"},
+            {"data": '{"username": "Alice"}'},
+        )
+
+        for request_kwargs in requests:
+            with self.subTest(request_kwargs=request_kwargs):
+                response = self.client.post(
+                    "/api/auth/register", **request_kwargs
+                )
+
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(
+                    response.get_json(),
+                    {"message": "Request body must be a JSON object"},
+                )
+                self.assertEqual(User.query.count(), 0)
+                self.assertEqual(Student.query.count(), 0)
+
+    def test_register_route_returns_409_for_normalized_duplicate(self):
+        AuthService.register_user("Alice", "alice@example.com", "password")
+
+        response = self.client.post(
+            "/api/auth/register",
+            json={
+                "username": "Another User",
+                "email": "  ALICE@EXAMPLE.COM  ",
+                "password": "password",
+            },
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(
+            response.get_json(), {"message": "Username or email already exists"}
+        )
+        self.assertEqual(User.query.count(), 1)
+        self.assertEqual(Student.query.count(), 1)
+
+    def test_register_route_persists_normalized_valid_input(self):
+        response = self.client.post(
+            "/api/auth/register",
+            json={
+                "username": "  Alice  ",
+                "email": "  ALICE@Example.COM  ",
+                "password": "password",
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.get_json(), {"message": "User created successfully"})
+        user = User.query.one()
+        self.assertEqual(user.username, "Alice")
+        self.assertEqual(user.email, "alice@example.com")
+        self.assertEqual(Student.query.count(), 1)
+        self.assertIsNotNone(user.student)
 
 
 if __name__ == "__main__":
