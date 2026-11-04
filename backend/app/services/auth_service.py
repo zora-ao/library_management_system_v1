@@ -60,7 +60,12 @@ class _CachedGoogleRequest(requests.Request):
 
 _GOOGLE_AUTH_REQUEST = _CachedGoogleRequest()
 
-_REGISTRATION_EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+_REGISTRATION_EMAIL_PATTERN = re.compile(
+  r"^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+"
+  r"(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@"
+  r"(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+"
+  r"[A-Za-z]{2,63}$"
+)
 
 
 class RegistrationValidationError(ValueError):
@@ -83,7 +88,7 @@ class AuthService:
     normalized_username = username.strip()
     normalized_email = email.strip().lower()
 
-    if not normalized_username or not normalized_email or not password:
+    if not normalized_username or not normalized_email or not password.strip():
       raise RegistrationValidationError(
         "Username, email, and password are required"
       )

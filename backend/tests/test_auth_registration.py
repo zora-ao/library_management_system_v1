@@ -27,6 +27,12 @@ class RegistrationServiceTests(unittest.TestCase):
         db.engine.dispose()
         self.context.pop()
 
+    def clear_accounts(self):
+        db.session.rollback()
+        Student.query.delete()
+        User.query.delete()
+        db.session.commit()
+
     def assert_registration_error(self, expected_type, expected_message, *values):
         with self.assertRaises(Exception) as raised:
             AuthService.register_user(*values)
@@ -35,12 +41,6 @@ class RegistrationServiceTests(unittest.TestCase):
         self.assertEqual(str(raised.exception), expected_message)
         self.assertEqual(User.query.count(), 0)
         self.assertEqual(Student.query.count(), 0)
-
-    def clear_accounts(self):
-        db.session.rollback()
-        Student.query.delete()
-        User.query.delete()
-        db.session.commit()
 
     def test_register_user_normalizes_username_and_email(self):
         user = AuthService.register_user(
@@ -54,13 +54,26 @@ class RegistrationServiceTests(unittest.TestCase):
         self.assertIsNotNone(user.student)
 
     def test_register_user_rejects_invalid_email(self):
-        self.assert_registration_error(
-            "RegistrationValidationError",
-            "Enter a valid email address",
-            "Alice",
+        invalid_emails = (
             "alice-at-example.com",
-            "password",
+            ".alice@example.com",
+            "alice..smith@example.com",
+            "alice@example..com",
+            "alice@exam!ple.com",
         )
+
+        for email in invalid_emails:
+            with self.subTest(email=email):
+                try:
+                    self.assert_registration_error(
+                        "RegistrationValidationError",
+                        "Enter a valid email address",
+                        "Alice",
+                        email,
+                        "password",
+                    )
+                finally:
+                    self.clear_accounts()
 
     def test_register_user_rejects_short_username(self):
         self.assert_registration_error(
@@ -111,6 +124,10 @@ class RegistrationServiceTests(unittest.TestCase):
             ),
             (
                 ("Alice", "alice@example.com", ""),
+                "Username, email, and password are required",
+            ),
+            (
+                ("Alice", "alice@example.com", "        "),
                 "Username, email, and password are required",
             ),
             (
@@ -172,6 +189,12 @@ class RegistrationRouteTests(unittest.TestCase):
         db.engine.dispose()
         self.context.pop()
 
+    def clear_accounts(self):
+        db.session.rollback()
+        Student.query.delete()
+        User.query.delete()
+        db.session.commit()
+
     def test_register_route_returns_400_for_each_invalid_field(self):
         cases = (
             (
@@ -206,6 +229,14 @@ class RegistrationRouteTests(unittest.TestCase):
                 },
                 "Username, email, and password must be strings",
             ),
+            (
+                {
+                    "username": "Alice",
+                    "email": "alice@example.com",
+                    "password": "        ",
+                },
+                "Username, email, and password are required",
+            ),
         )
 
         for payload, expected_message in cases:
@@ -216,6 +247,36 @@ class RegistrationRouteTests(unittest.TestCase):
                 self.assertEqual(response.get_json(), {"message": expected_message})
                 self.assertEqual(User.query.count(), 0)
                 self.assertEqual(Student.query.count(), 0)
+
+    def test_register_route_rejects_malformed_email_variants(self):
+        invalid_emails = (
+            ".alice@example.com",
+            "alice..smith@example.com",
+            "alice@example..com",
+            "alice@exam!ple.com",
+        )
+
+        for email in invalid_emails:
+            with self.subTest(email=email):
+                try:
+                    response = self.client.post(
+                        "/api/auth/register",
+                        json={
+                            "username": "Alice",
+                            "email": email,
+                            "password": "password",
+                        },
+                    )
+
+                    self.assertEqual(response.status_code, 400)
+                    self.assertEqual(
+                        response.get_json(),
+                        {"message": "Enter a valid email address"},
+                    )
+                    self.assertEqual(User.query.count(), 0)
+                    self.assertEqual(Student.query.count(), 0)
+                finally:
+                    self.clear_accounts()
 
     def test_register_route_rejects_non_object_json(self):
         requests = (
