@@ -4,6 +4,7 @@ from pathlib import Path
 import struct
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
@@ -106,6 +107,44 @@ class BackupEnvelopeTests(unittest.TestCase):
         second, _ = self.encrypt("second.pahina-backup")
 
         self.assertNotEqual(first.read_bytes(), second.read_bytes())
+
+    def test_encrypt_returns_digest_without_reopening_completed_output(self):
+        output = self.root / "single-write.pahina-backup"
+
+        def hash_input_only(path):
+            path = Path(path)
+            if path == output:
+                self.fail("Completed encrypted output was reopened for hashing")
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+
+        with patch(
+            "app.services.backup_envelope._sha256_file",
+            side_effect=hash_input_only,
+        ):
+            digest = encrypt_backup(
+                self.manifest,
+                self.dump_path,
+                output,
+                PASSPHRASE,
+                self.policy,
+            )
+
+        self.assertEqual(digest, hashlib.sha256(output.read_bytes()).hexdigest())
+
+    def test_encrypt_rejects_dump_that_does_not_match_manifest(self):
+        self.dump_path.write_bytes(self.dump_bytes + b"changed")
+        output = self.root / "mismatch.pahina-backup"
+
+        with self.assertRaisesRegex(ValueError, "Dump does not match its manifest"):
+            encrypt_backup(
+                self.manifest,
+                self.dump_path,
+                output,
+                PASSPHRASE,
+                self.policy,
+            )
+
+        self.assertFalse(output.exists())
 
     def test_wrong_passphrase_and_tampering_have_same_public_error(self):
         encrypted, _ = self.encrypt()

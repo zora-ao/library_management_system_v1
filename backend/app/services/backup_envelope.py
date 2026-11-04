@@ -180,22 +180,27 @@ def encrypt_backup(
   )
   encryptor = Cipher(algorithms.AES(key), modes.GCM(nonce)).encryptor()
   encryptor.authenticate_additional_data(header)
+  output_digest = hashlib.sha256()
 
   try:
     with output_path.open("wb") as output, dump_path.open("rb") as dump:
-      output.write(header)
-      output.write(encryptor.update(UINT32.pack(len(manifest_bytes))))
-      output.write(encryptor.update(manifest_bytes))
-      output.write(encryptor.update(UINT64.pack(dump_size)))
+      def write_encrypted(data: bytes) -> None:
+        output.write(data)
+        output_digest.update(data)
+
+      write_encrypted(header)
+      write_encrypted(encryptor.update(UINT32.pack(len(manifest_bytes))))
+      write_encrypted(encryptor.update(manifest_bytes))
+      write_encrypted(encryptor.update(UINT64.pack(dump_size)))
       for chunk in iter(lambda: dump.read(CHUNK_BYTES), b""):
-        output.write(encryptor.update(chunk))
-      output.write(encryptor.finalize())
-      output.write(encryptor.tag)
+        write_encrypted(encryptor.update(chunk))
+      write_encrypted(encryptor.finalize())
+      write_encrypted(encryptor.tag)
   except Exception:
     output_path.unlink(missing_ok=True)
     raise
 
-  return _sha256_file(output_path)
+  return output_digest.hexdigest()
 
 
 def _raise_invalid(exc: Exception | None = None):
