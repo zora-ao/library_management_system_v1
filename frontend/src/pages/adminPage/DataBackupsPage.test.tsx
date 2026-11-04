@@ -133,9 +133,11 @@ describe("DataBackupsPage", () => {
 
     await user.click(screen.getByRole("button", { name: /download encrypted backup/i }));
 
-    expect(screen.getByRole("button", {
+    const pendingButton = screen.getByRole("button", {
       name: /creating the postgresql archive and encrypting it before download begins/i,
-    })).toBeDisabled();
+    });
+    expect(pendingButton).toBeDisabled();
+    expect(pendingButton).toHaveClass("h-auto", "min-h-9", "whitespace-normal");
 
     await act(async () => {
       finishDownload?.({

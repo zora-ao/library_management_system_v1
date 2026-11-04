@@ -1,4 +1,5 @@
 import importlib
+import logging
 from pathlib import Path
 import unittest
 from unittest.mock import MagicMock, patch
@@ -9,6 +10,14 @@ from app.services.auth_service import AuthService, _CachedGoogleRequest, _GOOGLE
 
 
 class ConfigAndCorsTests(unittest.TestCase):
+    def test_create_app_emits_informational_operational_events(self):
+        with patch.object(
+            config_module.Config, "SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"
+        ), patch.object(config_module.Config, "JWT_SECRET_KEY", "test-secret"):
+            flask_app = create_app()
+
+        self.assertTrue(flask_app.logger.isEnabledFor(logging.INFO))
+
     def test_config_loads_backend_env_file_explicitly(self):
         expected_env_path = Path(config_module.__file__).resolve().parent.parent / ".env"
         with patch("dotenv.load_dotenv") as mock_load_dotenv:

@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask
 from flask_cors import CORS
 
@@ -18,6 +20,8 @@ from app.maintenance import install_maintenance_guard
 def create_app():
   app = Flask(__name__)
   app.config.from_object(Config)
+  configured_log_level = str(app.config.get("LOG_LEVEL", "INFO")).upper()
+  app.logger.setLevel(getattr(logging, configured_log_level, logging.INFO))
 
   db_uri = app.config.get("SQLALCHEMY_DATABASE_URI") or ""
   if not db_uri.startswith("postgresql"):

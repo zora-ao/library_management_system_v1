@@ -193,15 +193,26 @@ class BackupService:
     )
     encryption_done = time.perf_counter()
     to_milliseconds = lambda seconds: int(round(seconds * 1000))
+    timings = {
+      "metadata_before_ms": to_milliseconds(metadata_before_done - started_at),
+      "native_dump_ms": to_milliseconds(native_dump_done - metadata_before_done),
+      "metadata_after_ms": to_milliseconds(metadata_after_done - native_dump_done),
+      "encryption_ms": to_milliseconds(encryption_done - metadata_after_done),
+      "total_ms": to_milliseconds(encryption_done - started_at),
+    }
     current_app.logger.info(
-      "backup_creation_timing",
+      (
+        "backup_creation_timing metadata_before_ms=%d native_dump_ms=%d "
+        "metadata_after_ms=%d encryption_ms=%d total_ms=%d"
+      ),
+      timings["metadata_before_ms"],
+      timings["native_dump_ms"],
+      timings["metadata_after_ms"],
+      timings["encryption_ms"],
+      timings["total_ms"],
       extra={
         "event": "backup_creation_timing",
-        "metadata_before_ms": to_milliseconds(metadata_before_done - started_at),
-        "native_dump_ms": to_milliseconds(native_dump_done - metadata_before_done),
-        "metadata_after_ms": to_milliseconds(metadata_after_done - native_dump_done),
-        "encryption_ms": to_milliseconds(encryption_done - metadata_after_done),
-        "total_ms": to_milliseconds(encryption_done - started_at),
+        **timings,
       },
     )
     return BackupArtifact(

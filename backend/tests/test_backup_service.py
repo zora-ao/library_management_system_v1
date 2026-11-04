@@ -151,20 +151,31 @@ class BackupServiceTests(unittest.TestCase):
             b"PGDMP-timed-archive"
         )
 
-        with self.app.app_context(), patch.object(
+        with self.app.app_context(), self.assertLogs(
             self.app.logger,
-            "info",
-        ) as log_info:
+            level="INFO",
+        ) as captured:
             BackupService.create_backup(PASSPHRASE, self.workspace)
 
-        timing_calls = [
-            log_call
-            for log_call in log_info.call_args_list
-            if log_call.args == ("backup_creation_timing",)
+        timing_records = [
+            record
+            for record in captured.records
+            if getattr(record, "event", None) == "backup_creation_timing"
         ]
-        self.assertEqual(len(timing_calls), 1)
+        self.assertEqual(len(timing_records), 1)
+        timing_record = timing_records[0]
         self.assertEqual(
-            timing_calls[0].kwargs["extra"],
+            {
+                field: getattr(timing_record, field)
+                for field in (
+                    "event",
+                    "metadata_before_ms",
+                    "native_dump_ms",
+                    "metadata_after_ms",
+                    "encryption_ms",
+                    "total_ms",
+                )
+            },
             {
                 "event": "backup_creation_timing",
                 "metadata_before_ms": 100,
@@ -174,7 +185,13 @@ class BackupServiceTests(unittest.TestCase):
                 "total_ms": 900,
             },
         )
-        self.assertNotIn(PASSPHRASE, repr(timing_calls[0]))
+        formatted_output = "\n".join(captured.output)
+        self.assertIn("metadata_before_ms=100", formatted_output)
+        self.assertIn("native_dump_ms=400", formatted_output)
+        self.assertIn("metadata_after_ms=100", formatted_output)
+        self.assertIn("encryption_ms=300", formatted_output)
+        self.assertIn("total_ms=900", formatted_output)
+        self.assertNotIn(PASSPHRASE, formatted_output)
 
     def write_encrypted(self, manifest: BackupManifest, name: str) -> Path:
         dump = self.workspace / f"{name}.dump"

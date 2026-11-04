@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 class Config:
+  LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
   SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
   SQLALCHEMY_TRACK_MODIFICATIONS = False
   SQLALCHEMY_ENGINE_OPTIONS = {
