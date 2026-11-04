@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 from pathlib import Path
+import time
 
 from flask import current_app
 from sqlalchemy import func, select, text
@@ -144,18 +145,22 @@ class BackupService:
     if not capabilities.available:
       raise BackupServiceError(capabilities.reason or "Database backups are unavailable")
 
+    started_at = time.perf_counter()
     dump_path = workspace / "database.dump"
     before = (
       BackupService._schema_revisions(),
       BackupService._table_counts(),
       BackupService._active_admin_count(),
     )
+    metadata_before_done = time.perf_counter()
     create_custom_dump(BackupService._postgres_config(), dump_path)
+    native_dump_done = time.perf_counter()
     after = (
       BackupService._schema_revisions(),
       BackupService._table_counts(),
       BackupService._active_admin_count(),
     )
+    metadata_after_done = time.perf_counter()
     if before != after:
       dump_path.unlink(missing_ok=True)
       raise BackupServiceError("Database changed while the backup was being created")
@@ -185,6 +190,19 @@ class BackupService:
       encrypted_path,
       passphrase,
       BackupService._envelope_policy(),
+    )
+    encryption_done = time.perf_counter()
+    to_milliseconds = lambda seconds: int(round(seconds * 1000))
+    current_app.logger.info(
+      "backup_creation_timing",
+      extra={
+        "event": "backup_creation_timing",
+        "metadata_before_ms": to_milliseconds(metadata_before_done - started_at),
+        "native_dump_ms": to_milliseconds(native_dump_done - metadata_before_done),
+        "metadata_after_ms": to_milliseconds(metadata_after_done - native_dump_done),
+        "encryption_ms": to_milliseconds(encryption_done - metadata_after_done),
+        "total_ms": to_milliseconds(encryption_done - started_at),
+      },
     )
     return BackupArtifact(
       path=encrypted_path,

@@ -109,7 +109,9 @@ export function BackupDownloadCard({
           </p>
         )}
         <Button size="lg" className="w-full" disabled={!valid} onClick={handleDownload}>
-          {pending ? "Preparing encrypted backup…" : "Download encrypted backup"}
+          {pending
+            ? "Creating the PostgreSQL archive and encrypting it before download begins…"
+            : "Download encrypted backup"}
         </Button>
       </CardContent>
     </Card>

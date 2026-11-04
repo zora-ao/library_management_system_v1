@@ -136,6 +136,46 @@ class BackupServiceTests(unittest.TestCase):
             hashlib.sha256(artifact.path.read_bytes()).hexdigest(),
         )
 
+    @patch("app.services.backup_service.check_capabilities")
+    @patch("app.services.backup_service.create_custom_dump")
+    @patch("app.services.backup_service.time", create=True)
+    def test_create_backup_logs_phase_timings_without_secrets(
+        self,
+        clock,
+        create_dump,
+        check,
+    ):
+        clock.perf_counter.side_effect = (0.0, 0.1, 0.5, 0.6, 0.9)
+        check.return_value = self.capabilities()
+        create_dump.side_effect = lambda _config, path: path.write_bytes(
+            b"PGDMP-timed-archive"
+        )
+
+        with self.app.app_context(), patch.object(
+            self.app.logger,
+            "info",
+        ) as log_info:
+            BackupService.create_backup(PASSPHRASE, self.workspace)
+
+        timing_calls = [
+            log_call
+            for log_call in log_info.call_args_list
+            if log_call.args == ("backup_creation_timing",)
+        ]
+        self.assertEqual(len(timing_calls), 1)
+        self.assertEqual(
+            timing_calls[0].kwargs["extra"],
+            {
+                "event": "backup_creation_timing",
+                "metadata_before_ms": 100,
+                "native_dump_ms": 400,
+                "metadata_after_ms": 100,
+                "encryption_ms": 300,
+                "total_ms": 900,
+            },
+        )
+        self.assertNotIn(PASSPHRASE, repr(timing_calls[0]))
+
     def write_encrypted(self, manifest: BackupManifest, name: str) -> Path:
         dump = self.workspace / f"{name}.dump"
         dump.write_bytes(b"PGDMP-valid")
