@@ -60,8 +60,45 @@ class _CachedGoogleRequest(requests.Request):
 
 _GOOGLE_AUTH_REQUEST = _CachedGoogleRequest()
 
+_REGISTRATION_EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+class RegistrationValidationError(ValueError):
+  """Raised when registration input does not satisfy the public contract."""
+
+
+class RegistrationConflictError(ValueError):
+  """Raised when a normalized username or email already exists."""
+
 
 class AuthService:
+
+  @staticmethod
+  def validate_registration(username, email, password):
+    if not all(isinstance(value, str) for value in (username, email, password)):
+      raise RegistrationValidationError(
+        "Username, email, and password must be strings"
+      )
+
+    normalized_username = username.strip()
+    normalized_email = email.strip().lower()
+
+    if not normalized_username or not normalized_email or not password:
+      raise RegistrationValidationError(
+        "Username, email, and password are required"
+      )
+    if not 3 <= len(normalized_username) <= 100:
+      raise RegistrationValidationError(
+        "Username must be between 3 and 100 characters"
+      )
+    if len(normalized_email) > 100:
+      raise RegistrationValidationError("Email must be 100 characters or fewer")
+    if not _REGISTRATION_EMAIL_PATTERN.fullmatch(normalized_email):
+      raise RegistrationValidationError("Enter a valid email address")
+    if len(password) < 8:
+      raise RegistrationValidationError("Password must be at least 8 characters")
+
+    return normalized_username, normalized_email, password
 
   @staticmethod
   def issue_access_token(user):
@@ -219,12 +256,16 @@ class AuthService:
   @staticmethod
   def register_user(username, email, password):
 
+    username, email, password = AuthService.validate_registration(
+      username, email, password
+    )
+
     existing_user = User.query.filter(
       (User.email == email) | (User.username == username)
     ).first()
 
     if existing_user:
-      raise ValueError("Username or email already exist")
+      raise RegistrationConflictError("Username or email already exists")
 
     try:
       new_user = User(
