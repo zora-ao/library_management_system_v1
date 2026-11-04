@@ -86,6 +86,7 @@ class BackupService:
       database_url=current_app.config.get("SQLALCHEMY_DATABASE_URI") or "",
       binary_dir=Path(binary_dir) if binary_dir else None,
       timeout_seconds=current_app.config.get("BACKUP_OPERATION_TIMEOUT_SECONDS", 300),
+      compression_level=current_app.config.get("BACKUP_PG_COMPRESSION_LEVEL", "1"),
     )
 
   @staticmethod

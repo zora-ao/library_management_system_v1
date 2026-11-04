@@ -29,6 +29,7 @@ class BackupServiceTests(unittest.TestCase):
             SQLALCHEMY_TRACK_MODIFICATIONS=False,
             BACKUP_MAX_BYTES=4 * 1024 * 1024,
             BACKUP_OPERATION_TIMEOUT_SECONDS=300,
+            BACKUP_PG_COMPRESSION_LEVEL="1",
             BACKUP_PG_BIN_DIR=None,
             BACKUP_SCRYPT_N=32768,
             BACKUP_SCRYPT_R=8,
@@ -85,6 +86,14 @@ class BackupServiceTests(unittest.TestCase):
             result = BackupService.capabilities()
         self.assertEqual(result, self.capabilities())
         check.assert_called_once()
+
+    def test_postgres_config_propagates_compression_level(self):
+        with self.app.app_context():
+            self.app.config["BACKUP_PG_COMPRESSION_LEVEL"] = "0"
+
+            config = BackupService._postgres_config()
+
+        self.assertEqual(getattr(config, "compression_level", None), "0")
 
     @patch("app.services.backup_service.check_capabilities")
     def test_capabilities_require_a_separate_backup_signing_key(self, check):

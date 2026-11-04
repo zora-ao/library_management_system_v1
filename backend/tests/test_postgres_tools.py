@@ -37,6 +37,13 @@ class PostgresToolsTests(unittest.TestCase):
     def completed(stdout="", stderr="", returncode=0):
         return subprocess.CompletedProcess([], returncode, stdout, stderr)
 
+    @staticmethod
+    def config_with_compression(level):
+        return PostgresToolConfig(
+            database_url=DATABASE_URL,
+            compression_level=level,
+        )
+
     @patch("app.services.postgres_tools.subprocess.run")
     def test_dump_uses_custom_format_and_keeps_decoded_password_out_of_args(self, run):
         run.return_value = self.completed()
@@ -50,6 +57,7 @@ class PostgresToolsTests(unittest.TestCase):
             args[1:],
             [
                 "--format=custom",
+                "--compress=1",
                 "--no-owner",
                 "--no-privileges",
                 "--exclude-table=public.system_security_state",
@@ -66,6 +74,41 @@ class PostgresToolsTests(unittest.TestCase):
         self.assertEqual(options["env"]["PGUSER"], "backup_user")
         self.assertEqual(options["env"]["PGSSLMODE"], "require")
         self.assertEqual(options["timeout"], 300)
+
+    @patch("app.services.postgres_tools.subprocess.run")
+    def test_dump_accepts_compression_boundary_strings(self, run):
+        run.return_value = self.completed()
+
+        for level in ("0", "9"):
+            with self.subTest(level=level):
+                config = self.config_with_compression(level)
+                create_custom_dump(config, self.root / f"level-{level}.dump")
+                self.assertIn(f"--compress={level}", run.call_args.args[0])
+
+    @patch("app.services.postgres_tools.subprocess.run")
+    def test_dump_rejects_invalid_compression_before_starting_process(self, run):
+        invalid_levels = (-1, 10, 1.5, True, " 1 ", "fast")
+
+        for level in invalid_levels:
+            with self.subTest(level=level):
+                config = self.config_with_compression(level)
+                with self.assertRaisesRegex(
+                    PostgresToolError,
+                    "compression level must be an integer from 0 to 9",
+                ):
+                    create_custom_dump(config, self.root / "invalid.dump")
+
+        run.assert_not_called()
+
+    @patch("app.services.postgres_tools.subprocess.run")
+    def test_capabilities_report_invalid_compression_without_starting_process(self, run):
+        config = self.config_with_compression("fast")
+
+        capabilities = check_capabilities(config)
+
+        self.assertFalse(capabilities.available)
+        self.assertIn("compression level", capabilities.reason)
+        run.assert_not_called()
 
     @patch("app.services.postgres_tools.subprocess.run")
     def test_validate_and_restore_use_exact_safe_arguments(self, run):
@@ -154,6 +197,10 @@ class PostgresToolsTests(unittest.TestCase):
     def test_config_exposes_native_tool_limits(self):
         self.assertEqual(Config.BACKUP_MAX_BYTES, 262_144_000)
         self.assertEqual(Config.BACKUP_OPERATION_TIMEOUT_SECONDS, 300)
+        self.assertEqual(
+            getattr(Config, "BACKUP_PG_COMPRESSION_LEVEL", None),
+            "1",
+        )
         self.assertTrue(hasattr(Config, "BACKUP_PG_BIN_DIR"))
 
 
