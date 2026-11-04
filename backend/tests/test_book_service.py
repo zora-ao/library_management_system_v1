@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from flask import Flask
+from sqlalchemy.exc import IntegrityError
 from werkzeug.datastructures import MultiDict
 
 from app.extensions import db
@@ -251,6 +252,51 @@ class BookNumericValidationTests(BookServiceTestCase):
             self.assertEqual(book.image_url, "https://example.com/original.jpg")
             upload.assert_not_called()
         self.assertIsNone(Category.query.filter_by(name="New Category").first())
+
+
+class BookDatabaseConstraintTests(BookServiceTestCase):
+    def test_direct_writes_reject_each_invalid_numeric_state(self):
+        invalid_books = (
+            Book("Invalid total", "Author", total_copies=0, available_copies=0),
+            Book("Negative available", "Author", total_copies=1, available_copies=-1),
+            Book("Excess available", "Author", total_copies=1, available_copies=2),
+            Book("Invalid pages", "Author", total_copies=1, pages=0),
+        )
+
+        for book in invalid_books:
+            with self.subTest(title=book.title):
+                try:
+                    db.session.add(book)
+                    with self.assertRaises(IntegrityError):
+                        db.session.commit()
+                finally:
+                    db.session.rollback()
+                    Book.query.delete()
+                    db.session.commit()
+
+    def test_direct_writes_allow_valid_boundary_values(self):
+        db.session.add_all(
+            [
+                Book(
+                    "Minimum values",
+                    "Author",
+                    total_copies=1,
+                    available_copies=0,
+                    pages=1,
+                ),
+                Book(
+                    "Optional pages",
+                    "Author",
+                    total_copies=1,
+                    available_copies=1,
+                    pages=None,
+                ),
+            ]
+        )
+
+        db.session.commit()
+
+        self.assertEqual(Book.query.count(), 2)
 
 
 class BookArchiveServiceTests(BookServiceTestCase):
