@@ -25,6 +25,7 @@ const invalidateBorrowData = (
   scopes.forEach((scope) => {
     queryClient.invalidateQueries({ queryKey: ["borrows", scope] });
   });
+  queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 };
 
 const invalidateBookAvailability = (

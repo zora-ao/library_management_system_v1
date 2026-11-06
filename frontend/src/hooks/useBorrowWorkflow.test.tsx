@@ -67,6 +67,7 @@ describe("borrow workflow API", () => {
     queryClient.setQueryData(["borrows", "active"], []);
     queryClient.setQueryData(["borrows", "history"], []);
     queryClient.setQueryData(["books"], []);
+    queryClient.setQueryData(["dashboard"], { pending: 1 });
     const { result } = renderHook(() => useRejectBorrow(), { wrapper: createWrapper(queryClient) });
 
     await act(async () => { await result.current.mutateAsync({ borrowId: "borrow-1", reason: "Missing ID" }); });
@@ -76,6 +77,7 @@ describe("borrow workflow API", () => {
       expect(queryClient.getQueryState(["borrows", "active"])?.isInvalidated).toBe(true);
       expect(queryClient.getQueryState(["borrows", "history"])?.isInvalidated).toBe(true);
       expect(queryClient.getQueryState(["books"])?.isInvalidated).toBe(false);
+      expect(queryClient.getQueryState(["dashboard"])?.isInvalidated).toBe(true);
     });
   });
 
@@ -85,6 +87,7 @@ describe("borrow workflow API", () => {
     queryClient.setQueryData(["borrows", "active"], []);
     queryClient.setQueryData(["borrows", "history"], []);
     queryClient.setQueryData(["books"], []);
+    queryClient.setQueryData(["dashboard"], { waiting_for_pickup: 1 });
     const { result } = renderHook(() => useConfirmBorrowPickup(), { wrapper: createWrapper(queryClient) });
 
     await act(async () => { await result.current.mutateAsync("borrow-1"); });
@@ -94,6 +97,7 @@ describe("borrow workflow API", () => {
       expect(queryClient.getQueryState(["borrows", "active"])?.isInvalidated).toBe(true);
       expect(queryClient.getQueryState(["borrows", "history"])?.isInvalidated).toBe(false);
       expect(queryClient.getQueryState(["books"])?.isInvalidated).toBe(false);
+      expect(queryClient.getQueryState(["dashboard"])?.isInvalidated).toBe(true);
     });
   });
 
@@ -105,6 +109,7 @@ describe("borrow workflow API", () => {
     queryClient.setQueryData(["borrows", "history"], []);
     queryClient.setQueryData(["books"], []);
     queryClient.setQueryData(["book", "book-1"], { id: "book-1", available_copies: 1 });
+    queryClient.setQueryData(["dashboard"], { pending: 1 });
     const { result } = renderHook(() => useApproveBorrow(), { wrapper: createWrapper(queryClient) });
 
     await act(async () => { await result.current.mutateAsync("borrow-1"); });
@@ -115,6 +120,7 @@ describe("borrow workflow API", () => {
       expect(queryClient.getQueryState(["borrows", "history"])?.isInvalidated).toBe(false);
       expect(queryClient.getQueryState(["books"])?.isInvalidated).toBe(true);
       expect(queryClient.getQueryState(["book", "book-1"])?.isInvalidated).toBe(true);
+      expect(queryClient.getQueryState(["dashboard"])?.isInvalidated).toBe(true);
     });
   });
 });

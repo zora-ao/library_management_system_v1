@@ -18,6 +18,7 @@ export const useCategories = () => {
 const invalidateCategoryWorkspace = (queryClient: ReturnType<typeof useQueryClient>) => {
   queryClient.invalidateQueries({ queryKey: ["categories"] });
   queryClient.invalidateQueries({ queryKey: ["books"] });
+  queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 };
 
 export const useCreateCategory = () => {

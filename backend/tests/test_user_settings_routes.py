@@ -5,9 +5,11 @@ from unittest.mock import MagicMock, patch
 
 from flask import Flask
 from flask_jwt_extended import JWTManager, create_access_token
+from sqlalchemy import event
 
 from app.blueprints.users.routes import users_bp
-from app.models.user import User
+from app.extensions import db
+from app.models import Student, User
 from app.services.auth_service import AuthService
 
 
@@ -155,6 +157,59 @@ class ProfileAvatarRouteTests(unittest.TestCase):
         mock_db.session.commit.assert_called_once_with()
         delete_avatar.assert_called_once_with("https://cdn.example.com/old.png")
 
+
+class UserListQueryTests(unittest.TestCase):
+    def setUp(self):
+        self.app = Flask(__name__)
+        self.app.config.update(
+            TESTING=True,
+            JWT_SECRET_KEY="test-secret",
+            SQLALCHEMY_DATABASE_URI="sqlite://",
+            SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        )
+        JWTManager(self.app)
+        db.init_app(self.app)
+        self.app.register_blueprint(users_bp)
+        self.context = self.app.app_context()
+        self.context.push()
+        db.create_all()
+        for index in range(4):
+            user = User(f"Student {index}", f"student{index}@example.com")
+            user.student = Student(
+                student_number=f"2026-{index}",
+                enrollment_status="Enrolled",
+            )
+            db.session.add(user)
+        db.session.commit()
+        self.token = create_access_token(
+            identity=str(uuid.uuid4()),
+            additional_claims={"role": "admin"},
+        )
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.context.pop()
+
+    def test_user_list_serializes_student_profiles_in_one_query(self):
+        db.session.expire_all()
+        statements = []
+
+        def record_statement(_conn, _cursor, statement, _params, _context, _many):
+            statements.append(statement)
+
+        event.listen(db.engine, "before_cursor_execute", record_statement)
+        try:
+            response = self.app.test_client().get(
+                "/api/users",
+                headers={"Authorization": f"Bearer {self.token}"},
+            )
+        finally:
+            event.remove(db.engine, "before_cursor_execute", record_statement)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.get_json()), 4)
+        self.assertEqual(len(statements), 1, statements)
 
 if __name__ == "__main__":
     unittest.main()
