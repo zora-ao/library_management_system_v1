@@ -2,6 +2,33 @@
 
 Measurements: 2026-11-05; final verification: 2026-11-06 (Asia/Manila)
 
+## Staff dashboard optimization (2026-11-06)
+
+The shared admin/librarian dashboard now loads from one compact, role-aware `GET /api/dashboard` request instead of downloading the complete users, borrow history, 1,000-book catalog, and categories collections. The endpoint returns aggregate counts, at most three attention rows, at most four recent rows, and seven local-day activity buckets. Dedicated management pages keep their complete APIs.
+
+The dashboard query has a 15-second stale time, refreshes on window focus, and is invalidated after successful circulation, book, category, role, account-status, and profile mutations. Failed mutations do not invalidate it. The `/api/users` endpoint now eager-loads student profiles, eliminating its per-user lazy queries.
+
+Read-only measurements against the configured Supabase session pooler:
+
+| Dashboard load | Before | After | Change |
+| --- | ---: | ---: | ---: |
+| Admin cold wall time | 7,576.2 ms | 1,993.1 ms | 73.7% faster |
+| Admin warm wall time | 5,835.2 ms | 1,251.6 ms | 78.5% faster |
+| SQL statements across dashboard requests | 29 | 6 | 79.3% fewer |
+| Visible API requests | 4 | 1 | 75% fewer |
+
+The final named-timezone cold request opened one database connection and spent 776.4 ms reaching/checking out that connection. Its measured Flask duration was 1,888.6 ms with 963.1 ms across six cursor executions. The warm request reused the connection (`db_connect_count=0`), measured 1,148.2 ms in Flask, and spent 1,019.4 ms across the same six statements. This confirms that remaining latency is predominantly fixed remote connection and sequential network round-trip cost rather than response size or PostgreSQL execution. Network conditions vary, so these cold/warm figures are point-in-time measurements rather than service-level guarantees.
+
+Backend unit coverage now verifies that the dashboard service remains at no more than three application queries as history grows, staff permissions are enforced, librarian responses omit the admin-only user total, empty databases return safe zeros, timezone offsets are bounded, and `/api/users` serializes student profiles in one statement. Frontend coverage verifies the compact endpoint, cache reuse, role-specific rendering, and targeted mutation invalidation.
+
+An independent review found and fixed three pre-handoff edge cases: initial request failures now show a retry action instead of an indefinite spinner; expired `BORROWED` rows remain excluded from the active-loan count exactly as before; and the browser now sends its IANA timezone so both daylight-saving transitions use the correct local-day boundaries. `tzdata==2026.6` provides the IANA database consistently on Windows and Linux.
+
+Verification after the dashboard change:
+
+- Backend: 149 passed; 1 PostgreSQL backup/restore integration test skipped because `TEST_DATABASE_URL` is not configured.
+- Frontend: 162 passed.
+- Frontend production build: passed. Vite retains the existing advisory that the main JavaScript chunk exceeds 500 kB.
+
 ## Outcome
 
 The highest-amplification problems from `performance-diagnosis.md` are fixed without changing the database provider, production credentials, borrowing state machine, role rules, or restore safety:

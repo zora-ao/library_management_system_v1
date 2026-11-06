@@ -1,16 +1,14 @@
 import { LoadingState } from "@/components/ui/loading-spinner";
-import type { Borrow, BorrowStatus } from "@/features/borrows/types/borrow.types";
-import { useAuth, useGetAllUsers } from "@/hooks/useAuth";
-import { useAdminBorrows } from "@/hooks/useBorrows";
-import { useBooks } from "@/hooks/useBooks";
-import { useCategories } from "@/hooks/useCategories";
+import { Button } from "@/components/ui/button";
+import type { BorrowStatus } from "@/features/borrows/types/borrow.types";
+import type { DashboardSummary } from "@/features/dashboard/types";
+import { useAuth } from "@/hooks/useAuth";
+import { useDashboard } from "@/hooks/useDashboard";
 import { cn } from "@/lib/utils";
 import { ArrowRight, CalendarDays, RotateCcw, UserRoundCog } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import BorrowingActivityChart from "./BorrowingActivityChart";
-
-const DAY_MS = 86_400_000;
 
 const STATUS_META: Record<BorrowStatus, { label: string; className: string; action: string }> = {
   PENDING_BORROW: { label: "Pending", className: "bg-warning-soft text-warning", action: "Review" },
@@ -22,26 +20,8 @@ const STATUS_META: Record<BorrowStatus, { label: string; className: string; acti
   OVERDUE: { label: "Overdue", className: "bg-danger-soft text-danger", action: "View loan" },
 };
 
-const priority: Record<BorrowStatus, number> = {
-  OVERDUE: 0,
-  PENDING_RETURN: 1,
-  PENDING_BORROW: 2,
-  READY_FOR_PICKUP: 3,
-  BORROWED: 4,
-  RETURNED: 5,
-  REJECTED: 6,
-};
-
-const getBorrowDate = (borrow: Borrow) =>
+const getBorrowDate = (borrow: DashboardSummary["recent"][number]) =>
   borrow.returned_at ?? borrow.borrowed_at ?? borrow.approved_at ?? borrow.created_at ?? borrow.due_date ?? "";
-
-const isSameLocalDay = (value: string | null | undefined, day: Date) => {
-  if (!value) return false;
-  const date = new Date(value);
-  return date.getFullYear() === day.getFullYear()
-    && date.getMonth() === day.getMonth()
-    && date.getDate() === day.getDate();
-};
 
 const formatCompactDate = (value: string | null | undefined) => {
   if (!value) return "—";
@@ -51,71 +31,51 @@ const formatCompactDate = (value: string | null | undefined) => {
 const AdminDashboardPage = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  const { data: users = [], isLoading: usersLoading } = useGetAllUsers({ enabled: isAdmin });
-  const { data: borrows = [], isLoading: borrowsLoading } = useAdminBorrows();
-  const { data: books = [], isLoading: booksLoading } = useBooks();
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: dashboard, isLoading, isError, refetch } = useDashboard();
 
   const now = useMemo(() => new Date(), []);
-  const isLoading = borrowsLoading || booksLoading || categoriesLoading || (isAdmin && usersLoading);
-
-  const dashboard = useMemo(() => {
-    const overdue = borrows.filter((borrow) =>
-      borrow.status === "OVERDUE"
-      || (borrow.status === "BORROWED" && borrow.due_date && new Date(borrow.due_date) < now));
-    const pending = borrows.filter((borrow) => borrow.status === "PENDING_BORROW");
-    const waitingForPickup = borrows.filter((borrow) => borrow.status === "READY_FOR_PICKUP");
-    const active = borrows.filter((borrow) => borrow.status === "BORROWED" || borrow.status === "PENDING_RETURN");
-    const returned = borrows.filter((borrow) => borrow.status === "RETURNED");
-    const attention = [...borrows]
-      .filter((borrow) => ["OVERDUE", "PENDING_RETURN", "PENDING_BORROW", "READY_FOR_PICKUP"].includes(borrow.status))
-      .sort((a, b) => priority[a.status] - priority[b.status] || getBorrowDate(b).localeCompare(getBorrowDate(a)))
-      .slice(0, 3);
-    const recent = [...borrows]
-      .sort((a, b) => getBorrowDate(b).localeCompare(getBorrowDate(a)))
-      .slice(0, 4);
-    const activity = Array.from({ length: 7 }, (_, index) => {
-      const day = new Date(now.getTime() - (6 - index) * DAY_MS);
-      return {
-        date: day,
-        label: new Intl.DateTimeFormat("en-US", { day: "numeric", month: "short" }).format(day),
-        loans: borrows.filter((borrow) => isSameLocalDay(borrow.borrowed_at, day)).length,
-        returns: borrows.filter((borrow) => isSameLocalDay(borrow.returned_at, day)).length,
-      };
-    });
-
-    return {
-      pending: pending.length,
-      waitingForPickup: waitingForPickup.length,
-      active: active.length,
-      overdue: overdue.length,
-      returned: returned.length,
-      returnedToday: returned.filter((borrow) => isSameLocalDay(borrow.returned_at, now)).length,
-      totalCopies: books.reduce((total, book) => total + (book.total_copies ?? 0), 0),
-      availableCopies: books.reduce((total, book) => total + (book.available_copies ?? 0), 0),
-      attention,
-      recent,
-      activity,
-    };
-  }, [books, borrows, now]);
 
   if (isLoading) {
     return <LoadingState className="text-primary" containerClassName="min-h-[70vh]" label="Loading dashboard" />;
   }
 
+  if (isError && !dashboard) {
+    return (
+      <div className="booky-empty min-h-[70vh]" role="alert">
+        <h2>We couldn’t load the dashboard.</h2>
+        <p>Please try again in a moment.</p>
+        <Button type="button" onClick={() => void refetch()}>Try again</Button>
+      </div>
+    );
+  }
+
+  if (!dashboard) {
+    return <LoadingState className="text-primary" containerClassName="min-h-[70vh]" label="Loading dashboard" />;
+  }
+
+  const activity = dashboard.activity.map((item) => {
+    const [year, month, day] = item.date.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    return {
+      ...item,
+      date,
+      label: new Intl.DateTimeFormat("en-US", { day: "numeric", month: "short" }).format(date),
+    };
+  });
+
   const firstName = user?.username?.trim().split(/\s+/)[0] || "there";
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";
   const overviewItems = [
-    ...(isAdmin ? [{ value: users.length, label: "Total users" }] : []),
-    { value: books.length, label: "Book titles" },
-    { value: dashboard.totalCopies, label: "Total copies" },
-    { value: dashboard.availableCopies, label: "Available copies" },
-    { value: categories.length, label: "Categories" },
+    ...(isAdmin && dashboard.total_users !== undefined ? [{ value: dashboard.total_users, label: "Total users" }] : []),
+    { value: dashboard.book_titles, label: "Book titles" },
+    { value: dashboard.total_copies, label: "Total copies" },
+    { value: dashboard.available_copies, label: "Available copies" },
+    { value: dashboard.categories, label: "Categories" },
     { value: dashboard.returned, label: "Returned · all time" },
   ];
   const statCards = [
     { label: "Pending requests", value: dashboard.pending, hint: "Awaiting your approval", featured: true },
-    { label: "Waiting for pickup", value: dashboard.waitingForPickup, hint: "Approved and ready" },
+    { label: "Waiting for pickup", value: dashboard.waiting_for_pickup, hint: "Approved and ready" },
     { label: "Active loans", value: dashboard.active, hint: `Includes ${dashboard.overdue} overdue ${dashboard.overdue === 1 ? "loan" : "loans"}` },
     { label: "Overdue", value: dashboard.overdue, hint: "Follow up with the borrower" },
   ];
@@ -195,7 +155,7 @@ const AdminDashboardPage = () => {
           <div className="mt-5 border-t border-border pt-4">
             <p className="text-sm font-bold uppercase tracking-wide text-leather sm:text-base">Today at the desk</p>
             <div className="mt-2 flex items-center gap-3 text-heading">
-              <strong className="text-3xl tabular-nums">{String(dashboard.returnedToday).padStart(2, "0")}</strong>
+              <strong className="text-3xl tabular-nums">{String(dashboard.returned_today).padStart(2, "0")}</strong>
               <span className="text-sm text-muted-foreground sm:text-base">books returned today</span>
             </div>
             <Link to="/all-borrows/returned" className="booky-link mt-2 inline-flex items-center text-sm sm:text-base">View return history <ArrowRight className="ml-1 size-3" /></Link>
@@ -214,7 +174,7 @@ const AdminDashboardPage = () => {
             </div>
           </div>
           <div className="mt-5 min-w-0">
-            <BorrowingActivityChart activity={dashboard.activity} />
+            <BorrowingActivityChart activity={activity} />
           </div>
         </section>
 

@@ -2,6 +2,7 @@ from uuid import UUID
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from sqlalchemy.orm import joinedload
 from app.middleware.auth import admin_required
 from app.models import User, Student
 from app.extensions import db
@@ -143,7 +144,7 @@ def update_current_user():
 @admin_required()
 def get_users():
 
-  users = User.query.order_by(User.created_at.desc()).all()
+  users = User.query.options(joinedload(User.student)).order_by(User.created_at.desc()).all()
 
   return jsonify([user.to_dict() for user in users]), 200
 

@@ -43,5 +43,6 @@ describe("category mutations", () => {
 
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["categories"] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["books"] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["dashboard"] });
   });
 });

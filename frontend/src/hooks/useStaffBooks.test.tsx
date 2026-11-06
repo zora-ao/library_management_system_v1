@@ -73,6 +73,7 @@ describe("staff books data layer", () => {
     expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ["books", "staff"] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["book"] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["categories"] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ["dashboard"] });
     await expect(restoreBook(book.id)).resolves.toEqual({ message: "restored", book });
   });
 });

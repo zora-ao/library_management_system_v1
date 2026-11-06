@@ -98,6 +98,7 @@ const invalidateBookCatalogs = (queryClient: ReturnType<typeof useQueryClient>) 
   queryClient.invalidateQueries({ queryKey: ["book"] });
   queryClient.invalidateQueries({ queryKey: ["categories"] });
   queryClient.invalidateQueries({ queryKey: ["favorite-books"] });
+  queryClient.invalidateQueries({ queryKey: ["dashboard"] });
 };
 
 export const useSubmitReview = (bookId: string) => {

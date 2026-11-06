@@ -32,6 +32,7 @@ export const useUpdateUserRole = () => {
     mutationFn: updateUserRole,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success("User role updated successfully");
     },
     onError: (error: AxiosError<{ message: string }>) => {
@@ -47,6 +48,7 @@ export const useUpdateUserActiveStatus = () => {
     mutationFn: updateUserActiveStatus,
     onSuccess: (user) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success(
         user.is_active
           ? `${user.username} has been activated`
@@ -71,6 +73,7 @@ export const useUpdateUserProfile = () => {
       }
 
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success("Profile updated successfully");
     },
     onError: (error: AxiosError<{ message: string }>) => {
