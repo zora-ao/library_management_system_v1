@@ -53,12 +53,6 @@ export const registerUser = async(credentials: RegisterCredentials): Promise<Aut
   return res.data
 };
 
-export const getCurrentUser = async(): Promise<User> => {
-  const res = await api.get<{ user: User }>("/auth/me");
-
-  return res.data.user;
-}
-
 export const getAllUsers = async(): Promise<User[]> => {
   const res = await api.get<User[]>("/users");
 

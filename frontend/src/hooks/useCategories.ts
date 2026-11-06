@@ -4,11 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 
+const CATEGORY_STALE_TIME_MS = 5 * 60 * 1000;
 
 export const useCategories = () => {
   return useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
+    staleTime: CATEGORY_STALE_TIME_MS,
+    refetchOnWindowFocus: true,
   });
 }
 

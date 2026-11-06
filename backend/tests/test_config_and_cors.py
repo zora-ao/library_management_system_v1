@@ -24,10 +24,10 @@ class ConfigAndCorsTests(unittest.TestCase):
             importlib.reload(config_module)
             mock_load_dotenv.assert_called_once_with(expected_env_path)
 
-    def test_config_enables_sqlalchemy_pool_pre_ping_and_recycle(self):
+    def test_config_uses_pre_ping_without_forcing_short_connection_recycling(self):
         engine_options = getattr(config_module.Config, "SQLALCHEMY_ENGINE_OPTIONS", {})
         self.assertTrue(engine_options.get("pool_pre_ping"))
-        self.assertEqual(engine_options.get("pool_recycle"), 180)
+        self.assertNotIn("pool_recycle", engine_options)
         connect_args = engine_options.get("connect_args", {})
         self.assertEqual(connect_args.get("connect_timeout"), 10)
         self.assertEqual(connect_args.get("keepalives"), 1)

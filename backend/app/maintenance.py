@@ -7,6 +7,7 @@ from sqlalchemy.engine import make_url
 
 from app.extensions import db
 from app.models import SystemSecurityState
+from app.security_state import cache_security_state_for_request
 
 
 MAINTENANCE_LOCK_KEY = 0x504148494E41
@@ -36,12 +37,13 @@ def install_maintenance_guard(app) -> None:
 
   @app.before_request
   def require_shared_maintenance_access():
-    if not request.path.startswith("/api"):
+    if request.method == "OPTIONS" or not request.path.startswith("/api"):
       return None
     try:
       state = db.session.get(SystemSecurityState, 1)
       if state is None or state.maintenance_mode:
         return _maintenance_response()
+      cache_security_state_for_request(state)
       if request.endpoint == RESTORE_ENDPOINT:
         return None
       acquired = db.session.execute(

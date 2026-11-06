@@ -10,7 +10,8 @@ import urllib3.util.connection as urllib3_connection
 from app.models import User, Student
 from app.extensions import db
 from flask_jwt_extended import create_access_token
-from app.security_state import get_auth_epoch
+from sqlalchemy.orm import joinedload
+from app.security_state import get_auth_epoch, get_authenticated_user
 
 # Prefer IPv4 for outbound HTTPS calls (e.g. Google OAuth cert fetches) so
 # broken local IPv6 routes do not stall token verification for 60-100 seconds.
@@ -243,7 +244,11 @@ class AuthService:
 
   @staticmethod
   def login_user(email, password):
-    user = User.query.filter_by(email=email).first()
+    user = (
+      User.query.options(joinedload(User.student))
+      .filter_by(email=email)
+      .first()
+    )
 
     if not user or not user.check_password(password):
       raise ValueError("Invalid Email or Password")
@@ -297,7 +302,7 @@ class AuthService:
 
   @staticmethod
   def get_current_user(user_id):
-    user = db.session.get(User, user_id)
+    user = get_authenticated_user(user_id)
 
     if not user or not user.is_active:
       raise ValueError("User not found or inactive")

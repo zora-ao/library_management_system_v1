@@ -15,6 +15,7 @@ from app.middleware.errors import error_bp
 from app.config import Config
 from app.security_state import configure_jwt_security
 from app.maintenance import install_maintenance_guard
+from app.performance import install_performance_diagnostics
 
 
 def create_app():
@@ -43,6 +44,7 @@ def create_app():
   migrate.init_app(app, db)
   jwt.init_app(app)
   configure_jwt_security(jwt)
+  install_performance_diagnostics(app, db)
   
   # Register the blueprints
   app.register_blueprint(auth_bp)

@@ -7,11 +7,13 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 class Config:
   LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+  PERFORMANCE_DIAGNOSTICS = os.getenv(
+    "PERFORMANCE_DIAGNOSTICS", "false"
+  ).strip().lower() in {"1", "true", "yes", "on"}
   SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
   SQLALCHEMY_TRACK_MODIFICATIONS = False
   SQLALCHEMY_ENGINE_OPTIONS = {
     "pool_pre_ping": True,
-    "pool_recycle": 180,
     "connect_args": {
       "connect_timeout": 10,
       "keepalives": 1,

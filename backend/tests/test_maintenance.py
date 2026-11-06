@@ -5,6 +5,7 @@ from flask import Blueprint, Flask, jsonify
 
 from app.extensions import db
 from app.maintenance import exclusive_maintenance_lock, install_maintenance_guard
+from app.security_state import get_auth_epoch
 
 
 class MaintenanceGuardTests(unittest.TestCase):
@@ -31,12 +32,25 @@ class MaintenanceGuardTests(unittest.TestCase):
         def normal():
             return jsonify({"ok": True})
 
+        @app.get("/api/security-epoch")
+        def security_epoch():
+            return jsonify({"auth_epoch": get_auth_epoch()})
+
         @app.get("/outside-api")
         def outside_api():
             return jsonify({"ok": True})
 
         install_maintenance_guard(app)
         return app
+
+    @patch("app.maintenance.db.session.execute")
+    @patch("app.maintenance.db.session.get")
+    def test_options_preflight_does_not_touch_database(self, get_state, execute):
+        response = self.make_app().test_client().options("/api/normal")
+
+        self.assertEqual(response.status_code, 200)
+        get_state.assert_not_called()
+        execute.assert_not_called()
 
     @patch("app.maintenance.db.session.execute")
     @patch("app.maintenance.db.session.get")
@@ -50,6 +64,21 @@ class MaintenanceGuardTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json(), {"ok": True})
         execute.assert_called_once()
+
+    @patch("app.maintenance.db.session.execute")
+    @patch("app.maintenance.db.session.get")
+    def test_route_reuses_security_state_loaded_by_maintenance_guard(self, get_state, execute):
+        get_state.return_value = MagicMock(
+            maintenance_mode=False,
+            auth_epoch="request-epoch",
+        )
+        execute.return_value.scalar.return_value = True
+
+        response = self.make_app().test_client().get("/api/security-epoch")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {"auth_epoch": "request-epoch"})
+        get_state.assert_called_once()
 
     @patch("app.maintenance.db.session.execute")
     @patch("app.maintenance.db.session.get")
