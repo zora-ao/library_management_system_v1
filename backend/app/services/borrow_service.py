@@ -30,7 +30,11 @@ class BorrowService:
     def get_borrowed_history(user_id):
         user_id = BorrowService._parse_uuid(user_id, "User ID")
         return (
-            Borrow.query.filter_by(user_id=user_id)
+            Borrow.query.options(
+                joinedload(Borrow.book),
+                joinedload(Borrow.user),
+            )
+            .filter_by(user_id=user_id)
             .filter(Borrow.status.in_([Borrow.STATUS_RETURNED, Borrow.STATUS_REJECTED]))
             .order_by(Borrow.returned_at.desc())
             .all()

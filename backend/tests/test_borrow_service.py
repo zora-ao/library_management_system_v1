@@ -2,6 +2,7 @@ import unittest
 from datetime import timedelta
 
 from flask import Flask
+from sqlalchemy import event
 
 from app.extensions import db
 from app.models import Book, Borrow, User
@@ -39,6 +40,26 @@ class BorrowServiceTestCase(unittest.TestCase):
 
 
 class BorrowApprovalTests(BorrowServiceTestCase):
+    def test_history_serialization_eager_loads_user_and_book_in_one_query(self):
+        history_item = self.add_request(Borrow.STATUS_RETURNED)
+        user_id = self.user.id
+        history_id = history_item.id
+        db.session.expire_all()
+        statements = []
+
+        def record_statement(_conn, _cursor, statement, _params, _context, _many):
+            statements.append(statement)
+
+        event.listen(db.engine, "before_cursor_execute", record_statement)
+        try:
+            history = BorrowService.get_borrowed_history(user_id)
+            serialized = [borrow.to_dict() for borrow in history]
+        finally:
+            event.remove(db.engine, "before_cursor_execute", record_statement)
+
+        self.assertEqual([item["id"] for item in serialized], [str(history_id)])
+        self.assertEqual(len(statements), 1, statements)
+
     def test_approval_reserves_one_copy_without_starting_loan(self):
         borrow = self.add_request()
 

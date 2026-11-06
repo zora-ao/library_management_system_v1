@@ -108,8 +108,15 @@ export function BackupDownloadCard({
             <ShieldCheck className="size-4" /> A fresh safety download is ready for restore verification.
           </p>
         )}
-        <Button size="lg" className="w-full" disabled={!valid} onClick={handleDownload}>
-          {pending ? "Preparing encrypted backup…" : "Download encrypted backup"}
+        <Button
+          size="lg"
+          className="h-auto min-h-9 w-full whitespace-normal py-2 text-center"
+          disabled={!valid}
+          onClick={handleDownload}
+        >
+          {pending
+            ? "Creating the PostgreSQL archive and encrypting it before download begins…"
+            : "Download encrypted backup"}
         </Button>
       </CardContent>
     </Card>

@@ -6,11 +6,14 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 class Config:
+  LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+  PERFORMANCE_DIAGNOSTICS = os.getenv(
+    "PERFORMANCE_DIAGNOSTICS", "false"
+  ).strip().lower() in {"1", "true", "yes", "on"}
   SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
   SQLALCHEMY_TRACK_MODIFICATIONS = False
   SQLALCHEMY_ENGINE_OPTIONS = {
     "pool_pre_ping": True,
-    "pool_recycle": 180,
     "connect_args": {
       "connect_timeout": 10,
       "keepalives": 1,
@@ -40,5 +43,6 @@ class Config:
   BACKUP_MAX_BYTES = 262_144_000
   MAX_CONTENT_LENGTH = BACKUP_MAX_BYTES + 1_048_576
   BACKUP_OPERATION_TIMEOUT_SECONDS = 300
+  BACKUP_PG_COMPRESSION_LEVEL = os.getenv("BACKUP_PG_COMPRESSION_LEVEL", "1")
   BACKUP_PG_BIN_DIR = os.getenv("BACKUP_PG_BIN_DIR")
 

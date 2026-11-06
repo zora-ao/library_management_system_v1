@@ -25,6 +25,7 @@ class PostgresToolConfig:
   database_url: str
   binary_dir: Path | None = None
   timeout_seconds: int = 300
+  compression_level: int | str = "1"
 
 
 @dataclass(frozen=True)
@@ -165,8 +166,25 @@ def _major(version: str) -> int:
   return int(version.split(".", 1)[0])
 
 
+def _compression_level(value: int | str) -> int:
+  if type(value) is int:
+    level = value
+  elif isinstance(value, str) and value in tuple(str(level) for level in range(10)):
+    level = int(value)
+  else:
+    raise PostgresToolError(
+      "PostgreSQL backup compression level must be an integer from 0 to 9"
+    )
+  if not 0 <= level <= 9:
+    raise PostgresToolError(
+      "PostgreSQL backup compression level must be an integer from 0 to 9"
+    )
+  return level
+
+
 def check_capabilities(config: PostgresToolConfig) -> ToolCapabilities:
   try:
+    _compression_level(config.compression_level)
     dump_version = _client_version(config, "pg_dump")
     restore_version = _client_version(config, "pg_restore")
     server_version = _read_server_version(config)
@@ -197,11 +215,13 @@ def check_capabilities(config: PostgresToolConfig) -> ToolCapabilities:
 
 
 def create_custom_dump(config: PostgresToolConfig, output_path: Path) -> None:
+  compression_level = _compression_level(config.compression_level)
   _run(
     config,
     [
       _binary(config, "pg_dump"),
       "--format=custom",
+      f"--compress={compression_level}",
       "--no-owner",
       "--no-privileges",
       "--exclude-table=public.system_security_state",

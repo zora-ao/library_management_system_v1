@@ -29,6 +29,7 @@ class BackupServiceTests(unittest.TestCase):
             SQLALCHEMY_TRACK_MODIFICATIONS=False,
             BACKUP_MAX_BYTES=4 * 1024 * 1024,
             BACKUP_OPERATION_TIMEOUT_SECONDS=300,
+            BACKUP_PG_COMPRESSION_LEVEL="1",
             BACKUP_PG_BIN_DIR=None,
             BACKUP_SCRYPT_N=32768,
             BACKUP_SCRYPT_R=8,
@@ -86,6 +87,14 @@ class BackupServiceTests(unittest.TestCase):
         self.assertEqual(result, self.capabilities())
         check.assert_called_once()
 
+    def test_postgres_config_propagates_compression_level(self):
+        with self.app.app_context():
+            self.app.config["BACKUP_PG_COMPRESSION_LEVEL"] = "0"
+
+            config = BackupService._postgres_config()
+
+        self.assertEqual(getattr(config, "compression_level", None), "0")
+
     @patch("app.services.backup_service.check_capabilities")
     def test_capabilities_require_a_separate_backup_signing_key(self, check):
         with self.app.app_context():
@@ -126,6 +135,63 @@ class BackupServiceTests(unittest.TestCase):
             artifact.file_digest,
             hashlib.sha256(artifact.path.read_bytes()).hexdigest(),
         )
+
+    @patch("app.services.backup_service.check_capabilities")
+    @patch("app.services.backup_service.create_custom_dump")
+    @patch("app.services.backup_service.time", create=True)
+    def test_create_backup_logs_phase_timings_without_secrets(
+        self,
+        clock,
+        create_dump,
+        check,
+    ):
+        clock.perf_counter.side_effect = (0.0, 0.1, 0.5, 0.6, 0.9)
+        check.return_value = self.capabilities()
+        create_dump.side_effect = lambda _config, path: path.write_bytes(
+            b"PGDMP-timed-archive"
+        )
+
+        with self.app.app_context(), self.assertLogs(
+            self.app.logger,
+            level="INFO",
+        ) as captured:
+            BackupService.create_backup(PASSPHRASE, self.workspace)
+
+        timing_records = [
+            record
+            for record in captured.records
+            if getattr(record, "event", None) == "backup_creation_timing"
+        ]
+        self.assertEqual(len(timing_records), 1)
+        timing_record = timing_records[0]
+        self.assertEqual(
+            {
+                field: getattr(timing_record, field)
+                for field in (
+                    "event",
+                    "metadata_before_ms",
+                    "native_dump_ms",
+                    "metadata_after_ms",
+                    "encryption_ms",
+                    "total_ms",
+                )
+            },
+            {
+                "event": "backup_creation_timing",
+                "metadata_before_ms": 100,
+                "native_dump_ms": 400,
+                "metadata_after_ms": 100,
+                "encryption_ms": 300,
+                "total_ms": 900,
+            },
+        )
+        formatted_output = "\n".join(captured.output)
+        self.assertIn("metadata_before_ms=100", formatted_output)
+        self.assertIn("native_dump_ms=400", formatted_output)
+        self.assertIn("metadata_after_ms=100", formatted_output)
+        self.assertIn("encryption_ms=300", formatted_output)
+        self.assertIn("total_ms=900", formatted_output)
+        self.assertNotIn(PASSPHRASE, formatted_output)
 
     def write_encrypted(self, manifest: BackupManifest, name: str) -> Path:
         dump = self.workspace / f"{name}.dump"

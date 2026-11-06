@@ -1,9 +1,12 @@
 from uuid import UUID
 
 from flask import Blueprint, current_app, request, jsonify
-from app.extensions import db
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.services.auth_service import AuthService
+from app.services.auth_service import (
+  AuthService,
+  RegistrationConflictError,
+  RegistrationValidationError,
+)
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
@@ -75,22 +78,24 @@ def login():
 @auth_bp.post("/register")
 def register():
 
-  data = request.get_json() or {}
+  data = request.get_json(silent=True)
 
-  username = data.get("username", "").strip()
-  email = data.get("email", "").strip().lower()
-  password = data.get("password", "")
-
-  if not username or not email or not password:
-      return jsonify({
-          "message": "Username, email, and password are required"
-      }), 400
+  if not isinstance(data, dict):
+    return jsonify({
+      "message": "Request body must be a JSON object"
+    }), 400
 
   try:
-    AuthService.register_user(username, email, password)
+    AuthService.register_user(
+      data.get("username", ""),
+      data.get("email", ""),
+      data.get("password", ""),
+    )
     return jsonify({ "message": "User created successfully" }), 201
-  except ValueError as e:
+  except RegistrationValidationError as e:
+    return jsonify({ "message": str(e) }), 400
+  except RegistrationConflictError as e:
     return jsonify({ "message": str(e) }), 409
-  except Exception as e:
-    print("Registration error:", e)
-    return jsonify({ f"message": "Failed to create user" }), 500
+  except Exception:
+    current_app.logger.exception("Registration failed")
+    return jsonify({ "message": "Failed to create user" }), 500

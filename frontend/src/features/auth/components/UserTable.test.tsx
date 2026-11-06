@@ -102,4 +102,75 @@ describe("admin users workspace", () => {
     expect(screen.getByText("This is your signed-in account.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Change role" })).not.toBeInTheDocument();
   });
+
+  it("shows the current role in the shared select", async () => {
+    const user = userEvent.setup();
+    render(<UserTable />);
+    await user.click(screen.getByRole("button", { name: "View Bianca Student details" }));
+    await user.click(screen.getByRole("button", { name: "Change role" }));
+
+    const roleDialog = screen.getByRole("dialog", { name: "Change user role" });
+    const roleSelect = within(roleDialog).getByRole("combobox", { name: "Account role" });
+    expect(roleSelect).toHaveTextContent("Student");
+    expect(roleSelect).toHaveClass("data-[size=default]:h-11");
+    expect(within(roleDialog).getByRole("button", { name: "Save role" })).toBeDisabled();
+
+    roleSelect.focus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+  });
+
+  it("submits a role selected from the shared dropdown", async () => {
+    const user = userEvent.setup();
+    render(<UserTable />);
+    await user.click(screen.getByRole("button", { name: "View Bianca Student details" }));
+    await user.click(screen.getByRole("button", { name: "Change role" }));
+    const roleDialog = screen.getByRole("dialog", { name: "Change user role" });
+
+    const roleSelect = within(roleDialog).getByRole("combobox", { name: "Account role" });
+    roleSelect.focus();
+    await user.keyboard("{Enter}");
+    await user.click(screen.getByRole("option", { name: "Librarian" }));
+    expect(updateRole).not.toHaveBeenCalled();
+
+    await user.click(within(roleDialog).getByRole("button", { name: "Save role" }));
+    expect(updateRole).toHaveBeenCalledOnce();
+    expect(updateRole).toHaveBeenCalledWith(
+      { userId: "student-1", role: "librarian" },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+  });
+
+  it("discards an unsaved role selection", async () => {
+    const user = userEvent.setup();
+    render(<UserTable />);
+    await user.click(screen.getByRole("button", { name: "View Bianca Student details" }));
+    await user.click(screen.getByRole("button", { name: "Change role" }));
+    let roleDialog = screen.getByRole("dialog", { name: "Change user role" });
+    const roleSelect = within(roleDialog).getByRole("combobox", { name: "Account role" });
+    roleSelect.focus();
+    await user.keyboard("{Enter}");
+    await user.click(screen.getByRole("option", { name: "Librarian" }));
+    await user.click(within(roleDialog).getByRole("button", { name: "Cancel" }));
+
+    await user.click(screen.getByRole("button", { name: "Change role" }));
+    roleDialog = screen.getByRole("dialog", { name: "Change user role" });
+    expect(within(roleDialog).getByRole("combobox", { name: "Account role" })).toHaveTextContent("Student");
+    expect(within(roleDialog).getByRole("button", { name: "Save role" })).toBeDisabled();
+    expect(updateRole).not.toHaveBeenCalled();
+  });
+
+  it("supports keyboard role selection", async () => {
+    const user = userEvent.setup();
+    render(<UserTable />);
+    await user.click(screen.getByRole("button", { name: "View Bianca Student details" }));
+    await user.click(screen.getByRole("button", { name: "Change role" }));
+    const roleDialog = screen.getByRole("dialog", { name: "Change user role" });
+    const roleSelect = within(roleDialog).getByRole("combobox", { name: "Account role" });
+
+    roleSelect.focus();
+    await user.keyboard("{Enter}{ArrowDown}{Enter}");
+
+    expect(roleSelect).toHaveTextContent("Librarian");
+  });
 });

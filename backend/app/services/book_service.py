@@ -10,6 +10,29 @@ class BookService:
     # for encapsulating book related
 
     @staticmethod
+    def _parse_book_integer(raw_value, label, *, minimum):
+        if isinstance(raw_value, bool) or not isinstance(raw_value, (str, int)):
+            raise ValueError(f"{label} must be a whole number")
+
+        if isinstance(raw_value, str):
+            normalized_value = raw_value.strip()
+            if not normalized_value:
+                raise ValueError(f"{label} must be a whole number")
+            try:
+                value = int(normalized_value)
+            except ValueError as error:
+                raise ValueError(f"{label} must be a whole number") from error
+        else:
+            value = raw_value
+
+        if value < minimum:
+            if label == "Total copies":
+                raise ValueError("Total copies must be 1 or greater")
+            raise ValueError("Pages must be greater than 0")
+
+        return value
+
+    @staticmethod
     def _parse_uuid(val, param_name="ID"):
         if isinstance(val, str):
             try:
@@ -169,6 +192,21 @@ class BookService:
         if isbn and Book.query.filter_by(isbn=isbn).first():
             raise FileExistsError("Book ISBN already exists")
 
+        total_copies = 1
+        if "total_copies" in form_data:
+            total_copies = BookService._parse_book_integer(
+                form_data.get("total_copies"), "Total copies", minimum=1
+            )
+
+        raw_pages = form_data.get("pages")
+        pages = None
+        if raw_pages is not None and not (
+            isinstance(raw_pages, str) and not raw_pages.strip()
+        ):
+            pages = BookService._parse_book_integer(
+                raw_pages, "Pages", minimum=1
+            )
+
         category_id = BookService.get_or_create_category(form_data.get("category_name"))
         image_url = upload_book_cover(image_file) if image_file and image_file.filename != "" else None
 
@@ -177,10 +215,10 @@ class BookService:
             title=title,
             author=author,
             category_id=category_id,
-            total_copies=form_data.get("total_copies", default=1, type=int),
-            available_copies=form_data.get("total_copies", default=1, type=int),
+            total_copies=total_copies,
+            available_copies=total_copies,
             description=form_data.get("description"),
-            pages=form_data.get("pages", type=int),
+            pages=pages,
             image_url=image_url
         )
         db.session.add(book)
@@ -197,16 +235,37 @@ class BookService:
         if new_isbn and new_isbn != book.isbn:
             if Book.query.filter(Book.isbn == new_isbn, Book.id != book_id).first():
                 raise FileExistsError("Book ISBN already exists")
+
+        new_total = None
+        if "total_copies" in form_data:
+            new_total = BookService._parse_book_integer(
+                form_data.get("total_copies"), "Total copies", minimum=1
+            )
+
+        pages_supplied = "pages" in form_data
+        new_pages = book.pages
+        if pages_supplied:
+            raw_pages = form_data.get("pages")
+            if raw_pages is None or (
+                isinstance(raw_pages, str) and not raw_pages.strip()
+            ):
+                new_pages = None
+            else:
+                new_pages = BookService._parse_book_integer(
+                    raw_pages, "Pages", minimum=1
+                )
+
+        if new_total is not None and new_total != book.total_copies:
+            book.adjust_total_copies(new_total)
+
+        if new_isbn and new_isbn != book.isbn:
             book.isbn = new_isbn
 
         book.title = form_data.get("title", book.title)
         book.author = form_data.get("author", book.author)
         book.description = form_data.get("description", book.description)
-        book.pages = form_data.get("pages", book.pages, type=int)
-
-        new_total = form_data.get("total_copies", type=int)
-        if new_total is not None and new_total != book.total_copies:
-            book.adjust_total_copies(new_total)
+        if pages_supplied:
+            book.pages = new_pages
 
         category_input = form_data.get("category_name")
         if category_input:

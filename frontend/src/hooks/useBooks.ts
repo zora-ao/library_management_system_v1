@@ -26,6 +26,8 @@ interface BookUpdateProps {
   data: BookFormData;
 }
 
+const BOOK_AVAILABILITY_STALE_TIME_MS = 30 * 1000;
+
 export const useFavoriteBooks = () => {
   return useQuery<Book[]>({
     queryKey: ["favorite-books"],
@@ -69,7 +71,8 @@ export const useBooks = (categoryId?: string) => {
   return useQuery<Book[]>({
     queryKey: ["books", categoryId],
     queryFn: () => getBooks(categoryId),
-    staleTime: 1000 * 60 * 5,
+    staleTime: BOOK_AVAILABILITY_STALE_TIME_MS,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -91,7 +94,6 @@ export const useStaffBooks = (state: StaffBookState) => {
 };
 
 const invalidateBookCatalogs = (queryClient: ReturnType<typeof useQueryClient>) => {
-  queryClient.invalidateQueries({ queryKey: ["books", "staff"] });
   queryClient.invalidateQueries({ queryKey: ["books"] });
   queryClient.invalidateQueries({ queryKey: ["book"] });
   queryClient.invalidateQueries({ queryKey: ["categories"] });

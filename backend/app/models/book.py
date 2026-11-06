@@ -7,6 +7,24 @@ from app.extensions import db
 
 class Book(BaseEntity): # Inheritance
   __tablename__ = "books"
+  __table_args__ = (
+    db.CheckConstraint(
+      "total_copies >= 1",
+      name="ck_books_total_copies_positive",
+    ),
+    db.CheckConstraint(
+      "available_copies >= 0",
+      name="ck_books_available_copies_nonnegative",
+    ),
+    db.CheckConstraint(
+      "available_copies <= total_copies",
+      name="ck_books_available_not_above_total",
+    ),
+    db.CheckConstraint(
+      "pages IS NULL OR pages > 0",
+      name="ck_books_pages_positive",
+    ),
+  )
 
   isbn = db.Column(db.String(20), unique=True)
   title = db.Column(db.String(200), nullable=False)

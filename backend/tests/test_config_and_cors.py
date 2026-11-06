@@ -1,4 +1,5 @@
 import importlib
+import logging
 from pathlib import Path
 import unittest
 from unittest.mock import MagicMock, patch
@@ -9,16 +10,24 @@ from app.services.auth_service import AuthService, _CachedGoogleRequest, _GOOGLE
 
 
 class ConfigAndCorsTests(unittest.TestCase):
+    def test_create_app_emits_informational_operational_events(self):
+        with patch.object(
+            config_module.Config, "SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"
+        ), patch.object(config_module.Config, "JWT_SECRET_KEY", "test-secret"):
+            flask_app = create_app()
+
+        self.assertTrue(flask_app.logger.isEnabledFor(logging.INFO))
+
     def test_config_loads_backend_env_file_explicitly(self):
         expected_env_path = Path(config_module.__file__).resolve().parent.parent / ".env"
         with patch("dotenv.load_dotenv") as mock_load_dotenv:
             importlib.reload(config_module)
             mock_load_dotenv.assert_called_once_with(expected_env_path)
 
-    def test_config_enables_sqlalchemy_pool_pre_ping_and_recycle(self):
+    def test_config_uses_pre_ping_without_forcing_short_connection_recycling(self):
         engine_options = getattr(config_module.Config, "SQLALCHEMY_ENGINE_OPTIONS", {})
         self.assertTrue(engine_options.get("pool_pre_ping"))
-        self.assertEqual(engine_options.get("pool_recycle"), 180)
+        self.assertNotIn("pool_recycle", engine_options)
         connect_args = engine_options.get("connect_args", {})
         self.assertEqual(connect_args.get("connect_timeout"), 10)
         self.assertEqual(connect_args.get("keepalives"), 1)

@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask
 from flask_cors import CORS
 
@@ -13,11 +15,14 @@ from app.middleware.errors import error_bp
 from app.config import Config
 from app.security_state import configure_jwt_security
 from app.maintenance import install_maintenance_guard
+from app.performance import install_performance_diagnostics
 
 
 def create_app():
   app = Flask(__name__)
   app.config.from_object(Config)
+  configured_log_level = str(app.config.get("LOG_LEVEL", "INFO")).upper()
+  app.logger.setLevel(getattr(logging, configured_log_level, logging.INFO))
 
   db_uri = app.config.get("SQLALCHEMY_DATABASE_URI") or ""
   if not db_uri.startswith("postgresql"):
@@ -39,6 +44,7 @@ def create_app():
   migrate.init_app(app, db)
   jwt.init_app(app)
   configure_jwt_security(jwt)
+  install_performance_diagnostics(app, db)
   
   # Register the blueprints
   app.register_blueprint(auth_bp)

@@ -1,8 +1,16 @@
 import unittest
 import uuid
+from uuid import UUID
+from unittest.mock import MagicMock, patch
 
 from flask import Flask, jsonify
-from flask_jwt_extended import JWTManager, decode_token, jwt_required
+from flask_jwt_extended import (
+    JWTManager,
+    decode_token,
+    get_jwt_identity,
+    jwt_required,
+)
+from sqlalchemy import event
 
 from app.extensions import db
 from app.models import SystemSecurityState, User
@@ -34,6 +42,16 @@ class SecurityStateTests(unittest.TestCase):
         @jwt_required()
         def protected():
             return jsonify({"ok": True})
+
+        @self.app.get("/current-user")
+        @jwt_required()
+        def current_user():
+            user = AuthService.get_current_user(UUID(str(get_jwt_identity())))
+            return jsonify({"user": user.to_dict()})
+
+        @self.app.get("/security-epoch")
+        def security_epoch():
+            return jsonify({"auth_epoch": get_auth_epoch()})
 
         with self.app.app_context():
             db.create_all()
@@ -75,6 +93,46 @@ class SecurityStateTests(unittest.TestCase):
         response = self.client.get("/protected", headers=self.auth_header(token))
         self.assertEqual(response.status_code, 200)
 
+    def test_current_user_reuses_jwt_user_without_duplicate_lookup(self):
+        token = self.issue_token()
+        statements = []
+
+        with self.app.app_context():
+            engine = db.engine
+
+            def record_statement(_conn, _cursor, statement, _params, _context, _many):
+                statements.append(statement)
+
+            event.listen(engine, "before_cursor_execute", record_statement)
+            try:
+                response = self.client.get(
+                    "/current-user",
+                    headers=self.auth_header(token),
+                )
+            finally:
+                event.remove(engine, "before_cursor_execute", record_statement)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["user"]["id"], str(self.user_id))
+        self.assertEqual(len(statements), 2, statements)
+
+    def test_security_state_cache_is_bound_to_each_request(self):
+        states = [
+            MagicMock(auth_epoch="first-request"),
+            MagicMock(auth_epoch="second-request"),
+        ]
+
+        with self.app.app_context(), patch(
+            "app.security_state.db.session.get",
+            side_effect=states,
+        ) as get_state:
+            first = self.client.get("/security-epoch")
+            second = self.client.get("/security-epoch")
+
+        self.assertEqual(first.get_json(), {"auth_epoch": "first-request"})
+        self.assertEqual(second.get_json(), {"auth_epoch": "second-request"})
+        self.assertEqual(get_state.call_count, 2)
+
     def test_epoch_mismatch_revokes_token(self):
         token = self.issue_token()
 
@@ -95,6 +153,18 @@ class SecurityStateTests(unittest.TestCase):
 
         response = self.client.get("/protected", headers=self.auth_header(token))
         self.assertEqual(response.status_code, 401)
+
+    def test_missing_security_state_revokes_token_instead_of_failing_open(self):
+        token = self.issue_token()
+
+        with self.app.app_context():
+            db.session.delete(db.session.get(SystemSecurityState, 1))
+            db.session.commit()
+
+        response = self.client.get("/protected", headers=self.auth_header(token))
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {"message": "Authentication required"})
 
     def test_role_change_revokes_old_claim(self):
         token = self.issue_token()

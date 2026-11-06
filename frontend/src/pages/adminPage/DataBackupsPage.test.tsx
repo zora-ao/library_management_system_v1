@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -113,6 +113,46 @@ describe("DataBackupsPage", () => {
     expect(click).toHaveBeenCalledOnce();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:backup");
     expect(screen.getByText(/fresh safety download is ready/i)).toBeInTheDocument();
+  });
+
+  it("accurately describes backup preparation while export is pending", async () => {
+    let finishDownload: ((result: {
+      blob: Blob;
+      filename: string;
+      safetyToken: string;
+    }) => void) | undefined;
+    mocks.download.mockImplementation(() => new Promise((resolve) => {
+      finishDownload = resolve;
+    }));
+    const user = userEvent.setup();
+    render(<DataBackupsPage />);
+    await waitFor(() => expect(screen.getByLabelText("Backup passphrase")).toBeEnabled());
+    await user.type(screen.getByLabelText("Backup passphrase"), "long-enough-passphrase");
+    await user.type(screen.getByLabelText("Confirm backup passphrase"), "long-enough-passphrase");
+    await user.type(screen.getByLabelText("Current password for backup"), "password");
+
+    await user.click(screen.getByRole("button", { name: /download encrypted backup/i }));
+
+    const pendingButton = screen.getByRole("button", {
+      name: /creating the postgresql archive and encrypting it before download begins/i,
+    });
+    expect(pendingButton).toBeDisabled();
+    expect(pendingButton).toHaveClass("h-auto", "min-h-9", "whitespace-normal");
+
+    await act(async () => {
+      finishDownload?.({
+        blob: new Blob(["encrypted"]),
+        filename: "pahina-test.pahina-backup",
+        safetyToken: "fresh-safety-token",
+      });
+    });
+    await waitFor(() => expect(screen.getByRole("button", {
+      name: /download encrypted backup/i,
+    })).toBeDisabled());
+    expect(screen.getByLabelText("Backup passphrase")).toHaveValue("");
+    expect(screen.queryByText(
+      /creating the postgresql archive and encrypting it before download begins/i,
+    )).not.toBeInTheDocument();
   });
 
   it("renders Google step-up for Google accounts", async () => {

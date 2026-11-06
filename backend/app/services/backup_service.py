@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
 from pathlib import Path
+import time
 
 from flask import current_app
 from sqlalchemy import func, select, text
@@ -86,6 +87,7 @@ class BackupService:
       database_url=current_app.config.get("SQLALCHEMY_DATABASE_URI") or "",
       binary_dir=Path(binary_dir) if binary_dir else None,
       timeout_seconds=current_app.config.get("BACKUP_OPERATION_TIMEOUT_SECONDS", 300),
+      compression_level=current_app.config.get("BACKUP_PG_COMPRESSION_LEVEL", "1"),
     )
 
   @staticmethod
@@ -143,18 +145,22 @@ class BackupService:
     if not capabilities.available:
       raise BackupServiceError(capabilities.reason or "Database backups are unavailable")
 
+    started_at = time.perf_counter()
     dump_path = workspace / "database.dump"
     before = (
       BackupService._schema_revisions(),
       BackupService._table_counts(),
       BackupService._active_admin_count(),
     )
+    metadata_before_done = time.perf_counter()
     create_custom_dump(BackupService._postgres_config(), dump_path)
+    native_dump_done = time.perf_counter()
     after = (
       BackupService._schema_revisions(),
       BackupService._table_counts(),
       BackupService._active_admin_count(),
     )
+    metadata_after_done = time.perf_counter()
     if before != after:
       dump_path.unlink(missing_ok=True)
       raise BackupServiceError("Database changed while the backup was being created")
@@ -184,6 +190,30 @@ class BackupService:
       encrypted_path,
       passphrase,
       BackupService._envelope_policy(),
+    )
+    encryption_done = time.perf_counter()
+    to_milliseconds = lambda seconds: int(round(seconds * 1000))
+    timings = {
+      "metadata_before_ms": to_milliseconds(metadata_before_done - started_at),
+      "native_dump_ms": to_milliseconds(native_dump_done - metadata_before_done),
+      "metadata_after_ms": to_milliseconds(metadata_after_done - native_dump_done),
+      "encryption_ms": to_milliseconds(encryption_done - metadata_after_done),
+      "total_ms": to_milliseconds(encryption_done - started_at),
+    }
+    current_app.logger.info(
+      (
+        "backup_creation_timing metadata_before_ms=%d native_dump_ms=%d "
+        "metadata_after_ms=%d encryption_ms=%d total_ms=%d"
+      ),
+      timings["metadata_before_ms"],
+      timings["native_dump_ms"],
+      timings["metadata_after_ms"],
+      timings["encryption_ms"],
+      timings["total_ms"],
+      extra={
+        "event": "backup_creation_timing",
+        **timings,
+      },
     )
     return BackupArtifact(
       path=encrypted_path,
