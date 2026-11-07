@@ -18,6 +18,12 @@ from app.dsa.search import (
     linear_exact_search,
 )
 from app.dsa.merge_sort import merge_sort_books
+from app.dsa.hash_table import (
+    ChainedHashTable,
+    HashTableStats,
+    IsbnIndexResult,
+    build_isbn_index,
+)
 
 __all__ = [
     "AlgorithmStats",
@@ -32,6 +38,10 @@ __all__ = [
     "linear_contains_search",
     "linear_exact_search",
     "merge_sort_books",
+    "ChainedHashTable",
+    "HashTableStats",
+    "IsbnIndexResult",
+    "build_isbn_index",
     "search_field_value",
     "sort_field_value",
 ]
