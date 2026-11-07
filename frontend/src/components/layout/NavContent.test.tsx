@@ -49,6 +49,7 @@ describe("admin sidebar navigation", () => {
     expect(screen.queryByRole("link", { name: /Librarians/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Students/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Data Backups" })).toHaveAttribute("href", "/backups");
+    expect(screen.getByRole("link", { name: "DSA Explorer" })).toHaveAttribute("href", "/dsa-explorer");
 
     const borrowRequestsToggle = screen.getByRole("button", { name: /Expand Borrow Requests menu/i });
     expect(borrowRequestsToggle).toBeInTheDocument();
@@ -69,6 +70,13 @@ describe("admin sidebar navigation", () => {
     render(<MemoryRouter><NavContent /></MemoryRouter>);
     expect(screen.queryByRole("link", { name: "Data Backups" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Users" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "DSA Explorer" })).toHaveAttribute("href", "/dsa-explorer");
+  });
+
+  it("does not show the DSA Explorer to students", () => {
+    authState.role = "student";
+    render(<MemoryRouter><NavContent /></MemoryRouter>);
+    expect(screen.queryByRole("link", { name: "DSA Explorer" })).not.toBeInTheDocument();
   });
 
   it("moves Settings and Logout from standalone navigation into the profile menu for admins", async () => {

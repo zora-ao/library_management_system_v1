@@ -15,6 +15,7 @@ export interface FilterSelectProps {
   className?: string;
   triggerClassName?: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export default function FilterSelect({
@@ -25,6 +26,7 @@ export default function FilterSelect({
   className,
   triggerClassName,
   placeholder,
+  disabled = false,
 }: FilterSelectProps) {
   const selectedOption = options.find((option) => option.value === value);
   const selectedLabel = selectedOption?.label || placeholder || label;
@@ -33,6 +35,7 @@ export default function FilterSelect({
     <div className={cn("relative w-full", className)}>
       <Select.Root
         value={value}
+        disabled={disabled}
         onValueChange={(next) => {
           if (next !== null) onChange(next);
         }}
@@ -40,7 +43,8 @@ export default function FilterSelect({
         <Select.Trigger
           aria-hidden="true"
           tabIndex={0}
-          className={cn("ui-filter-select text-sm sm:text-base", triggerClassName)}
+          disabled={disabled}
+          className={cn("ui-filter-select text-sm sm:text-base disabled:cursor-not-allowed disabled:opacity-50", triggerClassName)}
         >
           <span className="truncate">{selectedLabel}</span>
           <Select.Icon className="ui-filter-select-icon" aria-hidden="true">
@@ -79,6 +83,7 @@ export default function FilterSelect({
       <select
         aria-label={label}
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         tabIndex={-1}
         className="sr-only pointer-events-none text-sm sm:text-base"

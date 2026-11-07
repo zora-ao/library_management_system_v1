@@ -18,6 +18,8 @@ import BorrowRequestsPage from "./pages/adminPage/BorrowRequestsPage";
 import CategoriesPage from "./pages/adminPage/CategoriesPage";
 import DataBackupsPage from "./pages/adminPage/DataBackupsPage";
 import { AdminRoute } from "./routes/AdminRoute";
+import { StaffRoute } from "./routes/StaffRoute";
+import DsaExplorerPage from "./pages/adminPage/DsaExplorerPage";
 
 const App = () => {
   const { user } = useAuth();
@@ -38,6 +40,9 @@ const App = () => {
           <Route path="/my-borrows" element={<MyBorrowsPage />} />
           <Route path="/my-favorites" element={<MyFavoritesPage />} />
           <Route path="/profile" element={<UsersProfile />} />
+          <Route element={<StaffRoute />}>
+            <Route path="/dsa-explorer" element={<DsaExplorerPage />} />
+          </Route>
           <Route element={<AdminRoute />}>
             <Route path="/backups" element={<DataBackupsPage />} />
           </Route>
