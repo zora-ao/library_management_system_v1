@@ -17,6 +17,7 @@ from app.dsa.search import (
     linear_contains_search,
     linear_exact_search,
 )
+from app.dsa.merge_sort import merge_sort_books
 
 __all__ = [
     "AlgorithmStats",
@@ -30,6 +31,7 @@ __all__ = [
     "binary_exact_search",
     "linear_contains_search",
     "linear_exact_search",
+    "merge_sort_books",
     "search_field_value",
     "sort_field_value",
 ]
