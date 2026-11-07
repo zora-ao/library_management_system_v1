@@ -24,6 +24,7 @@ from app.dsa.hash_table import (
     IsbnIndexResult,
     build_isbn_index,
 )
+from app.dsa.binary_search_tree import BookTitleBST
 
 __all__ = [
     "AlgorithmStats",
@@ -42,6 +43,7 @@ __all__ = [
     "HashTableStats",
     "IsbnIndexResult",
     "build_isbn_index",
+    "BookTitleBST",
     "search_field_value",
     "sort_field_value",
 ]
