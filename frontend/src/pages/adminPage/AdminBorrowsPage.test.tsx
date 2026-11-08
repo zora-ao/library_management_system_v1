@@ -121,10 +121,10 @@ describe("AdminBorrowsPage", () => {
     expect(screen.getByRole("heading", { name: "Loans & Returns" })).toBeInTheDocument();
     expect(screen.getByText("Loans & Returns", { selector: "p" })).toBeInTheDocument();
     expect(screen.queryByText("Workspace / Loans & Returns")).not.toBeInTheDocument();
-    expect(screen.getByTestId("active-loans-count")).toHaveTextContent("02");
-    expect(screen.getByTestId("overdue-count")).toHaveTextContent("01");
-    expect(screen.getByTestId("due-today-count")).toHaveTextContent("01");
-    expect(screen.getByTestId("returned-today-count")).toHaveTextContent("01");
+    expect(screen.getByTestId("active-loans-count")).toHaveTextContent("2");
+    expect(screen.getByTestId("overdue-count")).toHaveTextContent("1");
+    expect(screen.getByTestId("due-today-count")).toHaveTextContent("1");
+    expect(screen.getByTestId("returned-today-count")).toHaveTextContent("1");
     expect(screen.queryByText("Ignored Request")).not.toBeInTheDocument();
   });
 
@@ -179,7 +179,7 @@ describe("AdminBorrowsPage", () => {
   it("uses theme-aware cards, controls, table rows, and pagination", () => {
     renderPage();
 
-    expect(screen.getByText("Active loans").closest("article")).toHaveClass("border-primary/40", "bg-primary/90", "text-primary-foreground");
+    expect(screen.getByText("Active loans").closest("article")).toHaveClass("border-border/70", "bg-card", "backdrop-blur-xl");
     expect(screen.getByText("Needs your attention").closest("article")).toHaveClass("border-border/70", "bg-card", "shadow-[var(--glass-shadow)]");
     expect(screen.getByRole("searchbox")).toHaveClass("bg-control");
     expect(screen.getByRole("columnheader", { name: "Student" }).closest("tr")).toHaveClass("border-border", "bg-muted/60");
@@ -199,7 +199,7 @@ describe("AdminBorrowsPage", () => {
 
     expect(page).toHaveClass("w-full", "space-y-7", "pb-10");
     expect(page).not.toHaveClass("mx-auto", "max-w-[1180px]");
-    expect(summaryCard).toHaveClass("w-full", "rounded-3xl");
+    expect(summaryCard).toHaveClass("rounded-3xl", "border-border/70", "bg-card", "backdrop-blur-xl");
     expect(workspace).toHaveClass("overflow-hidden", "rounded-3xl", "border-border/70", "bg-card");
     expect(filterBar).toHaveClass("border-b", "border-border", "p-5");
     expect(table).toHaveClass("w-full", "table-fixed", "text-sm", "sm:text-base");
@@ -227,9 +227,11 @@ describe("AdminBorrowsPage", () => {
     expect(eyebrow).not.toHaveClass("booky-eyebrow", "text-leather");
     expect(screen.getByRole("heading", { name: "Loans & Returns" })).toHaveClass("text-2xl", "sm:text-3xl");
     expect(screen.getByText("Track borrowed books, follow up on due dates, and record returns.")).toHaveClass("text-sm", "sm:text-base");
-    expect(screen.getByText("Active loans")).toHaveClass("text-xs", "sm:text-sm");
+    expect(screen.getByRole("heading", { name: "Loans & Returns" })).toHaveClass("font-semibold", "tracking-tight");
+    expect(screen.getByText("Active loans")).toHaveClass("text-sm", "font-medium", "sm:text-base");
+    expect(screen.getByTestId("active-loans-count")).toHaveClass("text-2xl", "font-semibold", "sm:text-3xl");
     expect(screen.getByText("Includes overdue books")).toHaveClass("text-xs", "sm:text-sm");
-    expect(screen.getByRole("button", { name: /Active Loans/ })).toHaveClass("text-xs", "sm:text-sm");
+    expect(screen.getByRole("button", { name: /Active Loans/ })).toHaveClass("text-sm", "font-semibold", "sm:text-base");
     expect(screen.getByRole("searchbox")).toHaveClass("text-sm", "sm:text-base");
     expect(screen.getByRole("columnheader", { name: "Student" })).toHaveClass("text-foreground");
     expect(screen.getByRole("columnheader", { name: "Student" })).not.toHaveClass("text-xs", "font-bold", "sm:text-sm");

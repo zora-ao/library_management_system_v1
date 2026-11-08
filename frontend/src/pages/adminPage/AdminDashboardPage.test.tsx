@@ -55,8 +55,8 @@ describe("AdminDashboardPage card surfaces", () => {
   it("renders the compact dashboard response instead of full collection data", () => {
     render(<MemoryRouter><AdminDashboardPage /></MemoryRouter>);
 
-    expect(screen.getByText("Pending requests").closest("article")).toHaveTextContent("02");
-    expect(screen.getByText("Waiting for pickup").closest("article")).toHaveTextContent("01");
+    expect(screen.getByText("Pending requests").closest("article")).toHaveTextContent(/Pending requests2Awaiting/);
+    expect(screen.getByText("Waiting for pickup").closest("article")).toHaveTextContent(/Waiting for pickup1Approved/);
     expect(screen.getByText("Book titles").previousElementSibling).toHaveTextContent("6");
     expect(screen.getByText("Available copies").previousElementSibling).toHaveTextContent("9");
     expect(screen.getByText("Categories").previousElementSibling).toHaveTextContent("3");
@@ -92,11 +92,12 @@ describe("AdminDashboardPage card surfaces", () => {
   it("uses theme-aware styling for dashboard cards shared by staff roles", () => {
     render(<MemoryRouter><AdminDashboardPage /></MemoryRouter>);
 
-    const featured = screen.getByText("Pending requests").closest("article");
+    const pending = screen.getByText("Pending requests").closest("article");
     const standard = screen.getByText("Waiting for pickup").closest("article");
     const overview = screen.getByText("Library overview").closest("section");
 
-    expect(featured).toHaveClass("bg-primary/90", "border-primary/40", "text-primary-foreground");
+    expect(pending).toHaveClass("bg-card", "border-border/70", "backdrop-blur-xl");
+    expect(pending).not.toHaveClass("bg-primary/90");
     expect(standard).toHaveClass("bg-card", "border-border/70", "shadow-[var(--glass-shadow)]");
     expect(overview).toHaveClass("bg-card", "border-border/70", "shadow-[var(--glass-shadow)]");
   });
@@ -107,8 +108,9 @@ describe("AdminDashboardPage card surfaces", () => {
     expect(screen.getByText("Overview").parentElement).toHaveClass("text-sm", "sm:text-base");
     expect(screen.queryByText("Workspace / Overview")).not.toBeInTheDocument();
     expect(screen.getByText(/Good (morning|afternoon|evening), Library\./)).toHaveClass("text-3xl", "sm:text-4xl");
-    expect(screen.getByText("Waiting for pickup")).toHaveClass("text-sm", "sm:text-base");
-    expect(screen.getByText("Approved and ready")).toHaveClass("text-sm", "sm:text-base");
+    expect(screen.getByText("Waiting for pickup")).toHaveClass("text-sm", "font-medium", "sm:text-base");
+    expect(screen.getByText("Waiting for pickup").nextElementSibling).toHaveClass("text-2xl", "font-semibold", "sm:text-3xl");
+    expect(screen.getByText("Approved and ready")).toHaveClass("text-xs", "sm:text-sm");
     expect(screen.getByText("Student / Book").parentElement).toHaveClass("text-sm", "sm:text-base");
     expect(screen.getByRole("link", { name: /Review requests/ })).toHaveClass("text-sm", "sm:text-base");
     expect(screen.getByText("Loans", { selector: "span" }).parentElement).toHaveClass("text-sm", "sm:text-base");

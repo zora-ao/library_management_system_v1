@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { AlertTriangle, BookOpen, CalendarClock, CheckCircle2, Search } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import FilterSelect from "@/components/ui/FilterSelect";
@@ -22,8 +22,6 @@ import {
 } from "@/features/borrows/lib/loanView";
 import { useAdminBorrows, useApproveReturn } from "@/hooks/useBorrows";
 import { cn } from "@/lib/utils";
-
-const countLabel = (value: number) => String(value).padStart(2, "0");
 
 const AdminBorrowsPage = () => {
   const { data: borrows = [], isLoading, isError, error } = useAdminBorrows();
@@ -96,24 +94,29 @@ const AdminBorrowsPage = () => {
   };
 
   const summary = [
-    { label: "Active loans", value: activeLoans.length, hint: "Includes overdue books", testId: "active-loans-count", featured: true },
-    { label: "Overdue", value: overdueLoans.length, hint: "Needs your attention", testId: "overdue-count" },
-    { label: "Due today", value: dueToday.length, hint: "Expected back today", testId: "due-today-count" },
-    { label: "Returned today", value: returnedToday.length, hint: "Checked back into the library", testId: "returned-today-count" },
+    { label: "Active loans", value: activeLoans.length, hint: "Includes overdue books", testId: "active-loans-count", icon: BookOpen, tone: "bg-primary/10 text-primary" },
+    { label: "Overdue", value: overdueLoans.length, hint: "Needs your attention", testId: "overdue-count", icon: AlertTriangle, tone: "bg-destructive/10 text-destructive" },
+    { label: "Due today", value: dueToday.length, hint: "Expected back today", testId: "due-today-count", icon: CalendarClock, tone: "bg-primary/10 text-primary" },
+    { label: "Returned today", value: returnedToday.length, hint: "Checked back into the library", testId: "returned-today-count", icon: CheckCircle2, tone: "bg-primary/10 text-primary" },
   ];
 
   return (
     <div className="w-full space-y-7 pb-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:text-sm">Loans &amp; Returns</p><h1 className="booky-heading mt-3 text-2xl sm:text-3xl">Loans &amp; Returns</h1><p className="mt-2 text-sm text-muted-foreground sm:text-base">Track borrowed books, follow up on due dates, and record returns.</p></div>
+        <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:text-sm">Loans &amp; Returns</p><h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Loans &amp; Returns</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">Track borrowed books, follow up on due dates, and record returns.</p></div>
       </header>
 
       <section className="grid w-full gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Loan summary">
-        {summary.map((item) => (
-          <article key={item.label} className={cn("min-h-28 w-full rounded-3xl border p-5 shadow-[var(--glass-shadow)]", item.featured ? "border-primary/40 bg-primary/90 text-primary-foreground" : "border-border/70 bg-card")}>
-            <p className={cn("text-xs font-bold sm:text-sm", item.featured ? "text-primary-foreground/75" : "text-muted-foreground")}>{item.label}</p>
-            <strong data-testid={item.testId} className={cn("mt-1 block text-2xl text-heading sm:text-3xl", item.featured && "text-primary-foreground", item.label === "Overdue" && "text-danger")}>{countLabel(item.value)}</strong>
-            <p className={cn("mt-1 text-xs sm:text-sm", item.featured ? "text-primary-foreground/75" : "text-muted-foreground")}>{item.hint}</p>
+        {summary.map(({ label, value, hint, testId, icon: Icon, tone }) => (
+          <article key={label} className="rounded-3xl border border-border/70 bg-card p-5 shadow-[var(--glass-shadow)] backdrop-blur-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground sm:text-base">{label}</p>
+                <p data-testid={testId} className="mt-2 text-2xl font-semibold sm:text-3xl">{value}</p>
+                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">{hint}</p>
+              </div>
+              <span className={cn("rounded-2xl p-3", tone)}><Icon className="size-5" /></span>
+            </div>
           </article>
         ))}
       </section>
@@ -121,14 +124,14 @@ const AdminBorrowsPage = () => {
       <section className="flex min-h-[570px] w-full flex-col overflow-hidden rounded-3xl border border-border/70 bg-card shadow-[var(--glass-shadow)] backdrop-blur-xl">
         <div className="flex flex-col gap-3 border-b border-border px-5 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-6">
-            <button type="button" onClick={() => switchMode("active")} className={cn("border-b-2 border-transparent pb-3 text-xs font-bold text-muted-foreground transition-colors sm:text-sm", mode === "active" && "border-primary text-foreground")}>Active Loans&nbsp; {activeLoans.length}</button>
-            <button type="button" onClick={() => switchMode("history")} className={cn("border-b-2 border-transparent pb-3 text-xs font-bold text-muted-foreground transition-colors sm:text-sm", mode === "history" && "border-primary text-foreground")}>Return History&nbsp; {returnedLoans.length}</button>
+            <button type="button" onClick={() => switchMode("active")} className={cn("border-b-2 border-transparent pb-3 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:text-base", mode === "active" && "border-primary text-foreground")}>Active Loans&nbsp; {activeLoans.length}</button>
+            <button type="button" onClick={() => switchMode("history")} className={cn("border-b-2 border-transparent pb-3 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:text-base", mode === "history" && "border-primary text-foreground")}>Return History&nbsp; {returnedLoans.length}</button>
           </div>
           <p className="pb-3 text-xs text-muted-foreground sm:text-sm">{mode === "active" ? "Overdue loans appear first" : "Most recent returns first"}</p>
         </div>
 
         <div className="grid gap-3 border-b border-border p-5 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_180px_150px_190px]">
-          <label className="relative"><span className="sr-only">Search loans</span><Search className="absolute left-3 top-3.5 size-4 text-muted-foreground" /><Input type="search" className="h-11 border-0 bg-control pl-10 text-sm sm:text-base md:text-base" placeholder="Search student, book title, or loan ID" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
+          <label className="relative"><span className="sr-only">Search loans</span><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input type="search" className="h-10 bg-control pl-9 text-sm sm:text-base md:text-base" placeholder="Search student, book title, or loan ID" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
           <div>
             {mode === "active" ? (
               <FilterSelect
