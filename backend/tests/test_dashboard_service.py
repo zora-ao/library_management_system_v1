@@ -103,7 +103,8 @@ class DashboardServiceTests(unittest.TestCase):
         self.assertEqual(result["categories"], 1)
         self.assertEqual(result["pending"], 1)
         self.assertEqual(result["waiting_for_pickup"], 1)
-        self.assertEqual(result["active"], 1)
+        # Active loans include overdue ones, matching the Loans & Returns page.
+        self.assertEqual(result["active"], 2)
         self.assertEqual(result["overdue"], 1)
         self.assertEqual(result["returned"], 1)
         self.assertEqual(result["returned_today"], 1)
@@ -219,6 +220,40 @@ class DashboardServiceTests(unittest.TestCase):
         march_eighth = next(item for item in result["activity"] if item["date"] == "2026-03-08")
         self.assertEqual(march_seventh["loans"], 1)
         self.assertEqual(march_eighth["loans"], 0)
+
+    def test_pending_returns_past_their_due_day_count_as_overdue(self):
+        book = Book("Refactoring", "Martin Fowler", total_copies=2, available_copies=0)
+        student = User("Ben Reyes", "ben@example.com", role="student")
+        db.session.add_all([book, student])
+        db.session.flush()
+        # Local time is 12:00 on Nov 6 (UTC+8).
+        late_return = self.add_borrow(
+            student,
+            book,
+            Borrow.STATUS_PENDING_RETURN,
+            created_hours_ago=72,
+            borrowed_at=self.now - timedelta(days=15),
+            due_date=datetime(2026, 11, 5, 10, 0, tzinfo=timezone.utc),  # Nov 5, 18:00 local
+        )
+        self.add_borrow(
+            student,
+            book,
+            Borrow.STATUS_PENDING_RETURN,
+            created_hours_ago=72,
+            borrowed_at=self.now - timedelta(days=14),
+            due_date=datetime(2026, 11, 6, 1, 0, tzinfo=timezone.utc),  # due earlier today, local
+        )
+        db.session.commit()
+
+        result = DashboardService.get_summary(
+            include_user_count=False,
+            timezone_offset_minutes=-480,
+            now_utc=self.now,
+        )
+
+        self.assertEqual(result["active"], 2)
+        self.assertEqual(result["overdue"], 1)
+        self.assertEqual(result["attention"][0]["id"], str(late_return.id))
 
 
 if __name__ == "__main__":
