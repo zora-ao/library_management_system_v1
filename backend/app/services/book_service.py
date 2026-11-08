@@ -2,9 +2,10 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from app.models import Book, Review, Category, Borrow, Favorite
+from app.models.book import REVIEW_STATS_GROUP
 from app.utils.cloudinary import upload_book_cover
 from app.extensions import db
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, undefer_group
 
 class BookService:
     # for encapsulating book related
@@ -48,7 +49,7 @@ class BookService:
             Favorite.query.join(Book, Favorite.book_id == Book.id)
             .options(
                 joinedload(Favorite.book).joinedload(Book.category),
-                joinedload(Favorite.book).joinedload(Book.reviews),
+                joinedload(Favorite.book).undefer_group(REVIEW_STATS_GROUP),
             )
             .filter(Favorite.user_id == user_id, Book.is_deleted == False)
             .order_by(Favorite.created_at.desc(), Favorite.id.desc())
@@ -94,28 +95,32 @@ class BookService:
         if not book or book.is_deleted:
             raise LookupError("Book not found")
 
-        reviews = Review.query.filter(
-            Review.book_id == book_id
-        ).order_by(Review.created_at.desc()).all()
+        reviews = (
+            Review.query.options(joinedload(Review.user))
+            .filter(Review.book_id == book_id)
+            .order_by(Review.created_at.desc())
+            .all()
+        )
 
         return reviews
 
     @staticmethod
     def get_book_reviews_stats(book_id):
-        reviews = Review.query.filter(Review.book_id == book_id).all()
-        total_reviews = len(reviews)
+        average, total_reviews = (
+            db.session.query(db.func.avg(Review.rating), db.func.count(Review.id))
+            .filter(Review.book_id == book_id)
+            .one()
+        )
 
-        if total_reviews == 0:
+        if not total_reviews:
             return {
                 "average_rating": 0.0,
                 "total_reviews": 0
             }
 
-        avr_rating = sum(review.rating for review in reviews) / total_reviews
-
         return {
-            "average_rating": round(avr_rating, 1),
-            "total_reviews": total_reviews
+            "average_rating": round(float(average), 1),
+            "total_reviews": int(total_reviews)
         }
 
     @staticmethod
@@ -138,17 +143,20 @@ class BookService:
 
     @staticmethod
     def get_book_by_id(book_id, include_deleted=False):
-        query = Book.query.options(joinedload(Book.category), joinedload(Book.reviews)) 
+        query = Book.query.options(
+            joinedload(Book.category), undefer_group(REVIEW_STATS_GROUP)
+        )
         if not include_deleted:
             query = query.filter(Book.is_deleted == False)
         return query.filter(Book.id == book_id).first()
 
     @staticmethod
     def get_paginated_books(search_query="", category_id=None,  page=1, limit=10):
-        # Added joinedload(Book.reviews) to load reviews for rating calculation
+        # Ratings come from SQL aggregates in the same statement, so no review
+        # rows are loaded.
         query = Book.query.options(
-            joinedload(Book.category), 
-            joinedload(Book.reviews)
+            joinedload(Book.category),
+            undefer_group(REVIEW_STATS_GROUP),
         ).filter(Book.is_deleted == False)
 
         # Filter by category if passed
@@ -160,6 +168,8 @@ class BookService:
                 Book.title.ilike(f"%{search_query}%") |
                 Book.author.ilike(f"%{search_query}%")
             )
+        # A stable order keeps pages from overlapping or skipping books.
+        query = query.order_by(Book.title.asc(), Book.id.asc())
         return query.paginate(page=page, per_page=limit, error_out=False)
 
     @staticmethod
@@ -169,7 +179,7 @@ class BookService:
 
         query = Book.query.options(
             joinedload(Book.category),
-            joinedload(Book.reviews),
+            undefer_group(REVIEW_STATS_GROUP),
         )
         if state == "active":
             return query.filter(Book.is_deleted == False).order_by(
@@ -336,11 +346,20 @@ class BookService:
     @staticmethod
     def get_related_books(book_id, limit = 5):
         book = Book.query.get_or_404(book_id)
-        related = Book.query.filter(
-        (Book.category_id == book.category_id) | (Book.author == book.author),
-        Book.id != book.id,
-        Book.is_deleted == False
-        ).limit(limit).all()
+        related = (
+            Book.query.options(
+                joinedload(Book.category),
+                undefer_group(REVIEW_STATS_GROUP),
+            )
+            .filter(
+                (Book.category_id == book.category_id) | (Book.author == book.author),
+                Book.id != book.id,
+                Book.is_deleted == False,
+            )
+            .order_by(Book.title.asc(), Book.id.asc())
+            .limit(limit)
+            .all()
+        )
 
         return related
 

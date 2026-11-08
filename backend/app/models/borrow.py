@@ -7,6 +7,11 @@ from app.extensions import db
 
 class Borrow(BaseEntity):
     __tablename__ = "borrows"
+    __table_args__ = (
+        db.Index("ix_borrows_user_id_status", "user_id", "status"),
+        db.Index("ix_borrows_book_id_status", "book_id", "status"),
+        db.Index("ix_borrows_status", "status"),
+    )
 
     # Status Constants
     STATUS_PENDING_BORROW = "PENDING_BORROW"
