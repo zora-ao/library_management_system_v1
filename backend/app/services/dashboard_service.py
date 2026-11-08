@@ -43,6 +43,19 @@ class DashboardService:
         local_today = now.astimezone(local_timezone).date()
         local_dates = [local_today - timedelta(days=days) for days in range(6, -1, -1)]
 
+        local_today_start = datetime.combine(
+            local_today, time.min, tzinfo=local_timezone
+        ).astimezone(timezone.utc).replace(tzinfo=None)
+
+        # Keep these definitions aligned with the Loans & Returns page
+        # (frontend/src/features/borrows/lib/loanView.ts): a loan is active
+        # until it is returned, and a pending return whose due date has passed
+        # (by local calendar day) is still overdue.
+        active_condition = Borrow.status.in_((
+            Borrow.STATUS_BORROWED,
+            Borrow.STATUS_PENDING_RETURN,
+            Borrow.STATUS_OVERDUE,
+        ))
         overdue_condition = or_(
             Borrow.status == Borrow.STATUS_OVERDUE,
             and_(
@@ -50,18 +63,17 @@ class DashboardService:
                 Borrow.due_date.is_not(None),
                 Borrow.due_date < now_for_db,
             ),
+            and_(
+                Borrow.status == Borrow.STATUS_PENDING_RETURN,
+                Borrow.due_date.is_not(None),
+                Borrow.due_date < local_today_start,
+            ),
         )
 
         metric_columns = [
             func.count(case((Borrow.status == Borrow.STATUS_PENDING_BORROW, 1))).label("pending"),
             func.count(case((Borrow.status == Borrow.STATUS_READY_FOR_PICKUP, 1))).label("waiting_for_pickup"),
-            func.count(case((or_(
-                Borrow.status == Borrow.STATUS_PENDING_RETURN,
-                and_(
-                    Borrow.status == Borrow.STATUS_BORROWED,
-                    or_(Borrow.due_date.is_(None), Borrow.due_date >= now_for_db),
-                ),
-            ), 1))).label("active"),
+            func.count(case((active_condition, 1))).label("active"),
             func.count(case((overdue_condition, 1))).label("overdue"),
             func.count(case((Borrow.status == Borrow.STATUS_RETURNED, 1))).label("returned"),
             select(func.count(Book.id)).where(Book.is_deleted.is_(False)).scalar_subquery().label("book_titles"),

@@ -5,6 +5,9 @@ from app.extensions import db
 
 class Review(BaseEntity):
   __tablename__ = "reviews"
+  __table_args__ = (
+    db.Index("ix_reviews_book_id", "book_id"),
+  )
 
   book_id = db.Column(UUID(as_uuid=True), db.ForeignKey("books.id"), nullable=False)
   user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)

@@ -9,6 +9,7 @@ from app.blueprints.books.routes import books_bp
 from app.blueprints.borrows.routes import borrows_bp
 from app.blueprints.category.routes import category_bp
 from app.blueprints.dashboard.routes import dashboard_bp
+from app.blueprints.dsa.routes import dsa_bp
 from app.blueprints.users.routes import users_bp
 
 from app.extensions import db, migrate, jwt
@@ -54,6 +55,7 @@ def create_app():
   app.register_blueprint(borrows_bp)
   app.register_blueprint(category_bp)
   app.register_blueprint(dashboard_bp)
+  app.register_blueprint(dsa_bp)
   app.register_blueprint(users_bp)
 
   install_maintenance_guard(app)

@@ -24,6 +24,7 @@ class Book(BaseEntity): # Inheritance
       "pages IS NULL OR pages > 0",
       name="ck_books_pages_positive",
     ),
+    db.Index("ix_books_category_id", "category_id"),
   )
 
   isbn = db.Column(db.String(20), unique=True)
@@ -68,15 +69,18 @@ class Book(BaseEntity): # Inheritance
   def available_copies(self):
     return self._available_copies
 
+  # Ratings are aggregated in SQL (see column_property definitions at the
+  # bottom of this module) instead of loading every Review row into Python.
   @property
   def average_rating(self):
-    if not self.reviews:
+    average = self.rating_average
+    if average is None:
       return 0.0
-    return round(sum(review.rating for review in self.reviews) / len(self.reviews), 1)
+    return round(float(average), 1)
 
   @property
   def total_reviews(self):
-    return len(self.reviews)
+    return int(self.review_count or 0)
 
   def adjust_total_copies(self, new_total: int):
     # it safely update the total copies and recalculate available copies
@@ -128,3 +132,30 @@ class Book(BaseEntity): # Inheritance
         "is_deleted": bool(self.is_deleted),
         "archived_at": archived_at.astimezone(timezone.utc).isoformat() if archived_at else None
     }
+
+
+# Review aggregates as deferred SQL subqueries. List queries load them in the
+# same statement with ``undefer_group(REVIEW_STATS_GROUP)``; any other access
+# loads both values with one extra query instead of fetching every review.
+from sqlalchemy import func, select  # noqa: E402
+from sqlalchemy.orm import column_property  # noqa: E402
+from app.models.review import Review  # noqa: E402
+
+REVIEW_STATS_GROUP = "review_stats"
+
+Book.rating_average = column_property(
+  select(func.avg(Review.rating))
+  .where(Review.book_id == Book.id)
+  .correlate_except(Review)
+  .scalar_subquery(),
+  deferred=True,
+  group=REVIEW_STATS_GROUP,
+)
+Book.review_count = column_property(
+  select(func.count(Review.id))
+  .where(Review.book_id == Book.id)
+  .correlate_except(Review)
+  .scalar_subquery(),
+  deferred=True,
+  group=REVIEW_STATS_GROUP,
+)

@@ -1,0 +1,1629 @@
+{
+  "cases": [
+    {
+      "comparison": "linear_vs_binary_title",
+      "correctness": {
+        "equivalent_result_ids": true,
+        "passed": true
+      },
+      "dataset_size": 100,
+      "measurements": [
+        {
+          "name": "linear_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 5000,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            37926600,
+            36963900,
+            35995600
+          ],
+          "summary_ns": {
+            "maximum": 37926600,
+            "median": 36963900,
+            "minimum": 35995600,
+            "p95": 37926600,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 640,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            4875900,
+            5564500,
+            4783600
+          ],
+          "summary_ns": {
+            "maximum": 5564500,
+            "median": 4875900,
+            "minimum": 4783600,
+            "p95": 5564500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_merge_sort_preprocessing",
+          "operation_counts": {
+            "comparisons": 541,
+            "writes": 1344
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            6750600,
+            5986100,
+            8550100
+          ],
+          "summary_ns": {
+            "maximum": 8550100,
+            "median": 6750600,
+            "minimum": 5986100,
+            "p95": 8550100,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            11626500,
+            11550600,
+            13333700
+          ],
+          "summary_ns": {
+            "maximum": 13333700,
+            "median": 11626500,
+            "minimum": 11550600,
+            "p95": 13333700,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "label": "first",
+          "query": "The Practical Databases: Volume 1"
+        },
+        {
+          "label": "middle",
+          "query": "The Quiet Archives: Volume 51"
+        },
+        {
+          "label": "last",
+          "query": "The Digital Libraries: Volume 100"
+        },
+        {
+          "label": "missing",
+          "query": "A Title That Is Not In The Catalog"
+        },
+        {
+          "label": "duplicate_title",
+          "query": "Data Structures in Practice"
+        }
+      ]
+    },
+    {
+      "comparison": "linear_vs_hash_isbn",
+      "correctness": {
+        "duplicate_isbn_count": 1,
+        "duplicate_policy": "last_record_wins",
+        "equivalent_result_ids_for_unique_targets": true,
+        "passed": true
+      },
+      "dataset_size": 100,
+      "measurements": [
+        {
+          "name": "linear_isbn_lookup_batch",
+          "operation_counts": {
+            "comparisons": 3102,
+            "lookups": 50,
+            "results": 38
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            9761900,
+            10683900,
+            10511000
+          ],
+          "summary_ns": {
+            "maximum": 10683900,
+            "median": 10511000,
+            "minimum": 9761900,
+            "p95": 10683900,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_isbn_lookup_batch",
+          "operation_counts": {
+            "lookups": 50,
+            "results": 38
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            427900,
+            521500,
+            378900
+          ],
+          "summary_ns": {
+            "maximum": 521500,
+            "median": 427900,
+            "minimum": 378900,
+            "p95": 521500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_index_build",
+          "operation_counts": {
+            "capacity": 191,
+            "collisions": 48,
+            "indexed_records": 93,
+            "max_chain_length": 3,
+            "normalized_duplicates": 1,
+            "resizes": 4,
+            "skipped_isbns": 6
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            2157200,
+            1804600,
+            1758100
+          ],
+          "summary_ns": {
+            "maximum": 2157200,
+            "median": 1804600,
+            "minimum": 1758100,
+            "p95": 2157200,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            2585100,
+            2326100,
+            2137000
+          ],
+          "summary_ns": {
+            "maximum": 2585100,
+            "median": 2326100,
+            "minimum": 2137000,
+            "p95": 2585100,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "label": "first_unique",
+          "normalized_unique": true,
+          "query": "978-0-00000-000-9"
+        },
+        {
+          "label": "middle_unique",
+          "normalized_unique": true,
+          "query": "9791040000052"
+        },
+        {
+          "label": "last_unique",
+          "normalized_unique": true,
+          "query": "9791040000099"
+        },
+        {
+          "label": "missing",
+          "normalized_unique": true,
+          "query": "9999999999999"
+        }
+      ]
+    },
+    {
+      "comparison": "custom_merge_vs_python_sorted",
+      "correctness": {
+        "passed": true,
+        "same_order_and_stability": true
+      },
+      "dataset_size": 100,
+      "measurements": [
+        {
+          "name": "python_sorted",
+          "operation_counts": {
+            "items": 100
+          },
+          "phase": "sorting",
+          "samples_ns": [
+            711200,
+            719100,
+            682500
+          ],
+          "summary_ns": {
+            "maximum": 719100,
+            "median": 711200,
+            "minimum": 682500,
+            "p95": 719100,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "custom_merge_sort",
+          "operation_counts": {
+            "comparisons": 541,
+            "items": 100,
+            "writes": 1344
+          },
+          "phase": "sorting",
+          "samples_ns": [
+            7444600,
+            8078500,
+            8507700
+          ],
+          "summary_ns": {
+            "maximum": 8507700,
+            "median": 8078500,
+            "minimum": 7444600,
+            "p95": 8507700,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "field": "title",
+          "label": "full_dataset"
+        }
+      ]
+    },
+    {
+      "comparison": "bst_vs_baselines",
+      "correctness": {
+        "exact_matches_binary": true,
+        "in_order_matches_merge_sort": true,
+        "passed": true,
+        "range_matches_linear": true
+      },
+      "dataset_size": 100,
+      "measurements": [
+        {
+          "name": "binary_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 640,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            3890500,
+            4932900,
+            5095200
+          ],
+          "summary_ns": {
+            "maximum": 5095200,
+            "median": 4932900,
+            "minimum": 3890500,
+            "p95": 5095200,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 380,
+            "lookups": 50,
+            "nodes_visited": 380,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            1604000,
+            926600,
+            1132000
+          ],
+          "summary_ns": {
+            "maximum": 1604000,
+            "median": 1132000,
+            "minimum": 926600,
+            "p95": 1604000,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "linear_range_query_batch",
+          "operation_counts": {
+            "comparisons": 7839,
+            "lookups": 50,
+            "results": 2278
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            36109200,
+            36389200,
+            37793900
+          ],
+          "summary_ns": {
+            "maximum": 37793900,
+            "median": 36389200,
+            "minimum": 36109200,
+            "p95": 37793900,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_range_query_batch",
+          "operation_counts": {
+            "comparisons": 4952,
+            "lookups": 50,
+            "nodes_visited": 2476,
+            "results": 2278
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            4393400,
+            4534500,
+            4528600
+          ],
+          "summary_ns": {
+            "maximum": 4534500,
+            "median": 4528600,
+            "minimum": 4393400,
+            "p95": 4534500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_merge_sort_preprocessing",
+          "operation_counts": {
+            "comparisons": 541,
+            "writes": 1344
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            14650500,
+            13231400,
+            8419500
+          ],
+          "summary_ns": {
+            "maximum": 14650500,
+            "median": 13231400,
+            "minimum": 8419500,
+            "p95": 14650500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_build_preprocessing",
+          "operation_counts": {
+            "tree_height": 7,
+            "tree_size": 100
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            753800,
+            752300,
+            731800
+          ],
+          "summary_ns": {
+            "maximum": 753800,
+            "median": 752300,
+            "minimum": 731800,
+            "p95": 753800,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_exact_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            18541000,
+            18164300,
+            13514700
+          ],
+          "summary_ns": {
+            "maximum": 18541000,
+            "median": 18164300,
+            "minimum": 13514700,
+            "p95": 18541000,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_exact_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            17008300,
+            14910300,
+            10283300
+          ],
+          "summary_ns": {
+            "maximum": 17008300,
+            "median": 14910300,
+            "minimum": 10283300,
+            "p95": 17008300,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_range_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            19797700,
+            18518200,
+            13679900
+          ],
+          "summary_ns": {
+            "maximum": 19797700,
+            "median": 18518200,
+            "minimum": 13679900,
+            "p95": 19797700,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "kind": "exact_queries",
+          "queries": [
+            {
+              "label": "first",
+              "query": "The Practical Databases: Volume 1"
+            },
+            {
+              "label": "middle",
+              "query": "The Quiet Archives: Volume 51"
+            },
+            {
+              "label": "last",
+              "query": "The Digital Libraries: Volume 100"
+            },
+            {
+              "label": "missing",
+              "query": "A Title That Is Not In The Catalog"
+            },
+            {
+              "label": "duplicate_title",
+              "query": "Data Structures in Practice"
+            }
+          ]
+        },
+        {
+          "kind": "range_queries",
+          "queries": [
+            {
+              "end": "The Quiet Software Design: Volume 90",
+              "label": "full_catalog",
+              "start": "Data Structures in Practice"
+            },
+            {
+              "end": "The Modern Databases: Volume 75",
+              "label": "middle_band",
+              "start": "The Distributed Libraries: Volume 19"
+            },
+            {
+              "end": "Zzzzz Benchmark Missing Z",
+              "label": "empty_range",
+              "start": "Zzzzz Benchmark Missing A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "comparison": "linear_vs_binary_title",
+      "correctness": {
+        "equivalent_result_ids": true,
+        "passed": true
+      },
+      "dataset_size": 1000,
+      "measurements": [
+        {
+          "name": "linear_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 50000,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            391385500,
+            184916600,
+            243290500
+          ],
+          "summary_ns": {
+            "maximum": 391385500,
+            "median": 243290500,
+            "minimum": 184916600,
+            "p95": 391385500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 960,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            5620700,
+            5783100,
+            3388000
+          ],
+          "summary_ns": {
+            "maximum": 5783100,
+            "median": 5620700,
+            "minimum": 3388000,
+            "p95": 5783100,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_merge_sort_preprocessing",
+          "operation_counts": {
+            "comparisons": 8702,
+            "writes": 19952
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            112757500,
+            100809600,
+            132836700
+          ],
+          "summary_ns": {
+            "maximum": 132836700,
+            "median": 112757500,
+            "minimum": 100809600,
+            "p95": 132836700,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            118378200,
+            106592700,
+            136224700
+          ],
+          "summary_ns": {
+            "maximum": 136224700,
+            "median": 118378200,
+            "minimum": 106592700,
+            "p95": 136224700,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "label": "first",
+          "query": "The Practical Databases: Volume 1"
+        },
+        {
+          "label": "middle",
+          "query": "The Practical Databases: Volume 501"
+        },
+        {
+          "label": "last",
+          "query": "The Applied Literature: Volume 1000"
+        },
+        {
+          "label": "missing",
+          "query": "A Title That Is Not In The Catalog"
+        },
+        {
+          "label": "duplicate_title",
+          "query": "Data Structures in Practice"
+        }
+      ]
+    },
+    {
+      "comparison": "linear_vs_hash_isbn",
+      "correctness": {
+        "duplicate_isbn_count": 1,
+        "duplicate_policy": "last_record_wins",
+        "equivalent_result_ids_for_unique_targets": true,
+        "passed": true
+      },
+      "dataset_size": 1000,
+      "measurements": [
+        {
+          "name": "linear_isbn_lookup_batch",
+          "operation_counts": {
+            "comparisons": 30539,
+            "lookups": 50,
+            "results": 38
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            147437900,
+            103280400,
+            96060000
+          ],
+          "summary_ns": {
+            "maximum": 147437900,
+            "median": 103280400,
+            "minimum": 96060000,
+            "p95": 147437900,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_isbn_lookup_batch",
+          "operation_counts": {
+            "lookups": 50,
+            "results": 38
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            642000,
+            630900,
+            404800
+          ],
+          "summary_ns": {
+            "maximum": 642000,
+            "median": 630900,
+            "minimum": 404800,
+            "p95": 642000,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_index_build",
+          "operation_counts": {
+            "capacity": 1535,
+            "collisions": 395,
+            "indexed_records": 940,
+            "max_chain_length": 2,
+            "normalized_duplicates": 1,
+            "resizes": 7,
+            "skipped_isbns": 59
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            10563400,
+            11670600,
+            12963900
+          ],
+          "summary_ns": {
+            "maximum": 12963900,
+            "median": 11670600,
+            "minimum": 10563400,
+            "p95": 12963900,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            11205400,
+            12301500,
+            13368700
+          ],
+          "summary_ns": {
+            "maximum": 13368700,
+            "median": 12301500,
+            "minimum": 11205400,
+            "p95": 13368700,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "label": "first_unique",
+          "normalized_unique": true,
+          "query": "978-0-00000-000-9"
+        },
+        {
+          "label": "middle_unique",
+          "normalized_unique": true,
+          "query": "9791040000501"
+        },
+        {
+          "label": "last_unique",
+          "normalized_unique": true,
+          "query": "9791040000999"
+        },
+        {
+          "label": "missing",
+          "normalized_unique": true,
+          "query": "9999999999999"
+        }
+      ]
+    },
+    {
+      "comparison": "custom_merge_vs_python_sorted",
+      "correctness": {
+        "passed": true,
+        "same_order_and_stability": true
+      },
+      "dataset_size": 1000,
+      "measurements": [
+        {
+          "name": "python_sorted",
+          "operation_counts": {
+            "items": 1000
+          },
+          "phase": "sorting",
+          "samples_ns": [
+            3296500,
+            9777400,
+            9629500
+          ],
+          "summary_ns": {
+            "maximum": 9777400,
+            "median": 9629500,
+            "minimum": 3296500,
+            "p95": 9777400,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "custom_merge_sort",
+          "operation_counts": {
+            "comparisons": 8702,
+            "items": 1000,
+            "writes": 19952
+          },
+          "phase": "sorting",
+          "samples_ns": [
+            72904000,
+            130745800,
+            113307300
+          ],
+          "summary_ns": {
+            "maximum": 130745800,
+            "median": 113307300,
+            "minimum": 72904000,
+            "p95": 130745800,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "field": "title",
+          "label": "full_dataset"
+        }
+      ]
+    },
+    {
+      "comparison": "bst_vs_baselines",
+      "correctness": {
+        "exact_matches_binary": true,
+        "in_order_matches_merge_sort": true,
+        "passed": true,
+        "range_matches_linear": true
+      },
+      "dataset_size": 1000,
+      "measurements": [
+        {
+          "name": "binary_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 960,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            4806700,
+            4970500,
+            5003300
+          ],
+          "summary_ns": {
+            "maximum": 5003300,
+            "median": 4970500,
+            "minimum": 4806700,
+            "p95": 5003300,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 510,
+            "lookups": 50,
+            "nodes_visited": 510,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            684900,
+            654000,
+            883100
+          ],
+          "summary_ns": {
+            "maximum": 883100,
+            "median": 684900,
+            "minimum": 654000,
+            "p95": 883100,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "linear_range_query_batch",
+          "operation_counts": {
+            "comparisons": 78339,
+            "lookups": 50,
+            "results": 22678
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            252405000,
+            379915600,
+            420002600
+          ],
+          "summary_ns": {
+            "maximum": 420002600,
+            "median": 379915600,
+            "minimum": 252405000,
+            "p95": 420002600,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_range_query_batch",
+          "operation_counts": {
+            "comparisons": 45984,
+            "lookups": 50,
+            "nodes_visited": 22992,
+            "results": 22678
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            36297600,
+            28654700,
+            24038600
+          ],
+          "summary_ns": {
+            "maximum": 36297600,
+            "median": 28654700,
+            "minimum": 24038600,
+            "p95": 36297600,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_merge_sort_preprocessing",
+          "operation_counts": {
+            "comparisons": 8702,
+            "writes": 19952
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            117977900,
+            112136900,
+            98345300
+          ],
+          "summary_ns": {
+            "maximum": 117977900,
+            "median": 112136900,
+            "minimum": 98345300,
+            "p95": 117977900,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_build_preprocessing",
+          "operation_counts": {
+            "tree_height": 10,
+            "tree_size": 1000
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            6995300,
+            6002800,
+            6657200
+          ],
+          "summary_ns": {
+            "maximum": 6995300,
+            "median": 6657200,
+            "minimum": 6002800,
+            "p95": 6995300,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_exact_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            122784600,
+            117107400,
+            103348600
+          ],
+          "summary_ns": {
+            "maximum": 122784600,
+            "median": 117107400,
+            "minimum": 103348600,
+            "p95": 122784600,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_exact_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            125658100,
+            118793700,
+            105885600
+          ],
+          "summary_ns": {
+            "maximum": 125658100,
+            "median": 118793700,
+            "minimum": 105885600,
+            "p95": 125658100,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_range_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            161270800,
+            146794400,
+            129041100
+          ],
+          "summary_ns": {
+            "maximum": 161270800,
+            "median": 146794400,
+            "minimum": 129041100,
+            "p95": 161270800,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "kind": "exact_queries",
+          "queries": [
+            {
+              "label": "first",
+              "query": "The Practical Databases: Volume 1"
+            },
+            {
+              "label": "middle",
+              "query": "The Practical Databases: Volume 501"
+            },
+            {
+              "label": "last",
+              "query": "The Applied Literature: Volume 1000"
+            },
+            {
+              "label": "missing",
+              "query": "A Title That Is Not In The Catalog"
+            },
+            {
+              "label": "duplicate_title",
+              "query": "Data Structures in Practice"
+            }
+          ]
+        },
+        {
+          "kind": "range_queries",
+          "queries": [
+            {
+              "end": "The Quiet Software Design: Volume 961",
+              "label": "full_catalog",
+              "start": "Data Structures in Practice"
+            },
+            {
+              "end": "The Modern Information Systems: Volume 374",
+              "label": "middle_band",
+              "start": "The Distributed Information Systems: Volume 536"
+            },
+            {
+              "end": "Zzzzz Benchmark Missing Z",
+              "label": "empty_range",
+              "start": "Zzzzz Benchmark Missing A"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "comparison": "linear_vs_binary_title",
+      "correctness": {
+        "equivalent_result_ids": true,
+        "passed": true
+      },
+      "dataset_size": 10000,
+      "measurements": [
+        {
+          "name": "linear_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 500000,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            2499144100,
+            6231636300,
+            3081086500
+          ],
+          "summary_ns": {
+            "maximum": 6231636300,
+            "median": 3081086500,
+            "minimum": 2499144100,
+            "p95": 6231636300,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 1310,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            10323400,
+            10119500,
+            5272600
+          ],
+          "summary_ns": {
+            "maximum": 10323400,
+            "median": 10119500,
+            "minimum": 5272600,
+            "p95": 10323400,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_merge_sort_preprocessing",
+          "operation_counts": {
+            "comparisons": 120114,
+            "writes": 267232
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            2443862100,
+            2125855600,
+            1255319300
+          ],
+          "summary_ns": {
+            "maximum": 2443862100,
+            "median": 2125855600,
+            "minimum": 1255319300,
+            "p95": 2443862100,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            2454185500,
+            2135975100,
+            1260591900
+          ],
+          "summary_ns": {
+            "maximum": 2454185500,
+            "median": 2135975100,
+            "minimum": 1260591900,
+            "p95": 2454185500,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "label": "first",
+          "query": "The Practical Databases: Volume 1"
+        },
+        {
+          "label": "middle",
+          "query": "The Hidden Algorithms: Volume 5001"
+        },
+        {
+          "label": "last",
+          "query": "The Practical Databases: Volume 10000"
+        },
+        {
+          "label": "missing",
+          "query": "A Title That Is Not In The Catalog"
+        },
+        {
+          "label": "duplicate_title",
+          "query": "Data Structures in Practice"
+        }
+      ]
+    },
+    {
+      "comparison": "linear_vs_hash_isbn",
+      "correctness": {
+        "duplicate_isbn_count": 1,
+        "duplicate_policy": "last_record_wins",
+        "equivalent_result_ids_for_unique_targets": true,
+        "passed": true
+      },
+      "dataset_size": 10000,
+      "measurements": [
+        {
+          "name": "linear_isbn_lookup_batch",
+          "operation_counts": {
+            "comparisons": 305039,
+            "lookups": 50,
+            "results": 38
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            726032300,
+            668746600,
+            798702300
+          ],
+          "summary_ns": {
+            "maximum": 798702300,
+            "median": 726032300,
+            "minimum": 668746600,
+            "p95": 798702300,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_isbn_lookup_batch",
+          "operation_counts": {
+            "lookups": 50,
+            "results": 38
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            300900,
+            283700,
+            435100
+          ],
+          "summary_ns": {
+            "maximum": 435100,
+            "median": 300900,
+            "minimum": 283700,
+            "p95": 435100,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_index_build",
+          "operation_counts": {
+            "capacity": 24575,
+            "collisions": 3406,
+            "indexed_records": 9410,
+            "max_chain_length": 3,
+            "normalized_duplicates": 1,
+            "resizes": 11,
+            "skipped_isbns": 589
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            113714200,
+            152853000,
+            167642500
+          ],
+          "summary_ns": {
+            "maximum": 167642500,
+            "median": 152853000,
+            "minimum": 113714200,
+            "p95": 167642500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "hash_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            114015100,
+            153136700,
+            168077600
+          ],
+          "summary_ns": {
+            "maximum": 168077600,
+            "median": 153136700,
+            "minimum": 114015100,
+            "p95": 168077600,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "label": "first_unique",
+          "normalized_unique": true,
+          "query": "978-0-00000-000-9"
+        },
+        {
+          "label": "middle_unique",
+          "normalized_unique": true,
+          "query": "9791040005001"
+        },
+        {
+          "label": "last_unique",
+          "normalized_unique": true,
+          "query": "9791040009999"
+        },
+        {
+          "label": "missing",
+          "normalized_unique": true,
+          "query": "9999999999999"
+        }
+      ]
+    },
+    {
+      "comparison": "custom_merge_vs_python_sorted",
+      "correctness": {
+        "passed": true,
+        "same_order_and_stability": true
+      },
+      "dataset_size": 10000,
+      "measurements": [
+        {
+          "name": "python_sorted",
+          "operation_counts": {
+            "items": 10000
+          },
+          "phase": "sorting",
+          "samples_ns": [
+            120989500,
+            98733300,
+            96059500
+          ],
+          "summary_ns": {
+            "maximum": 120989500,
+            "median": 98733300,
+            "minimum": 96059500,
+            "p95": 120989500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "custom_merge_sort",
+          "operation_counts": {
+            "comparisons": 120114,
+            "items": 10000,
+            "writes": 267232
+          },
+          "phase": "sorting",
+          "samples_ns": [
+            2461596600,
+            2789683900,
+            3049946600
+          ],
+          "summary_ns": {
+            "maximum": 3049946600,
+            "median": 2789683900,
+            "minimum": 2461596600,
+            "p95": 3049946600,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "field": "title",
+          "label": "full_dataset"
+        }
+      ]
+    },
+    {
+      "comparison": "bst_vs_baselines",
+      "correctness": {
+        "exact_matches_binary": true,
+        "in_order_matches_merge_sort": true,
+        "passed": true,
+        "range_matches_linear": true
+      },
+      "dataset_size": 10000,
+      "measurements": [
+        {
+          "name": "binary_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 1310,
+            "lookups": 50,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            38344700,
+            14176900,
+            15117400
+          ],
+          "summary_ns": {
+            "maximum": 38344700,
+            "median": 15117400,
+            "minimum": 14176900,
+            "p95": 38344700,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_exact_lookup_batch",
+          "operation_counts": {
+            "comparisons": 770,
+            "lookups": 50,
+            "nodes_visited": 770,
+            "results": 50
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            10904400,
+            2716600,
+            1789000
+          ],
+          "summary_ns": {
+            "maximum": 10904400,
+            "median": 2716600,
+            "minimum": 1789000,
+            "p95": 10904400,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "linear_range_query_batch",
+          "operation_counts": {
+            "comparisons": 783339,
+            "lookups": 50,
+            "results": 226678
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            5824821100,
+            4738067800,
+            3852047500
+          ],
+          "summary_ns": {
+            "maximum": 5824821100,
+            "median": 4738067800,
+            "minimum": 3852047500,
+            "p95": 5824821100,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_range_query_batch",
+          "operation_counts": {
+            "comparisons": 454248,
+            "lookups": 50,
+            "nodes_visited": 227124,
+            "results": 226678
+          },
+          "phase": "lookup",
+          "samples_ns": [
+            715679500,
+            386603300,
+            526906700
+          ],
+          "summary_ns": {
+            "maximum": 715679500,
+            "median": 526906700,
+            "minimum": 386603300,
+            "p95": 715679500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_merge_sort_preprocessing",
+          "operation_counts": {
+            "comparisons": 120114,
+            "writes": 267232
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            1950137700,
+            2527898800,
+            2576756900
+          ],
+          "summary_ns": {
+            "maximum": 2576756900,
+            "median": 2527898800,
+            "minimum": 1950137700,
+            "p95": 2576756900,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_build_preprocessing",
+          "operation_counts": {
+            "tree_height": 14,
+            "tree_size": 10000
+          },
+          "phase": "preprocessing",
+          "samples_ns": [
+            118288600,
+            287365500,
+            206277900
+          ],
+          "summary_ns": {
+            "maximum": 287365500,
+            "median": 206277900,
+            "minimum": 118288600,
+            "p95": 287365500,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "binary_exact_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            1988482400,
+            2542075700,
+            2591874300
+          ],
+          "summary_ns": {
+            "maximum": 2591874300,
+            "median": 2542075700,
+            "minimum": 1988482400,
+            "p95": 2591874300,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_exact_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            2079330700,
+            2817980900,
+            2784823800
+          ],
+          "summary_ns": {
+            "maximum": 2817980900,
+            "median": 2784823800,
+            "minimum": 2079330700,
+            "p95": 2817980900,
+            "sample_count": 3
+          }
+        },
+        {
+          "name": "bst_range_cold_batch_total",
+          "operation_counts": {
+            "lookups": 50
+          },
+          "phase": "cold_batch_total",
+          "samples_ns": [
+            2784105800,
+            3201867600,
+            3309941500
+          ],
+          "summary_ns": {
+            "maximum": 3309941500,
+            "median": 3201867600,
+            "minimum": 2784105800,
+            "p95": 3309941500,
+            "sample_count": 3
+          }
+        }
+      ],
+      "targets": [
+        {
+          "kind": "exact_queries",
+          "queries": [
+            {
+              "label": "first",
+              "query": "The Practical Databases: Volume 1"
+            },
+            {
+              "label": "middle",
+              "query": "The Hidden Algorithms: Volume 5001"
+            },
+            {
+              "label": "last",
+              "query": "The Practical Databases: Volume 10000"
+            },
+            {
+              "label": "missing",
+              "query": "A Title That Is Not In The Catalog"
+            },
+            {
+              "label": "duplicate_title",
+              "query": "Data Structures in Practice"
+            }
+          ]
+        },
+        {
+          "kind": "range_queries",
+          "queries": [
+            {
+              "end": "The Quiet Software Design: Volume 9878",
+              "label": "full_catalog",
+              "start": "Data Structures in Practice"
+            },
+            {
+              "end": "The Modern Databases: Volume 4584",
+              "label": "middle_band",
+              "start": "The Distributed Literature: Volume 1013"
+            },
+            {
+              "end": "Zzzzz Benchmark Missing Z",
+              "label": "empty_range",
+              "start": "Zzzzz Benchmark Missing A"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "config": {
+    "lookups": 50,
+    "max_estimated_scan_record_visits": 20000000,
+    "max_seconds": 120.0,
+    "repetitions": 3,
+    "seed": 104,
+    "sizes": [
+      100,
+      1000,
+      10000
+    ],
+    "warmups": 1
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "python_implementation": "CPython",
+    "python_version": "3.14.2"
+  },
+  "generated_at_utc": "2026-11-07T14:46:15.754006+00:00",
+  "policies": {
+    "normalized_isbn_duplicates": "last record wins; lookup benchmarks use normalized-unique targets",
+    "order_bias": "baseline/custom execution order alternates by repetition",
+    "percentiles": "nearest-rank p95 over raw samples",
+    "timed_scope": "algorithm callables only; fixture generation and I/O excluded"
+  },
+  "schema_version": 1,
+  "workload": {
+    "benchmark_callable_executions": 192,
+    "correctness_algorithm_executions": 120,
+    "dataset_count": 3,
+    "estimated_scan_record_visits": 11100000,
+    "individual_lookup_or_range_queries": 6000,
+    "total_top_level_algorithm_executions": 312
+  }
+}

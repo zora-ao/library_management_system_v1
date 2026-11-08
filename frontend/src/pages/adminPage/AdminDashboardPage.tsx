@@ -5,7 +5,7 @@ import type { DashboardSummary } from "@/features/dashboard/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { cn } from "@/lib/utils";
-import { ArrowRight, CalendarDays, RotateCcw, UserRoundCog } from "lucide-react";
+import { AlertTriangle, ArrowRight, BookOpen, CalendarDays, Clock3, Inbox, RotateCcw, UserRoundCog } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import BorrowingActivityChart from "./BorrowingActivityChart";
@@ -74,10 +74,10 @@ const AdminDashboardPage = () => {
     { value: dashboard.returned, label: "Returned · all time" },
   ];
   const statCards = [
-    { label: "Pending requests", value: dashboard.pending, hint: "Awaiting your approval", featured: true },
-    { label: "Waiting for pickup", value: dashboard.waiting_for_pickup, hint: "Approved and ready" },
-    { label: "Active loans", value: dashboard.active, hint: `Includes ${dashboard.overdue} overdue ${dashboard.overdue === 1 ? "loan" : "loans"}` },
-    { label: "Overdue", value: dashboard.overdue, hint: "Follow up with the borrower" },
+    { label: "Pending requests", value: dashboard.pending, hint: "Awaiting your approval", icon: Inbox, tone: "bg-primary/10 text-primary" },
+    { label: "Waiting for pickup", value: dashboard.waiting_for_pickup, hint: "Approved and ready", icon: Clock3, tone: "bg-primary/10 text-primary" },
+    { label: "Active loans", value: dashboard.active, hint: `Includes ${dashboard.overdue} overdue ${dashboard.overdue === 1 ? "loan" : "loans"}`, icon: BookOpen, tone: "bg-primary/10 text-primary" },
+    { label: "Overdue", value: dashboard.overdue, hint: "Follow up with the borrower", icon: AlertTriangle, tone: "bg-destructive/10 text-destructive" },
   ];
 
   return (
@@ -102,11 +102,16 @@ const AdminDashboardPage = () => {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {statCards.map((card) => (
-          <article key={card.label} className={cn("flex min-h-36 flex-col justify-between rounded-3xl border p-5 shadow-[var(--glass-shadow)]", card.featured ? "border-primary/40 bg-primary/90 text-primary-foreground" : "border-border/70 bg-card")}>
-            <p className={cn("text-sm font-bold sm:text-base", card.featured ? "text-primary-foreground/75" : "text-muted-foreground")}>{card.label}</p>
-            <strong className={cn("booky-heading text-3xl leading-none tabular-nums sm:text-4xl", card.featured && "text-primary-foreground")}>{String(card.value).padStart(2, "0")}</strong>
-            <p className={cn("text-sm sm:text-base", card.featured ? "text-primary-foreground/75" : "text-muted-foreground")}>{card.hint}</p>
+        {statCards.map(({ label, value, hint, icon: Icon, tone }) => (
+          <article key={label} className="rounded-3xl border border-border/70 bg-card p-5 shadow-[var(--glass-shadow)] backdrop-blur-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground sm:text-base">{label}</p>
+                <p className="mt-2 text-2xl font-semibold sm:text-3xl">{value}</p>
+                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">{hint}</p>
+              </div>
+              <span className={cn("rounded-2xl p-3", tone)}><Icon className="size-5" /></span>
+            </div>
           </article>
         ))}
       </div>
@@ -155,7 +160,7 @@ const AdminDashboardPage = () => {
           <div className="mt-5 border-t border-border pt-4">
             <p className="text-sm font-bold uppercase tracking-wide text-leather sm:text-base">Today at the desk</p>
             <div className="mt-2 flex items-center gap-3 text-heading">
-              <strong className="text-3xl tabular-nums">{String(dashboard.returned_today).padStart(2, "0")}</strong>
+              <strong className="text-2xl font-semibold tabular-nums sm:text-3xl">{dashboard.returned_today}</strong>
               <span className="text-sm text-muted-foreground sm:text-base">books returned today</span>
             </div>
             <Link to="/all-borrows/returned" className="booky-link mt-2 inline-flex items-center text-sm sm:text-base">View return history <ArrowRight className="ml-1 size-3" /></Link>
@@ -200,7 +205,7 @@ const AdminDashboardPage = () => {
         <p className="text-sm font-bold uppercase tracking-wide text-muted-foreground sm:text-base">Library overview</p>
         <div className={cn("mt-2 grid gap-4", isAdmin ? "grid-cols-2 md:grid-cols-3 xl:grid-cols-6" : "grid-cols-2 md:grid-cols-5")}>
           {overviewItems.map((item) => (
-            <div key={item.label} className="flex items-baseline gap-3"><strong className="booky-heading text-2xl tabular-nums sm:text-3xl">{item.value}</strong><span className="text-sm text-muted-foreground sm:text-base">{item.label}</span></div>
+            <div key={item.label} className="flex items-baseline gap-3"><strong className="text-2xl font-semibold tabular-nums sm:text-3xl">{item.value}</strong><span className="text-sm text-muted-foreground sm:text-base">{item.label}</span></div>
           ))}
         </div>
       </section>
