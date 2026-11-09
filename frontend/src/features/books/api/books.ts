@@ -30,12 +30,22 @@ export const submitReview = async (
   return new ReviewEntity(data);
 };
 
-export const getBooks = async (categoryId?: string): Promise<Book[]> => {
-  // Add category filter to the request if a category was selected
-  const params = categoryId ? { category_id: categoryId, limit: 1000 } : { limit: 1000 };
-  const { data } = await api.get("/books", { params });
+// The API caps each page at 100 books, so the catalog is read page by page.
+export const BOOKS_PAGE_SIZE = 100;
+const MAX_CATALOG_PAGES = 50;
 
-  return Array.isArray(data) ? data : data.books || [];
+export const getBooks = async (categoryId?: string): Promise<Book[]> => {
+  const books: Book[] = [];
+  for (let page = 1; page <= MAX_CATALOG_PAGES; page += 1) {
+    // Add category filter to the request if a category was selected
+    const params = { page, limit: BOOKS_PAGE_SIZE, ...(categoryId ? { category_id: categoryId } : {}) };
+    const { data } = await api.get("/books", { params });
+
+    if (Array.isArray(data)) return data;
+    books.push(...(data.books || []));
+    if (!data.pagination?.has_next) break;
+  }
+  return books;
 };
 
 export const getStaffBooks = async (state: StaffBookState): Promise<Book[]> => {

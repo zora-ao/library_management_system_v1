@@ -14,6 +14,10 @@ class DuplicateReviewError(Exception):
 
 
 class BookService:
+    DEFAULT_PAGE_SIZE = 10
+    # Public catalog pages are capped so one request cannot pull the whole table.
+    MAX_PAGE_SIZE = 100
+
     # for encapsulating book related
 
     @staticmethod

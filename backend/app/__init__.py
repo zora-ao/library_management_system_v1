@@ -18,6 +18,7 @@ from app.config import Config
 from app.security_state import configure_jwt_security
 from app.maintenance import install_maintenance_guard
 from app.performance import install_performance_diagnostics
+from app.rate_limits import init_rate_limits
 
 
 def create_app():
@@ -46,6 +47,7 @@ def create_app():
   migrate.init_app(app, db)
   jwt.init_app(app)
   configure_jwt_security(jwt)
+  init_rate_limits(app)
   install_performance_diagnostics(app, db)
   
   # Register the blueprints

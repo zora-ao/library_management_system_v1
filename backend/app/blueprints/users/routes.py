@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 from app.middleware.auth import admin_required
 from app.models import User, Student
 from app.extensions import db
+from app.rate_limits import PASSWORD_CHANGE_PER_IP, limiter
 from app.services.auth_service import AuthService
 from app.utils.cloudinary import upload_avatar, delete_avatar
 
@@ -14,8 +15,11 @@ users_bp = Blueprint("users", __name__, url_prefix="/api/users")
 
 @users_bp.put("/me/password")
 @jwt_required()
+@limiter.limit(PASSWORD_CHANGE_PER_IP)
 def change_current_user_password():
-  data = request.get_json() or {}
+  data = request.get_json(silent=True)
+  if not isinstance(data, dict):
+    data = {}
   current_password = data.get("current_password", "")
   new_password = data.get("new_password", "")
   confirm_password = data.get("confirm_password", "")
