@@ -15,7 +15,7 @@ export const developers: Developer[] = [
   {
     id: "developer-1",
     name: "Eryck Jouhann V. Cadawas",
-    role: "Decepticon",
+    role: "Frontend Developer",
     bio: "Focused on the frontend experience and the interfaces readers use every day.",
     image: "/images/hojan.webp",
     socials: {
@@ -27,7 +27,7 @@ export const developers: Developer[] = [
   {
     id: "developer-2",
     name: "Carl Jasper A. Ramos",
-    role: "Backshot Developer",
+    role: "Backend Developer",
     bio: "Works on the backend, data, and the services that keep the library running.",
     image: "/images/cj.webp",
     socials: {
@@ -39,7 +39,7 @@ export const developers: Developer[] = [
   {
     id: "developer-3",
     name: "Dolf Louise P. Felipe",
-    role: "Project Demo (Demolition)",
+    role: "Project Demo/Tester",
     bio: "Helps shape and demonstrate the project from concept to working demo.",
     image: "/images/dolf.webp",
     socials: {
