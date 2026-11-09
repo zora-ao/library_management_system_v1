@@ -6,6 +6,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 class User(BaseEntity): # Inheritance
   __tablename__ = "users"
 
+  ROLE_STUDENT = "student"
+  ROLE_LIBRARIAN = "librarian"
+  ROLE_ADMIN = "admin"
+  ROLES = (ROLE_STUDENT, ROLE_LIBRARIAN, ROLE_ADMIN)
+
+  __table_args__ = (
+    db.CheckConstraint(
+      "role IN ({})".format(", ".join(f"'{role}'" for role in ROLES)),
+      name="ck_users_role_valid",
+    ),
+  )
+
   username = db.Column(db.String(100), unique=True, nullable=False)
   email = db.Column(db.String(100), unique=True, nullable=False)
   phone = db.Column(db.String(30), nullable=True)
@@ -47,7 +59,7 @@ class User(BaseEntity): # Inheritance
   @property
   def password(self):
     # prevent direct reading of plain text or raw hashes
-    raise AttributeError("Password cannot be view for security reasons")
+    raise AttributeError("Password cannot be viewed for security reasons")
 
   @password.setter
   def password(self, plain_password: str):

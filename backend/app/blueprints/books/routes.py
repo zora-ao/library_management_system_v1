@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import logging
 
 from app.middleware.auth import admin_required
-from app.services.book_service import BookService
+from app.services.book_service import BookService, DuplicateReviewError
 
 
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
@@ -117,6 +117,10 @@ def add_review(id):
     return jsonify(review.to_dict()), 201
   except ValueError as e:
     return jsonify({"message": str(e)}), 400
+  except LookupError as e:
+    return jsonify({"message": str(e)}), 404
+  except DuplicateReviewError as e:
+    return jsonify({"message": str(e)}), 409
 
 # For restoring a book
 @books_bp.put("/restore/<uuid:id>")
