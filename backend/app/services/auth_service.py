@@ -7,10 +7,9 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import requests as http_requests
 import urllib3.util.connection as urllib3_connection
-from app.models import User, Student
+from app.models import User
 from app.extensions import db
 from flask_jwt_extended import create_access_token
-from sqlalchemy.orm import joinedload
 from app.security_state import get_auth_epoch, get_authenticated_user
 
 # Prefer IPv4 for outbound HTTPS calls (e.g. Google OAuth cert fetches) so
@@ -214,14 +213,6 @@ class AuthService:
           avatar_url=avatar
         )
         db.session.add(user)
-        db.session.flush()
-
-        student = Student(
-            user_id=user.id,
-            enrollment_status="Enrolled"
-        )
-
-        db.session.add(student)
         db.session.commit()
 
       elif not user.google_id:
@@ -244,11 +235,7 @@ class AuthService:
 
   @staticmethod
   def login_user(email, password):
-    user = (
-      User.query.options(joinedload(User.student))
-      .filter_by(email=email)
-      .first()
-    )
+    user = User.query.filter_by(email=email).first()
 
     if not user or not user.check_password(password):
       raise ValueError("Invalid Email or Password")
@@ -285,14 +272,6 @@ class AuthService:
       )
 
       db.session.add(new_user)
-      db.session.flush()
-
-      new_student = Student(
-            user_id=new_user.id,
-            enrollment_status="Enrolled"
-        )
-
-      db.session.add(new_student)
       db.session.commit()
 
       return new_user

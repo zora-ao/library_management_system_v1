@@ -2,9 +2,8 @@ from uuid import UUID
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
-from sqlalchemy.orm import joinedload
 from app.middleware.auth import admin_required
-from app.models import User, Student
+from app.models import User
 from app.extensions import db
 from app.rate_limits import PASSWORD_CHANGE_PER_IP, limiter
 from app.services.auth_service import AuthService
@@ -73,39 +72,6 @@ def update_current_user():
   if "avatar_url" in data:
       user.avatar_url = data["avatar_url"]
 
-
-  if user.role == "student":
-    student_data = data.get("student")
-
-    if not user.student:
-      user.student = Student(
-          enrollment_status="Enrolled"
-      )
-
-    student_number = data.get("student_number")
-
-    if student_number is not None:
-      student_number = student_number.strip()
-
-      existing_student = Student.query.filter(
-          Student.student_number == student_number,
-          Student.user_id != user.id
-      ).first()
-
-      if existing_student:
-          return jsonify({
-              "message": "Student number already in use"
-          }), 400
-      
-      user.student.student_number = student_number or None
-
-
-    if "course" in data:
-        user.student.course = data.get("course", "").strip() or None
-
-    if "year_level" in data:
-            user.student.year_level = data.get("year_level", "").strip() or None
-
   if avatar_file:
     allowed_types = {
         "image/jpeg",
@@ -148,7 +114,7 @@ def update_current_user():
 @admin_required()
 def get_users():
 
-  users = User.query.options(joinedload(User.student)).order_by(User.created_at.desc()).all()
+  users = User.query.order_by(User.created_at.desc()).all()
 
   return jsonify([user.to_dict() for user in users]), 200
 

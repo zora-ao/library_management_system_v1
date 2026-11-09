@@ -10,7 +10,7 @@ vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({ user: { id: "admin-1", username: "Alex Admin", email: "alex@test.dev", role: "admin", avatar_url: "", is_active: true } }),
   useGetAllUsers: () => ({ data: [
     { id: "admin-1", username: "Alex Admin", email: "alex@test.dev", role: "admin", avatar_url: "", is_active: true, created_at: "2026-10-20T00:00:00Z" },
-    { id: "student-1", username: "Bianca Student", email: "bianca@test.dev", role: "student", student: null, avatar_url: "", is_active: true, created_at: "2026-10-19T00:00:00Z" },
+    { id: "student-1", username: "Bianca Student", email: "bianca@test.dev", role: "student", avatar_url: "", is_active: true, created_at: "2026-10-19T00:00:00Z" },
     { id: "librarian-1", username: "Carlo Librarian", email: "carlo@test.dev", role: "librarian", avatar_url: "", is_active: false, created_at: "2026-10-18T00:00:00Z" },
   ], isLoading: false, isError: false }),
   useUpdateUserRole: () => ({ mutate: updateRole, isPending: false }),

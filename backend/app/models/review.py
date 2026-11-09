@@ -30,6 +30,7 @@ class Review(BaseEntity):
     return {
       "id": str(self.id) if self.id else "",
       "username": self.user.username if self.user and self.user.username else "Anonymous",
+      "avatar_url": self.user.avatar_url if self.user else None,
       "rating": self.rating,
       "comment": self.comment,
       "created_at": self.created_at.isoformat() if self.created_at else None,

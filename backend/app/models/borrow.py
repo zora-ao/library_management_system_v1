@@ -34,10 +34,6 @@ class Borrow(BaseEntity):
         db.Index("ix_borrows_user_id_status", "user_id", "status"),
         db.Index("ix_borrows_book_id_status", "book_id", "status"),
         db.Index("ix_borrows_status", "status"),
-        db.CheckConstraint(
-            "status IN ({})".format(", ".join(f"'{status}'" for status in STATUSES)),
-            name="ck_borrows_status_valid",
-        ),
     )
 
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
@@ -50,7 +46,13 @@ class Borrow(BaseEntity):
     approved_at = db.Column(db.DateTime, nullable=True)
     rejection_reason = db.Column(db.Text, nullable=True)
 
-    status = db.Column("status", db.String(100), default=STATUS_PENDING_BORROW, nullable=False)
+    status = db.Column(
+        "status",
+        db.String(100),
+        db.ForeignKey("borrow_statuses.code", name="fk_borrows_status_borrow_statuses", onupdate="CASCADE"),
+        default=STATUS_PENDING_BORROW,
+        nullable=False,
+    )
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 

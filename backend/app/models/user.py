@@ -11,25 +11,22 @@ class User(BaseEntity): # Inheritance
   ROLE_ADMIN = "admin"
   ROLES = (ROLE_STUDENT, ROLE_LIBRARIAN, ROLE_ADMIN)
 
-  __table_args__ = (
-    db.CheckConstraint(
-      "role IN ({})".format(", ".join(f"'{role}'" for role in ROLES)),
-      name="ck_users_role_valid",
-    ),
-  )
-
   username = db.Column(db.String(100), unique=True, nullable=False)
   email = db.Column(db.String(100), unique=True, nullable=False)
   phone = db.Column(db.String(30), nullable=True)
   is_active = db.Column(db.Boolean, nullable=False, default=True)
-  role = db.Column(db.String(20), nullable=False, default='student')
+  role = db.Column(
+    db.String(20),
+    db.ForeignKey("roles.name", name="fk_users_role_roles", onupdate="CASCADE"),
+    nullable=False,
+    default='student',
+  )
   created_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
 
   google_id = db.Column(db.String(255), unique=True, nullable=True, index=True)
   avatar_url = db.Column(db.String(500), nullable=True)
 
   borrows = db.relationship("Borrow", backref="user", lazy=True)
-  student = db.relationship("Student", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
   # protect the raw pass 
   _password_hash = db.Column("password_hash", db.String(255), nullable=True)
@@ -91,5 +88,4 @@ class User(BaseEntity): # Inheritance
             if self.created_at
             else None
         ),
-        "student": self.student.to_dict() if self.student else None,
     }
