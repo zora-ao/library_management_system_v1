@@ -121,8 +121,10 @@ class PostgresToolsTests(unittest.TestCase):
 
         validate_args = run.call_args_list[0].args[0]
         self.assertEqual(run.call_args_list[0].kwargs["stdout"], subprocess.DEVNULL)
-        restore_args = run.call_args_list[1].args[0]
+        list_args = run.call_args_list[1].args[0]
+        restore_args = run.call_args_list[2].args[0]
         self.assertEqual(validate_args[1:], ["--list", str(dump)])
+        self.assertEqual(list_args[1:], ["--list", str(dump)])
         self.assertEqual(
             restore_args[1:],
             [
@@ -132,12 +134,43 @@ class PostgresToolsTests(unittest.TestCase):
                 "--no-owner",
                 "--no-privileges",
                 "--schema=public",
+                "--use-list",
+                str(self.root / "database.dump.restore-list"),
                 "--dbname",
                 "library_data",
                 str(dump),
             ],
         )
         self.assertNotIn("p@ss:word", " ".join(restore_args))
+
+    @patch("app.services.postgres_tools.subprocess.run")
+    def test_restore_skips_platform_routines_in_the_backup(self, run):
+        listing = "\n".join([
+            ";",
+            "; Archive created at 2026-11-09 12:00:00 UTC",
+            "245; 1255 17504 FUNCTION public rls_auto_enable() postgres",
+            "4021; 0 0 COMMENT public FUNCTION rls_auto_enable() postgres",
+            "4022; 0 0 ACL public FUNCTION rls_auto_enable() postgres",
+            "246; 1255 17505 PROCEDURE public tidy() postgres",
+            "247; 1255 17506 AGGREGATE public total(integer) postgres",
+            "210; 1259 17400 TABLE public users postgres",
+            "3990; 0 17400 TABLE DATA public users postgres",
+            "3801; 2606 17410 CONSTRAINT public users users_pkey postgres",
+            "3802; 2606 17420 FK CONSTRAINT public borrows fk_borrows_status_borrow_statuses postgres",
+            "3803; 1259 17430 INDEX public ix_books_category_id postgres",
+        ])
+        run.side_effect = [self.completed(stdout=listing), self.completed()]
+        dump = self.root / "database.dump"
+
+        restore_custom_dump(self.config, dump)
+
+        kept = (self.root / "database.dump.restore-list").read_text(encoding="utf-8")
+        self.assertNotIn("rls_auto_enable", kept)
+        self.assertNotIn("PROCEDURE", kept)
+        self.assertNotIn("AGGREGATE", kept)
+        for entry in ("TABLE public users", "TABLE DATA public users", "CONSTRAINT public users",
+                      "FK CONSTRAINT public borrows", "INDEX public ix_books_category_id"):
+            self.assertIn(entry, kept)
 
     @patch("app.services.postgres_tools.subprocess.run")
     def test_command_failures_and_timeouts_expose_bounded_safe_errors(self, run):

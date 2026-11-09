@@ -63,7 +63,9 @@ def _error_response(error):
     # The client only sees the generic message; keep pg_dump/pg_restore's
     # (credential-scrubbed) output in the server log for diagnosis.
     current_app.logger.error(
-      "backup_postgres_tool_failed",
+      "backup_postgres_tool_failed (exit %s): %s",
+      error.exit_code,
+      error.diagnostic,
       extra={
         "event": "backup_postgres_tool_failed",
         "exit_code": error.exit_code,
