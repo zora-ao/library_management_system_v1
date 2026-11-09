@@ -1,6 +1,7 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useIsDarkTheme } from "@/hooks/useIsDarkTheme";
 import type { StepUpInput } from "../types";
 
 
@@ -20,12 +21,23 @@ export function StepUpControl({
   labelSuffix,
   disabled = false,
 }: StepUpControlProps) {
+  const isDark = useIsDarkTheme();
+
   if (googleAccount) {
     return (
       <div className="space-y-2" aria-disabled={disabled}>
         <Label>Verify your Google account for {labelSuffix}</Label>
-        <div className={disabled ? "pointer-events-none opacity-50" : ""}>
+        {/* colorScheme "light" matches the iframe's own document. Without it,
+            dark mode's color-scheme makes Chrome paint an opaque white backdrop
+            behind the iframe, visible around the pill's rounded corners. */}
+        <div className={disabled ? "pointer-events-none opacity-50" : ""} style={{ colorScheme: "light" }}>
+          {/* Google renders this button in an iframe, so CSS can't theme it;
+              pick its dark or light variant and remount when the theme flips. */}
           <GoogleLogin
+            key={isDark ? "dark" : "light"}
+            theme={isDark ? "filled_black" : "outline"}
+            shape="pill"
+            size="large"
             onSuccess={(response) => onChange({
               method: "google",
               credential: response.credential ?? "",
