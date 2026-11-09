@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { BookOpen, Heart, Star } from "lucide-react";
+import { BookOpen, Bookmark, Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,7 +49,7 @@ function BookDetailsContent({ bookId }: { bookId?: string }) {
         {book.description && book.description.length > 160 && <button type="button" className="details-expand" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? "View less" : "View more"}</button>}
         <div className="details-actions">
           <Button className="details-borrow" disabled={!available || borrow.isPending || borrow.isSuccess} onClick={() => borrow.mutate({ book_id: book.id })}>
-            <img src="/book-details/borrow.svg" alt="" />
+            <Bookmark size={18} strokeWidth={2} aria-hidden="true" />
             {borrow.isPending ? "Submitting…" : borrow.isSuccess ? "Request submitted" : !available ? "Out of stock" : "Borrow book"}
           </Button>
           <Button

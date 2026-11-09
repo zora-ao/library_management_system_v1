@@ -54,6 +54,7 @@ class CategoryDict(TypedDict):
 class ReviewDict(TypedDict):
   id: str
   username: str
+  avatar_url: str | None
   rating: int
   comment: str | None
   created_at: str | None

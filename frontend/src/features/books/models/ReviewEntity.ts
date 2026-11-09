@@ -1,6 +1,7 @@
 export interface IReview {
   id: string;
   username?: string;
+  avatar_url?: string | null;
   rating: number;
   comment: string;
   created_at: string;
@@ -9,6 +10,7 @@ export interface IReview {
 export class ReviewEntity {
   id: string;
   userName: string;
+  avatarUrl: string | null;
   rating: number;
   comment: string;
   createdAt: Date;
@@ -16,6 +18,7 @@ export class ReviewEntity {
   constructor(data: IReview){
     this.id = data.id;
     this.userName = data.username || "Anonymous";
+    this.avatarUrl = data.avatar_url || null;
     this.rating = data.rating;
     this.comment = data.comment;
     this.createdAt = new Date(data.created_at);
