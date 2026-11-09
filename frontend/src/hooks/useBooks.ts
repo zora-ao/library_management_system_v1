@@ -162,21 +162,6 @@ export const useUpdateBooks = () => {
   });
 };
 
-export const useDeleteBooks = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (bookId: string) => deleteBook(bookId),
-    onSuccess: () => {
-      invalidateBookCatalogs(queryClient);
-      toast.success("Book deleted successfully");
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast.error(error.response?.data?.message || "Failed to delete book");
-    },
-  });
-};
-
 export const useArchiveBook = () => {
   const queryClient = useQueryClient();
   return useMutation({

@@ -21,11 +21,6 @@ export const createBorrow = async (payload: CreateBorrowPayload): Promise<Borrow
   return data.borrow || data;
 };
 
-export const returnBook = async (borrowId: string): Promise<Borrow> => {
-  const { data } = await api.put(`/borrows/${borrowId}/return`);
-  return data.borrow || data;
-};
-
 
 export const approveBorrow = async (borrowId: string): Promise<Borrow> => {
   const { data } = await api.put(`/borrows/admin/${borrowId}/approve-borrow`);

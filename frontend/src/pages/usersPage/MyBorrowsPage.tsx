@@ -12,8 +12,10 @@ const statusOptions = [
   { value: "all", label: "All statuses" }, { value: "borrowed", label: "Borrowed" },
   { value: "soon", label: "Due soon" }, { value: "overdue", label: "Overdue" },
   { value: "pending", label: "Awaiting approval" }, { value: "ready", label: "Ready for pickup" },
-  { value: "pending-return", label: "Awaiting return confirmation" },
 ];
+// Returns are recorded by staff at the library desk, so students only see
+// request-stage filters while they have a request in progress.
+const requestStatusFilters = ["pending", "ready"];
 const activeSort = [{ value: "due", label: "Due date: nearest first" }, { value: "borrowed", label: "Recently borrowed" }, { value: "title", label: "Book title: A–Z" }];
 const historySort = [{ value: "returned", label: "Recently returned" }, { value: "borrowed", label: "Recently borrowed" }, { value: "title", label: "Book title: A–Z" }];
 const periodOptions = [{ value: "all", label: "All time" }, { value: "month", label: "This month" }, { value: "quarter", label: "Last 3 months" }, { value: "year", label: "This year" }];
@@ -30,18 +32,22 @@ export default function MyBorrowsPage() {
   const [sort, setSort] = useState(() => (tab === "history" ? "returned" : "due"));
   const [now, setNow] = useState(() => new Date());
   useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 60000); return () => window.clearInterval(timer); }, []);
-  useEffect(() => {
+  // Reset filters when the tab changes (also via the URL), during render rather
+  // than in an effect, so the page does not render twice.
+  const [filtersTab, setFiltersTab] = useState(tab);
+  if (filtersTab !== tab) {
+    setFiltersTab(tab);
     setQuery("");
     setStatus("all");
     setPeriod("all");
     setSort(tab === "history" ? "returned" : "due");
-  }, [tab]);
+  }
   const isHistory = tab === "history";
   const current = isHistory ? history : active;
   const records = current.data ?? [];
   const summary = summarizeBorrows(active.data ?? [], history.data ?? [], now);
   const visible = filterBorrows(records, { query, status, period, sort, history: isHistory }, now);
-  const pending = (active.data ?? []).some(b => b.status === "PENDING_BORROW" || b.status === "READY_FOR_PICKUP" || b.status === "PENDING_RETURN");
+  const pending = (active.data ?? []).some(b => b.status === "PENDING_BORROW" || b.status === "READY_FOR_PICKUP");
   const rejected = (history.data ?? []).some(b => b.status === "REJECTED");
   const cards = [
     { label: "Currently borrowed", value: summary.borrowed, note: "Books still with you", kind: "", source: active },
@@ -62,7 +68,7 @@ export default function MyBorrowsPage() {
       {["active", "history"].map(value => <TabsContent key={value} value={value} className="borrows-tab-content">
         <div className="borrows-controls">
           <label className="borrows-search"><Search size={15} aria-hidden="true" /><input type="search" aria-label={isHistory ? "Search your borrowing history" : "Search your borrowed books"} placeholder={isHistory ? "Search your borrowing history" : "Search your borrowed books"} value={query} onChange={event => setQuery(event.target.value)} /></label>
-          <BorrowSelect label={isHistory ? "History period" : "Borrow status"} value={isHistory ? period : status} options={isHistory ? periodOptions : statusOptions.filter(option => pending || option.value === status || !["pending", "ready", "pending-return"].includes(option.value))} onChange={isHistory ? setPeriod : setStatus} />
+          <BorrowSelect label={isHistory ? "History period" : "Borrow status"} value={isHistory ? period : status} options={isHistory ? periodOptions : statusOptions.filter(option => pending || option.value === status || !requestStatusFilters.includes(option.value))} onChange={isHistory ? setPeriod : setStatus} />
           <BorrowSelect label="Sort borrows" value={sort} options={isHistory ? historySort : activeSort} onChange={setSort} />
         </div>
         <div className="borrows-result-info"><p aria-live="polite">{current.isLoading ? "Loading your books…" : current.isError ? "Records unavailable" : isHistory ? `Showing ${visible.length} of ${records.length} ${rejected ? "history records" : "returned books"}` : `${visible.length} active ${visible.length === 1 ? "book" : "books"}`}</p><p>{sort === "due" ? "Overdue books appear first" : sort === "title" ? "Sorted by book title" : sort === "returned" ? "Most recent returns first" : "Most recently borrowed first"}</p></div>

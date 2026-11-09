@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
@@ -65,7 +65,7 @@ function saveReadIds(userId: string, ids: string[]) {
   }
 }
 
-export function buildUserNotifications(
+function buildUserNotifications(
   active: Borrow[],
   history: Borrow[],
   now = new Date()
@@ -211,10 +211,13 @@ export default function NotificationsModal() {
   const [open, setOpen] = useState(false);
   const userKey = user?.id || user?.username || "guest";
   const [readIds, setReadIds] = useState<string[]>(() => loadReadIds(userKey));
-
-  useEffect(() => {
+  // Reload read state when a different user signs in, during render rather than
+  // in an effect, so the bell never shows the previous user's read markers.
+  const [readIdsUser, setReadIdsUser] = useState(userKey);
+  if (readIdsUser !== userKey) {
+    setReadIdsUser(userKey);
     setReadIds(loadReadIds(userKey));
-  }, [userKey]);
+  }
 
   const notifications = useMemo(
     () => buildUserNotifications(active.data ?? [], history.data ?? []),

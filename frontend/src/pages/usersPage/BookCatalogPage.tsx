@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useBooks } from "@/hooks/useBooks";
 import { useCategories } from "@/hooks/useCategories";
 import { LoadingState } from "@/components/ui/loading-spinner";
@@ -20,7 +20,11 @@ export default function BookCatalogPage() {
     [book.title, book.author, book.isbn, book.category_name].some(value => value?.toLowerCase().includes(query.trim().toLowerCase())) &&
     (genre === "All" || book.category_name === genre) && (availability !== "available" || book.available_copies > 0)
   ).sort((a, b) => sort === "Z-A" ? b.title.localeCompare(a.title) : a.title.localeCompare(b.title));
-  const popular = [...books].sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0)).slice(0, 4);
+  // Only books students have actually rated, best average first, then most reviewed.
+  const topRated = books
+    .filter(book => (book.total_reviews ?? 0) > 0)
+    .sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0) || (b.total_reviews ?? 0) - (a.total_reviews ?? 0))
+    .slice(0, 4);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const page = Math.min(currentPage, totalPages);
   const start = (page - 1) * PAGE_SIZE;
@@ -50,14 +54,14 @@ export default function BookCatalogPage() {
       </aside>
       <div className="booky-results">
         {isLoading ? <LoadingState containerClassName="h-96" label="Loading catalog" /> : isError ? <div className="booky-empty" role="alert"><h2>We couldn’t load the catalog.</h2><p>Please try again in a moment.</p><Button type="button" onClick={() => void refetch()}>Try again</Button></div> : <>
-          {genre === "All" && <section aria-labelledby="popular-heading">
-            <div className="booky-section-heading"><div><h2 id="popular-heading">Popular this week</h2><p>A few campus favorites to get you started.</p></div><button type="button" onClick={() => document.getElementById("all-books")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Explore all&nbsp; →</button></div>
-            {popular.length ? <div className="booky-cards">{popular.map(book => <BookCard key={book.id} book={book} variant="popular" />)}</div> : <p className="booky-empty">New campus favorites will appear here.</p>}
+          {genre === "All" && <section aria-labelledby="top-rated-heading">
+            <div className="booky-section-heading"><div><h2 id="top-rated-heading">Top rated</h2><p>The books students rate highest.</p></div><button type="button" onClick={() => document.getElementById("all-books")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Explore all&nbsp; →</button></div>
+            {topRated.length ? <div className="booky-cards">{topRated.map(book => <BookCard key={book.id} book={book} variant="popular" />)}</div> : <p className="booky-empty">Top-rated books will appear here once students leave reviews.</p>}
           </section>}
           <section id="all-books" aria-labelledby="browse-heading">
             <div className="booky-section-heading"><div><h2 id="browse-heading">Browse all books</h2><p aria-live="polite">Showing {visible.length} of {filtered.length} titles</p></div><span className="booky-chip">{genre === "All" ? "All genres" : genre}{availability !== null && <>&nbsp; · &nbsp;{availability === "all" ? "All availability" : "Available now"}</>}</span></div>
             {visible.length ? <div className="booky-cards">{visible.map(book => <BookCard key={book.id} book={book} variant="catalog" />)}</div> : <div className="booky-empty"><h3>{books.length ? "No books match your search." : "The library catalog is empty."}</h3>{books.length > 0 && <button type="button" onClick={reset}>Clear filters</button>}</div>}
-            <div className="booky-pagination"><p>Showing {filtered.length ? start + 1 : 0}–{Math.min(start + PAGE_SIZE, filtered.length)} of {filtered.length} books</p><nav aria-label="Book pages">{page > 1 && <button type="button" onClick={() => setCurrentPage(page - 1)}>← Previous</button>}{pages.map(n => <button type="button" key={n} aria-label={`Page ${n}`} aria-current={page === n ? "page" : undefined} onClick={() => setCurrentPage(n)}>{n}</button>)}<button type="button" disabled={page >= totalPages} onClick={() => setCurrentPage(page + 1)}>Next →</button></nav></div>
+            <div className="booky-pagination"><p>Showing {filtered.length ? start + 1 : 0}–{Math.min(start + PAGE_SIZE, filtered.length)} of {filtered.length} books</p><nav aria-label="Book pages"><button type="button" disabled={page <= 1} onClick={() => setCurrentPage(page - 1)}>← Previous</button>{pages.map(n => <button type="button" key={n} aria-label={`Page ${n}`} aria-current={page === n ? "page" : undefined} onClick={() => setCurrentPage(n)}>{n}</button>)}<button type="button" disabled={page >= totalPages} onClick={() => setCurrentPage(page + 1)}>Next →</button></nav></div>
           </section>
         </>}
       </div>
