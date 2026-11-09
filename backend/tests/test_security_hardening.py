@@ -222,3 +222,22 @@ class ProxyTrustTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class HealthCheckTests(HardenedAppTestCase):
+    def test_health_check_answers_without_touching_the_database(self):
+        from sqlalchemy import event
+
+        statements = []
+        listener = lambda *args, **kwargs: statements.append(args[2])
+        event.listen(db.engine, "before_cursor_execute", listener)
+        try:
+            get_response = self.client.get("/health")
+            head_response = self.client.head("/health")
+        finally:
+            event.remove(db.engine, "before_cursor_execute", listener)
+
+        self.assertEqual(get_response.status_code, 200)
+        self.assertEqual(get_response.get_json(), {"status": "ok"})
+        self.assertEqual(head_response.status_code, 200)
+        self.assertEqual(statements, [])

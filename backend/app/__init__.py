@@ -60,6 +60,13 @@ def create_app():
   app.register_blueprint(dsa_bp)
   app.register_blueprint(users_bp)
 
+  # Uptime monitors ping this to keep the free Render instance awake. It sits
+  # outside /api so it skips the maintenance guard and never touches the
+  # database. Flask answers HEAD requests on GET routes automatically.
+  @app.get("/health")
+  def health():
+    return {"status": "ok"}, 200
+
   install_maintenance_guard(app)
 
   # JSON error handlers (404/500/DB rollback) — must be registered after blueprints
