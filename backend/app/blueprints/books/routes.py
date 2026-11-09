@@ -1,9 +1,10 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import logging
+from uuid import UUID
 
 from app.middleware.auth import admin_required
-from app.services.book_service import BookService
+from app.services.book_service import BookService, DuplicateReviewError
 
 
 books_bp = Blueprint("book", __name__, url_prefix="/api/books")
@@ -57,7 +58,10 @@ def get_related_books(id):
     related = BookService.get_related_books(book_id=id, limit=5)
     return jsonify([ book.to_dict() for book in related ]), 200
   except ValueError as e:
-    return jsonify({"message": f"Could not load related books: {str(e)}"}), 500
+    return jsonify({"message": str(e)}), 400
+  except Exception:
+    logging.exception("Failed to load related books for %s", id)
+    return jsonify({"message": "Could not load related books"}), 500
 
 # get all reviews
 @books_bp.get("/<uuid:id>/reviews")
@@ -71,14 +75,15 @@ def get_book_reviews(id):
       "reviews": [review.to_dict() for review in reviews]
     }), 200
   
-  except LookupError as e:
+  except LookupError:
     return jsonify({
-      "message": f"Book not found: {e}"
+      "message": "Book not found"
     }), 404
 
-  except Exception as e:
+  except Exception:
+    logging.exception("Failed to get reviews for book %s", id)
     return jsonify({
-      "message": f"Failed to get book reviews: {e}"
+      "message": "Failed to get book reviews"
     }), 500
 
 # get book review stat
@@ -90,10 +95,10 @@ def get_book_review_stats(id):
 
     return jsonify(stats), 200
 
-  except Exception as e:
-    logging.error(f"Error fetching stats for book {id}: {str(e)}", exc_info=True)
+  except Exception:
+    logging.exception("Failed to get review stats for book %s", id)
     return jsonify({
-      "message": f"Failed to get the book review stats: {e}"
+      "message": "Failed to get the book review stats"
     }), 500
 
 # add review
@@ -117,6 +122,10 @@ def add_review(id):
     return jsonify(review.to_dict()), 201
   except ValueError as e:
     return jsonify({"message": str(e)}), 400
+  except LookupError as e:
+    return jsonify({"message": str(e)}), 404
+  except DuplicateReviewError as e:
+    return jsonify({"message": str(e)}), 409
 
 # For restoring a book
 @books_bp.put("/restore/<uuid:id>")
@@ -171,8 +180,9 @@ def create_book():
   except FileExistsError as e:
     # this one is for the image file
     return jsonify({"message": str(e)}), 409
-  except Exception as e:
-    return jsonify({"message": f"Server error: {str(e)}"}), 500
+  except Exception:
+    logging.exception("Failed to create book")
+    return jsonify({"message": "Failed to create book"}), 500
   
 
 # For getting a single book
@@ -189,10 +199,16 @@ def get_book(id):
 @books_bp.get("")
 def get_books():
 
-  search_query = request.args.get("search", "").strip()
+  search_query = request.args.get("search", "").strip()[:200]
   category_id = request.args.get("category_id", "").strip() or None
-  page = request.args.get("page", 1, type=int)
-  limit = request.args.get("limit", 10, type=int)
+  if category_id is not None:
+    try:
+      category_id = UUID(category_id)
+    except ValueError:
+      return jsonify({"message": "Invalid category ID"}), 400
+  page = max(request.args.get("page", 1, type=int) or 1, 1)
+  limit = request.args.get("limit", BookService.DEFAULT_PAGE_SIZE, type=int) or BookService.DEFAULT_PAGE_SIZE
+  limit = min(max(limit, 1), BookService.MAX_PAGE_SIZE)
 
   paginated_books = BookService.get_paginated_books(
     search_query=search_query,

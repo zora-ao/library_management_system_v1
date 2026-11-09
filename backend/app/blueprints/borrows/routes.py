@@ -66,26 +66,8 @@ def borrow_book():
         return jsonify({"message": "Something went wrong"}), 500
 
 
-# User flags a book for return
-@borrows_bp.put("/<uuid:id>/return")
-@jwt_required()
-def return_book(id):
-    user_id = get_jwt_identity()
-
-    try:
-        borrow = BorrowService.request_return(id, user_id)
-        return jsonify({
-            "message": "Return request submitted successfully. Please bring the physical book to the library.",
-            "borrow": borrow.to_dict()
-        }), 200
-    except PermissionError as e:
-        return jsonify({"message": str(e)}), 403
-    except ValueError as e:
-        status_code = 404 if "not found" in str(e).lower() else 400
-        return jsonify({"message": str(e)}), status_code
-    except Exception:
-        return jsonify({"message": "Something went wrong"}), 500
-
+# Returns are recorded by staff at the library desk (see approve-return below);
+# students do not submit return requests themselves.
 
 
 # View all records

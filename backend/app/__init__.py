@@ -18,6 +18,7 @@ from app.config import Config
 from app.security_state import configure_jwt_security
 from app.maintenance import install_maintenance_guard
 from app.performance import install_performance_diagnostics
+from app.rate_limits import init_rate_limits
 
 
 def create_app():
@@ -46,6 +47,7 @@ def create_app():
   migrate.init_app(app, db)
   jwt.init_app(app)
   configure_jwt_security(jwt)
+  init_rate_limits(app)
   install_performance_diagnostics(app, db)
   
   # Register the blueprints
@@ -57,6 +59,13 @@ def create_app():
   app.register_blueprint(dashboard_bp)
   app.register_blueprint(dsa_bp)
   app.register_blueprint(users_bp)
+
+  # Uptime monitors ping this to keep the free Render instance awake. It sits
+  # outside /api so it skips the maintenance guard and never touches the
+  # database. Flask answers HEAD requests on GET routes automatically.
+  @app.get("/health")
+  def health():
+    return {"status": "ok"}, 200
 
   install_maintenance_guard(app)
 

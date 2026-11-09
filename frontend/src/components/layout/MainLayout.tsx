@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import PageOutlet from "./PageOutlet";
 import CatalogLayout from "./CatalogLayout";
 import { Sidebar } from "./Sidebar";
 import { MobileHeader } from "./MobileHeader";
@@ -34,7 +35,7 @@ const MainLayout = () => {
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col min-w-0">
         <main className={isDashboard ? "flex-1 p-4 md:p-8" : "flex-1 p-4 md:p-6"}>
-          <Outlet />
+          <PageOutlet />
         </main>
       </div>
     </div>

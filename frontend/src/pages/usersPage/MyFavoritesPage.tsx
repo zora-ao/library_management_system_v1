@@ -95,7 +95,7 @@ export default function MyFavoritesPage() {
   const [availability, setAvailability] = useState("all");
   const [sort, setSort] = useState("recent");
 
-  const records = favoritesQuery.data ?? [];
+  const records = useMemo(() => favoritesQuery.data ?? [], [favoritesQuery.data]);
 
   const visible = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();

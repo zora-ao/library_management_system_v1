@@ -23,6 +23,12 @@ class Config:
     },
   }
 
+  # Render terminates requests at one proxy and sets RENDER=true, so trust a
+  # single X-Forwarded-For hop there. Override with TRUSTED_PROXY_COUNT.
+  TRUSTED_PROXY_COUNT = int(os.getenv("TRUSTED_PROXY_COUNT", "1" if os.getenv("RENDER") else "0"))
+  RATELIMIT_ENABLED = os.getenv("RATELIMIT_ENABLED", "true").strip().lower() not in {"0", "false", "no", "off"}
+  RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
+
   JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
   JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=4)
 

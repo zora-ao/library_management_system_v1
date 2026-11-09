@@ -172,5 +172,24 @@ class BookRouteTests(unittest.TestCase):
         remove_fav.assert_called_once()
 
 
+    @patch("app.blueprints.books.routes.BookService.add_review")
+    def test_add_review_maps_missing_book_and_duplicate_errors(self, add_review):
+        from app.services.book_service import DuplicateReviewError
+
+        url = f"/api/books/{self.book_id}/reviews"
+        payload = {"rating": 4, "comment": "Great"}
+
+        add_review.side_effect = LookupError("Book not found")
+        missing = self.client.post(url, json=payload, headers=self.headers(self.student_token))
+        add_review.side_effect = DuplicateReviewError("You have already reviewed this book")
+        duplicate = self.client.post(url, json=payload, headers=self.headers(self.student_token))
+        add_review.side_effect = ValueError("Rating must be a whole number between 1 and 5")
+        invalid = self.client.post(url, json=payload, headers=self.headers(self.student_token))
+
+        self.assertEqual(missing.status_code, 404)
+        self.assertEqual(duplicate.status_code, 409)
+        self.assertEqual(duplicate.get_json()["message"], "You have already reviewed this book")
+        self.assertEqual(invalid.status_code, 400)
+
 if __name__ == "__main__":
     unittest.main()

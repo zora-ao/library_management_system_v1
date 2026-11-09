@@ -7,7 +7,6 @@ import {
   getBorrowHistory,
   getBorrows,
   rejectBorrow,
-  returnBook,
 } from "@/features/borrows/api/borrows";
 import type { Borrow, CreateBorrowPayload } from "@/features/borrows/types/borrow.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -69,23 +68,6 @@ export const useCreateBorrows = () => {
       const errorMessage =
         error.response?.data?.message ||
         "Failed to request book borrow. Please try again.";
-      toast.error(errorMessage);
-    },
-  });
-};
-
-export const useReturnBook = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (borrowId: string) => returnBook(borrowId),
-    onSuccess: () => {
-      invalidateBorrowData(queryClient, ["active", "admin"]);
-      toast.success("Return request submitted. Please bring the physical book to the library.");
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      const errorMessage =
-        error.response?.data?.message || "Failed to submit return request.";
       toast.error(errorMessage);
     },
   });

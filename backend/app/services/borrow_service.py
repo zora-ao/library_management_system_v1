@@ -95,30 +95,6 @@ class BorrowService:
             raise
 
     @staticmethod
-    def request_return(borrow_id, user_id):
-        borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
-        user_id = BorrowService._parse_uuid(user_id, "User ID")
-
-        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
-        if not borrow:
-            raise ValueError("Borrow record not found")
-
-        if str(borrow.user_id) != str(user_id):
-            raise PermissionError("Unauthorized")
-
-        if borrow.status != Borrow.STATUS_BORROWED:
-            raise ValueError("Only active borrowed books can be marked for return")
-
-        try:
-            borrow.status = Borrow.STATUS_PENDING_RETURN
-            db.session.commit()
-            db.session.refresh(borrow)
-            return borrow
-        except Exception:
-            db.session.rollback()
-            raise
-
-    @staticmethod
     def approve_borrow_request(borrow_id):
         """Reserve an available copy for an approved request."""
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")

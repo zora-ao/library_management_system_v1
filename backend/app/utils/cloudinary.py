@@ -1,15 +1,23 @@
+import os
 import re
 import cloudinary
 import cloudinary.uploader
 from flask import current_app
 
 def init_cloudinary():
-  cloudinary.config(
-    cloud_url = current_app.config["CLOUDINARY_URI"],
-    api_key = current_app.config["CLOUDINARY_API_KEY"],
-    api_secret = current_app.config["CLOUDINARY_API_SECRET"],
-    secure = True
-  )
+  # The SDK reads CLOUDINARY_URL once at import time, which can happen before
+  # app.config loads backend/.env. Re-read it now so uploads work locally too.
+  cloudinary_url = current_app.config.get("CLOUDINARY_URI")
+  if cloudinary_url:
+    os.environ["CLOUDINARY_URL"] = cloudinary_url
+  cloudinary.reset_config()
+
+  overrides = {"secure": True}
+  if current_app.config.get("CLOUDINARY_API_KEY"):
+    overrides["api_key"] = current_app.config["CLOUDINARY_API_KEY"]
+  if current_app.config.get("CLOUDINARY_API_SECRET"):
+    overrides["api_secret"] = current_app.config["CLOUDINARY_API_SECRET"]
+  cloudinary.config(**overrides)
 
 def upload_book_cover(file):
   init_cloudinary()
