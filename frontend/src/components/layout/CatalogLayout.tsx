@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import PageOutlet from "./PageOutlet";
 import { ChevronDown, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -141,7 +142,7 @@ export default function CatalogLayout() {
         </div>
       </header>
       <main className="booky-content">
-        <Outlet />
+        <PageOutlet />
       </main>
       {!isDetails && !isBorrows && !isFavorites && !isAbout && !isProfile && (
         <footer className="booky-footer">
