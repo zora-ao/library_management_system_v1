@@ -245,8 +245,30 @@ def validate_custom_dump(config: PostgresToolConfig, dump_path: Path) -> None:
   )
 
 
+# Routines (and their comments/ACLs) in the backup are never restored. The app
+# defines none; any found in public belong to the hosting platform, e.g.
+# Supabase's rls_auto_enable(), which its ensure_rls event trigger depends on,
+# so --clean cannot drop it and the whole restore would roll back.
+_SKIPPED_TOC_ENTRY = re.compile(
+  r"^\d+; \d+ \d+ (?:(?:COMMENT|ACL) \S+ )?(?:FUNCTION|PROCEDURE|AGGREGATE) "
+)
+
+
+def _restore_list(config: PostgresToolConfig, dump_path: Path) -> Path:
+  listing = _run(
+    config,
+    [_binary(config, "pg_restore"), "--list", str(dump_path)],
+    "Backup validation",
+  ).stdout or ""
+  kept = [line for line in listing.splitlines() if not _SKIPPED_TOC_ENTRY.match(line)]
+  list_path = dump_path.with_name(dump_path.name + ".restore-list")
+  list_path.write_text("\n".join(kept) + "\n", encoding="utf-8")
+  return list_path
+
+
 def restore_custom_dump(config: PostgresToolConfig, dump_path: Path) -> None:
   parts = _connection_parts(config.database_url)
+  list_path = _restore_list(config, dump_path)
   _run(
     config,
     [
@@ -260,6 +282,8 @@ def restore_custom_dump(config: PostgresToolConfig, dump_path: Path) -> None:
       # it fails while the excluded system_security_state table lives there)
       # or platform schemas that older, unfiltered backups may contain.
       "--schema=public",
+      "--use-list",
+      str(list_path),
       "--dbname",
       parts.database,
       str(dump_path),
