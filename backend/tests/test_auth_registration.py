@@ -4,7 +4,7 @@ from flask import Flask
 
 from app.blueprints.auth.routes import auth_bp
 from app.extensions import db
-from app.models import Student, User
+from app.models import User
 from app.services.auth_service import AuthService
 
 
@@ -29,7 +29,6 @@ class RegistrationServiceTests(unittest.TestCase):
 
     def clear_accounts(self):
         db.session.rollback()
-        Student.query.delete()
         User.query.delete()
         db.session.commit()
 
@@ -40,7 +39,6 @@ class RegistrationServiceTests(unittest.TestCase):
         self.assertEqual(type(raised.exception).__name__, expected_type)
         self.assertEqual(str(raised.exception), expected_message)
         self.assertEqual(User.query.count(), 0)
-        self.assertEqual(Student.query.count(), 0)
 
     def test_register_user_normalizes_username_and_email(self):
         user = AuthService.register_user(
@@ -50,8 +48,6 @@ class RegistrationServiceTests(unittest.TestCase):
         self.assertEqual(user.username, "Alice")
         self.assertEqual(user.email, "alice@example.com")
         self.assertEqual(User.query.count(), 1)
-        self.assertEqual(Student.query.count(), 1)
-        self.assertIsNotNone(user.student)
 
     def test_register_user_rejects_invalid_email(self):
         invalid_emails = (
@@ -164,7 +160,6 @@ class RegistrationServiceTests(unittest.TestCase):
         )
         self.assertEqual(str(raised.exception), "Username or email already exists")
         self.assertEqual(User.query.count(), 1)
-        self.assertEqual(Student.query.count(), 1)
 
 
 class RegistrationRouteTests(unittest.TestCase):
@@ -191,7 +186,6 @@ class RegistrationRouteTests(unittest.TestCase):
 
     def clear_accounts(self):
         db.session.rollback()
-        Student.query.delete()
         User.query.delete()
         db.session.commit()
 
@@ -246,7 +240,6 @@ class RegistrationRouteTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 400)
                 self.assertEqual(response.get_json(), {"message": expected_message})
                 self.assertEqual(User.query.count(), 0)
-                self.assertEqual(Student.query.count(), 0)
 
     def test_register_route_rejects_malformed_email_variants(self):
         invalid_emails = (
@@ -274,7 +267,6 @@ class RegistrationRouteTests(unittest.TestCase):
                         {"message": "Enter a valid email address"},
                     )
                     self.assertEqual(User.query.count(), 0)
-                    self.assertEqual(Student.query.count(), 0)
                 finally:
                     self.clear_accounts()
 
@@ -299,7 +291,6 @@ class RegistrationRouteTests(unittest.TestCase):
                     {"message": "Request body must be a JSON object"},
                 )
                 self.assertEqual(User.query.count(), 0)
-                self.assertEqual(Student.query.count(), 0)
 
     def test_register_route_returns_409_for_normalized_duplicate(self):
         AuthService.register_user("Alice", "alice@example.com", "password")
@@ -318,7 +309,6 @@ class RegistrationRouteTests(unittest.TestCase):
             response.get_json(), {"message": "Username or email already exists"}
         )
         self.assertEqual(User.query.count(), 1)
-        self.assertEqual(Student.query.count(), 1)
 
     def test_register_route_persists_normalized_valid_input(self):
         response = self.client.post(
@@ -335,8 +325,6 @@ class RegistrationRouteTests(unittest.TestCase):
         user = User.query.one()
         self.assertEqual(user.username, "Alice")
         self.assertEqual(user.email, "alice@example.com")
-        self.assertEqual(Student.query.count(), 1)
-        self.assertIsNotNone(user.student)
 
 
 if __name__ == "__main__":

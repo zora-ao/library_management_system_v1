@@ -5,7 +5,7 @@ import { filterAndSortUsers, getActiveLoansForUser, getUserSummary } from "./use
 
 const users: User[] = [
   { id: "admin-1", username: "Alex Admin", email: "alex@library.test", avatar_url: "", role: "admin", is_active: true, created_at: "2026-10-20T08:00:00Z" },
-  { id: "student-1", username: "Bianca Student", email: "bianca@library.test", avatar_url: "", role: "student", student: null, is_active: true, created_at: "2026-10-19T08:00:00Z" },
+  { id: "student-1", username: "Bianca Student", email: "bianca@library.test", avatar_url: "", role: "student", is_active: true, created_at: "2026-10-19T08:00:00Z" },
   { id: "librarian-1", username: "Carlo Librarian", email: "carlo@library.test", avatar_url: "", role: "librarian", is_active: false, created_at: "2026-10-18T08:00:00Z" },
 ];
 

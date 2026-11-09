@@ -24,15 +24,6 @@ class BookDict(TypedDict):
   archived_at: str | None
 
 
-class StudentDict(TypedDict):
-  id: str | None
-  user_id: str | None
-  student_number: str | None
-  course: str | None
-  year_level: str | None
-  enrollment_status: str
-
-
 class UserDict(TypedDict):
   id: str | None
   username: str
@@ -43,7 +34,6 @@ class UserDict(TypedDict):
   avatar_url: str | None
   is_google_account: bool
   created_at: str | None
-  student: StudentDict | None
 
 
 class CategoryDict(TypedDict):

@@ -33,10 +33,11 @@ from app.services.postgres_tools import (
 
 APPLICATION_ID = "pahina-library"
 DATA_TABLES = (
+  "roles",
   "users",
-  "students",
   "books",
   "categories",
+  "borrow_statuses",
   "borrows",
   "favorites",
   "reviews",

@@ -13,7 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from app.blueprints.backups.routes import backups_bp
 from app.extensions import db
 from app.maintenance import exclusive_maintenance_lock, install_maintenance_guard
-from app.models import Book, Borrow, Category, Student, SystemSecurityState, User
+from app.models import Book, Borrow, Category, SystemSecurityState, User
 from app.security_state import configure_jwt_security
 from app.services.auth_service import AuthService
 from app.services.backup_service import BackupService, InspectedBackup
@@ -128,19 +128,13 @@ class PostgresBackupRestoreIntegrationTests(unittest.TestCase):
         category = Category("Integration History")
         db.session.add_all([admin, student_user, category])
         db.session.flush()
-        student = Student(
-            user_id=student_user.id,
-            student_number="REC-001",
-            course="History",
-            year_level="4",
-        )
         book = Book(
             title="Recovery Proof",
             author="Pahina",
             isbn="RECOVERY-001",
             category_id=category.id,
         )
-        db.session.add_all([student, book])
+        db.session.add(book)
         db.session.flush()
         borrow = Borrow(
             user_id=student_user.id,
@@ -173,7 +167,7 @@ class PostgresBackupRestoreIntegrationTests(unittest.TestCase):
 
             admin_id, student_id, category_id, book_id, borrow_id = ids
             self.assertIsNotNone(db.session.get(User, admin_id))
-            self.assertIsNotNone(Student.query.filter_by(user_id=student_id).one())
+            self.assertIsNotNone(db.session.get(User, student_id))
             self.assertEqual(db.session.get(Book, book_id).category_id, category_id)
             restored_borrow = db.session.get(Borrow, borrow_id)
             self.assertEqual(restored_borrow.user_id, student_id)

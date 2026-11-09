@@ -9,7 +9,7 @@ from sqlalchemy import event
 
 from app.blueprints.users.routes import users_bp
 from app.extensions import db
-from app.models import Student, User
+from app.models import User
 from app.services.auth_service import AuthService
 
 
@@ -174,12 +174,7 @@ class UserListQueryTests(unittest.TestCase):
         self.context.push()
         db.create_all()
         for index in range(4):
-            user = User(f"Student {index}", f"student{index}@example.com")
-            user.student = Student(
-                student_number=f"2026-{index}",
-                enrollment_status="Enrolled",
-            )
-            db.session.add(user)
+            db.session.add(User(f"Student {index}", f"student{index}@example.com"))
         db.session.commit()
         self.token = create_access_token(
             identity=str(uuid.uuid4()),
@@ -191,7 +186,7 @@ class UserListQueryTests(unittest.TestCase):
         db.drop_all()
         self.context.pop()
 
-    def test_user_list_serializes_student_profiles_in_one_query(self):
+    def test_user_list_serializes_users_in_one_query(self):
         db.session.expire_all()
         statements = []
 

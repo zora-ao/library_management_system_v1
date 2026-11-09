@@ -2,19 +2,6 @@ import { api } from "@/services/api";
 import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from "../types/auth.types";
 
 
-export interface UpdateProfilePayload {
-  username?: string;
-  email?: string;
-  phone?: string;
-  avatar_url?: string;
-  student?: {
-    student_number?: string;
-    course?: string;
-    year_level?: string;
-    avatar?: File;
-  };
-}
-
 export interface ChangePasswordPayload {
   current_password: string;
   new_password: string;

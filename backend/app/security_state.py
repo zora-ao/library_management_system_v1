@@ -5,7 +5,6 @@ from uuid import UUID
 from flask import g, has_request_context, jsonify, request
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy import update
-from sqlalchemy.orm import joinedload
 
 from app.extensions import db
 from app.models.system_security_state import SystemSecurityState
@@ -127,11 +126,7 @@ def configure_jwt_security(jwt_manager) -> None:
     with measure_authentication():
       try:
         identity = UUID(str(jwt_payload.get("sub") or get_jwt_identity()))
-        user = db.session.get(
-          User,
-          identity,
-          options=[joinedload(User.student)],
-        )
+        user = db.session.get(User, identity)
         state = _security_state()
       except (RuntimeError, TypeError, ValueError):
         return True

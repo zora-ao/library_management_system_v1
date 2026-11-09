@@ -9,7 +9,7 @@ from flask import Flask
 from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
-from app.models import Book, Borrow, Review, User
+from app.models import Book, Borrow, BorrowStatus, Review, Role, User
 from app.services.book_service import BookService, DuplicateReviewError
 
 
@@ -115,6 +115,23 @@ class RoleAndStatusRuleTests(ModelRulesTestCase):
         db.session.commit()
 
         self.assertEqual(Borrow.query.count(), len(Borrow.STATUSES))
+
+    def test_lookup_tables_are_seeded_with_every_role_and_status(self):
+        self.assertEqual(
+            sorted(role.name for role in Role.query.all()), sorted(User.ROLES)
+        )
+        self.assertEqual(
+            sorted(status.code for status in BorrowStatus.query.all()),
+            sorted(Borrow.STATUSES),
+        )
+        self.assertTrue(all(role.description for role in Role.query.all()))
+        self.assertTrue(all(status.description for status in BorrowStatus.query.all()))
+
+    def test_role_and_status_columns_reference_the_lookup_tables(self):
+        role_fk, = User.__table__.c.role.foreign_keys
+        status_fk, = Borrow.__table__.c.status.foreign_keys
+        self.assertEqual(role_fk.target_fullname, "roles.name")
+        self.assertEqual(status_fk.target_fullname, "borrow_statuses.code")
 
 
 class OverdueRuleTests(unittest.TestCase):
@@ -224,6 +241,68 @@ class ConstraintMigrationTests(unittest.TestCase):
 
         self.assertEqual(migration.BORROW_STATUSES, Borrow.STATUSES)
         self.assertEqual(migration.USER_ROLES, User.ROLES)
+
+
+LOOKUP_MIGRATION_PATH = MIGRATION_PATH.with_name("e6f7a8b9c0d1_add_role_and_borrow_status_lookups.py")
+
+
+class LookupMigrationTests(unittest.TestCase):
+    def load_migration(self):
+        spec = importlib.util.spec_from_file_location("lookup_migration", LOOKUP_MIGRATION_PATH)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.op = MagicMock()
+        return module
+
+    def test_seed_rows_match_the_models(self):
+        migration = self.load_migration()
+
+        self.assertEqual(migration.ROLES, Role.SEED)
+        self.assertEqual(migration.BORROW_STATUSES, BorrowStatus.SEED)
+        self.assertEqual(tuple(name for name, _ in Role.SEED), User.ROLES)
+        self.assertEqual(tuple(code for code, _ in BorrowStatus.SEED), Borrow.STATUSES)
+
+    def test_upgrade_replaces_checks_with_foreign_keys(self):
+        migration = self.load_migration()
+
+        migration.upgrade()
+
+        self.assertEqual(
+            [c.args[0] for c in migration.op.create_table.call_args_list],
+            ["roles", "borrow_statuses"],
+        )
+        self.assertEqual(migration.op.bulk_insert.call_count, 2)
+        self.assertEqual(
+            migration.op.drop_constraint.call_args_list,
+            [
+                call("ck_users_role_valid", "users", type_="check"),
+                call("ck_borrows_status_valid", "borrows", type_="check"),
+            ],
+        )
+        self.assertEqual(
+            migration.op.create_foreign_key.call_args_list,
+            [
+                call("fk_users_role_roles", "users", "roles", ["role"], ["name"], onupdate="CASCADE"),
+                call(
+                    "fk_borrows_status_borrow_statuses", "borrows", "borrow_statuses",
+                    ["status"], ["code"], onupdate="CASCADE",
+                ),
+            ],
+        )
+
+    def test_downgrade_restores_the_check_constraints(self):
+        migration = self.load_migration()
+
+        migration.downgrade()
+
+        self.assertEqual(
+            [c.args[:2] for c in migration.op.create_check_constraint.call_args_list],
+            [("ck_borrows_status_valid", "borrows"), ("ck_users_role_valid", "users")],
+        )
+        self.assertEqual(
+            [c.args[0] for c in migration.op.drop_table.call_args_list],
+            ["borrow_statuses", "roles"],
+        )
 
 
 if __name__ == "__main__":
