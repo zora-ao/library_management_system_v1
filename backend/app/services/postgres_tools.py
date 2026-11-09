@@ -224,6 +224,10 @@ def create_custom_dump(config: PostgresToolConfig, output_path: Path) -> None:
       f"--compress={compression_level}",
       "--no-owner",
       "--no-privileges",
+      # Only the app's own schema. Hosted Postgres (e.g. Supabase) also has
+      # auth/storage/realtime schemas owned by a platform role; restoring
+      # them with --clean fails with "must be owner" and aborts the restore.
+      "--schema=public",
       "--exclude-table=public.system_security_state",
       "--file",
       str(output_path),
@@ -252,6 +256,10 @@ def restore_custom_dump(config: PostgresToolConfig, dump_path: Path) -> None:
       "--single-transaction",
       "--no-owner",
       "--no-privileges",
+      # Restore objects inside public only, never the schema itself (dropping
+      # it fails while the excluded system_security_state table lives there)
+      # or platform schemas that older, unfiltered backups may contain.
+      "--schema=public",
       "--dbname",
       parts.database,
       str(dump_path),
