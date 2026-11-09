@@ -59,6 +59,17 @@ def _save_bounded_upload(upload, destination: Path) -> None:
 
 
 def _error_response(error):
+  if isinstance(error, PostgresToolError) and error.diagnostic:
+    # The client only sees the generic message; keep pg_dump/pg_restore's
+    # (credential-scrubbed) output in the server log for diagnosis.
+    current_app.logger.error(
+      "backup_postgres_tool_failed",
+      extra={
+        "event": "backup_postgres_tool_failed",
+        "exit_code": error.exit_code,
+        "diagnostic": error.diagnostic,
+      },
+    )
   if isinstance(error, PermissionError):
     return jsonify({"message": str(error)}), 403
   if isinstance(error, (ValueError, InvalidBackupError, BackupServiceError, PostgresToolError)):
