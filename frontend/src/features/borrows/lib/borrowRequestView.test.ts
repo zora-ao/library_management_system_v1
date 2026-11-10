@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { Borrow } from "../types/borrow.types";
 import {
+  buildPendingQueue,
   classifyBorrowRequests,
   filterBorrowRequests,
   formatRequestDate,
   getBorrowReference,
   getBorrowRequestCounts,
+  getQueuePositions,
 } from "./borrowRequestView";
 
 const makeBorrow = (overrides: Partial<Borrow> = {}): Borrow => ({
@@ -77,5 +79,29 @@ describe("borrow request view model", () => {
     const row = makeBorrow({ user_name: undefined, user_email: undefined, author: undefined, created_at: undefined });
     expect(filterBorrowRequests([row], "clean", "all")).toEqual([row]);
     expect(formatRequestDate(row.created_at)).toBe("—");
+  });
+
+  it("queues pending requests first come, first served", () => {
+    const rows = [
+      makeBorrow({ id: "second", created_at: "2026-10-20T10:00:00" }),
+      makeBorrow({ id: "approved", status: "READY_FOR_PICKUP", created_at: "2026-10-18T10:00:00" }),
+      makeBorrow({ id: "first", created_at: "2026-10-19T10:00:00" }),
+      makeBorrow({ id: "third", created_at: "2026-10-21T10:00:00" }),
+    ];
+    const queue = buildPendingQueue(rows);
+
+    expect(queue.size).toBe(3);
+    expect(queue.peek()?.id).toBe("first");
+    const positions = getQueuePositions(queue);
+    expect(["first", "second", "third"].map((id) => positions.get(id))).toEqual([1, 2, 3]);
+    expect(positions.get("approved")).toBeUndefined();
+    expect(queue.dequeue()?.id).toBe("first");
+    expect(queue.peek()?.id).toBe("second");
+  });
+
+  it("builds an empty queue when nothing is pending", () => {
+    const queue = buildPendingQueue([makeBorrow({ status: "REJECTED" })]);
+    expect(queue.isEmpty()).toBe(true);
+    expect(getQueuePositions(queue).size).toBe(0);
   });
 });

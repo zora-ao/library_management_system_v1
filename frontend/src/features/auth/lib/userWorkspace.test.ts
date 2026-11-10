@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Borrow } from "@/features/borrows/types/borrow.types";
 import type { User } from "../types/auth.types";
-import { filterAndSortUsers, getActiveLoansForUser, getUserSummary } from "./userWorkspace";
+import { filterAndSortUsers, getActiveLoansForUser, getUserSummary, indexActiveLoansByUser } from "./userWorkspace";
 
 const users: User[] = [
   { id: "admin-1", username: "Alex Admin", email: "alex@library.test", avatar_url: "", role: "admin", is_active: true, created_at: "2026-10-20T08:00:00Z" },
@@ -37,5 +37,21 @@ describe("user workspace data", () => {
     ];
     expect(getActiveLoansForUser("student-1", loans).map((item) => item.id)).toEqual(["active", "overdue", "pending-return"]);
     expect(getActiveLoansForUser("student-1", loans).filter((item) => item.is_overdue)).toHaveLength(1);
+  });
+
+  it("indexes active loans by user in a hash map, matching the per-user scan", () => {
+    const loans = [
+      borrow({ id: "s1-active" }),
+      borrow({ id: "s1-returned", status: "RETURNED" }),
+      borrow({ id: "s2-overdue", user_id: "student-2", status: "OVERDUE", is_overdue: true }),
+      borrow({ id: "s2-pickup", user_id: "student-2", status: "READY_FOR_PICKUP" }),
+    ];
+    const index = indexActiveLoansByUser(loans);
+
+    for (const userId of ["student-1", "student-2"]) {
+      expect(index.get(userId)?.map((loan) => loan.id)).toEqual(getActiveLoansForUser(userId, loans).map((loan) => loan.id));
+    }
+    expect(index.get("no-loans")).toBeUndefined();
+    expect(indexActiveLoansByUser([]).size).toBe(0);
   });
 });

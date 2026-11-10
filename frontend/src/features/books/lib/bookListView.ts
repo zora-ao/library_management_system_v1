@@ -1,4 +1,5 @@
 import type { Borrow } from "@/features/borrows/types/borrow.types";
+import { linearSearch, mergeSort } from "@/lib/dsa";
 import type { Book } from "../types/book.types";
 
 export type BookAvailability = "all" | "available" | "unavailable";
@@ -31,7 +32,8 @@ const toLocalDateKey = (value?: string | null) => {
 
 export const filterAndSortBooks = (books: Book[], filters: BookListFilters) => {
   const search = filters.search?.trim().toLocaleLowerCase() || "";
-  const filtered = books.filter((book) => {
+  // Linear search (O(n)) applies the search text and every filter in one pass.
+  const filtered = linearSearch(books, (book) => {
     const haystack = [book.title, book.author, book.isbn, book.category_name]
       .filter(Boolean)
       .join(" ")
@@ -44,7 +46,8 @@ export const filterAndSortBooks = (books: Book[], filters: BookListFilters) => {
     return true;
   });
 
-  return [...filtered].sort((a, b) => {
+  // Merge sort (O(m log m)) orders only the m matching books.
+  return mergeSort(filtered, (a, b) => {
     if (filters.sort === "title") return a.title.localeCompare(b.title);
     if (filters.sort === "availability") return b.available_copies - a.available_copies;
     if (filters.sort === "archived") {

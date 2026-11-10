@@ -1,0 +1,20 @@
+---
+title: 1 · How a request travels through the system
+---
+flowchart TB
+  U(["Browser"]) --> FE["React + TypeScript app<br/>Vite · React Query · Tailwind<br/>hosted on Vercel"]
+  FE -.->|"Google sign-in"| GO["Google Identity"]
+  FE -->|"HTTPS + JWT<br/>Authorization header"| RL
+  subgraph API["Flask API · gunicorn on Render"]
+    direction TB
+    RL["CORS + rate limits"] --> MG{"Maintenance<br/>mode on?"}
+    MG -->|"yes"| E503["503 · retry in 5 s"]
+    MG -->|"no"| JW["JWT check<br/>role + auth epoch"]
+    JW --> BP["Blueprints under /api<br/>auth · books · borrows · categories<br/>dashboard · users · backups · dsa"]
+    BP --> SV["Services<br/>business rules + transactions"]
+    SV --> ORM["SQLAlchemy models"]
+    SV --> DS["DSA module<br/>BST · hash table<br/>merge sort · search"]
+  end
+  ORM --> DB[("PostgreSQL<br/>Supabase")]
+  SV --> CL["Cloudinary<br/>book covers + avatars"]
+  HL["Uptime monitor"] -->|"GET /health<br/>skips DB"| RL

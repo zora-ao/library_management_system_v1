@@ -40,7 +40,7 @@ def verify_step_up(user_id: UUID, proof: StepUpProof) -> User:
     raise PermissionError("Administrator access required") from exc
 
   user = db.session.get(User, normalized_user_id)
-  if user is None or not user.is_active or user.role.lower() != "admin":
+  if user is None or not user.is_active or not user.is_admin():
     raise PermissionError("Administrator access required")
 
   credential = proof.credential.strip() if proof.credential else ""

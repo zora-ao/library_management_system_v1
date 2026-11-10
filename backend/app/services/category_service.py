@@ -1,7 +1,8 @@
 from app.models import Category, Book
 from app.extensions import db
+from app.services.base_service import BaseService
 
-class CategoryService:
+class CategoryService(BaseService):
 
   @staticmethod
   def get_all_categories():

@@ -7,6 +7,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import requests as http_requests
 import urllib3.util.connection as urllib3_connection
+from app.exceptions import ConflictError, ValidationError
 from app.models import User
 from app.extensions import db
 from flask_jwt_extended import create_access_token
@@ -68,11 +69,11 @@ _REGISTRATION_EMAIL_PATTERN = re.compile(
 )
 
 
-class RegistrationValidationError(ValueError):
+class RegistrationValidationError(ValidationError):
   """Raised when registration input does not satisfy the public contract."""
 
 
-class RegistrationConflictError(ValueError):
+class RegistrationConflictError(ConflictError, ValueError):
   """Raised when a normalized username or email already exists."""
 
 

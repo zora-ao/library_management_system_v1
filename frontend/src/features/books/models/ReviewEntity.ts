@@ -32,10 +32,6 @@ export class ReviewEntity {
     });
   }
 
-  get isHighRating(): boolean {
-    return this.rating >= 4;
-  }
-
 }
 
 export function sortReviews(reviews: ReviewEntity[], order: "newest" | "oldest"): ReviewEntity[] {

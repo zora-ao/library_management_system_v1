@@ -4,6 +4,7 @@ import { ArrowRight, Search } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-spinner";
 import { useFavoriteBooks } from "@/hooks/useBooks";
 import BookCard from "@/features/books/components/books/BookCard";
+import { containsText, linearSearch, mergeSort } from "@/lib/dsa";
 import BorrowSelect from "@/features/borrows/components/BorrowSelect";
 import "./my-favorites.css";
 
@@ -98,28 +99,23 @@ export default function MyFavoritesPage() {
   const records = useMemo(() => favoritesQuery.data ?? [], [favoritesQuery.data]);
 
   const visible = useMemo(() => {
-    const cleanQuery = query.trim().toLowerCase();
-    const filtered = records.filter((book) => {
+    // Linear search, O(n), then merge sort, O(m log m).
+    const filtered = linearSearch(records, (book) => {
       if (availability === "available" && book.available_copies <= 0) {
         return false;
       }
       if (availability === "unavailable" && book.available_copies > 0) {
         return false;
       }
-      if (!cleanQuery) return true;
-      return (
-        book.title.toLowerCase().includes(cleanQuery) ||
-        book.author.toLowerCase().includes(cleanQuery) ||
-        (book.category_name ?? "").toLowerCase().includes(cleanQuery)
-      );
+      return containsText([book.title, book.author, book.category_name], query);
     });
 
     if (sort === "title") {
-      return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+      return mergeSort(filtered, (a, b) => a.title.localeCompare(b.title));
     }
     if (sort === "rating") {
-      return [...filtered].sort(
-        (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0)
+      return mergeSort(
+        filtered, (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0)
       );
     }
     return filtered;

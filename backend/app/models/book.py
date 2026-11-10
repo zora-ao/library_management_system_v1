@@ -1,6 +1,7 @@
 from datetime import timezone
 
 from sqlalchemy.dialects.postgresql import UUID
+from app.exceptions import ValidationError
 from app.models.base import BaseEntity
 from app.models.schemas import BookDict
 from app.extensions import db
@@ -85,11 +86,11 @@ class Book(BaseEntity): # Inheritance
   def adjust_total_copies(self, new_total: int):
     # it safely update the total copies and recalculate available copies
     if new_total < 1:
-      raise ValueError("Total copies must be 1 or greater")
+      raise ValidationError("Total copies must be 1 or greater")
 
     diff = new_total - self._total_copies
     if self._available_copies + diff < 0:
-      raise ValueError("Cannot reduce copies below currently borrowed count")
+      raise ValidationError("Cannot reduce copies below currently borrowed count")
 
     self._total_copies = new_total
     self._available_copies += diff
@@ -97,14 +98,14 @@ class Book(BaseEntity): # Inheritance
   def decrement_available(self):
     # this will decrement the available copies when someone borrows it
     if self._available_copies <= 0:
-      raise ValueError("No available copies to borrow")
+      raise ValidationError("No available copies to borrow")
 
     self._available_copies -= 1
 
   def increment_available(self):
     # this will increment the available copies when someone return a book
     if self._available_copies >= self._total_copies:
-      raise ValueError("All copies are already returned")
+      raise ValidationError("All copies are already returned")
 
     self._available_copies += 1
 

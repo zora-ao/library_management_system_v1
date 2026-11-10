@@ -1,3 +1,4 @@
+import { HashMap, Queue, linearSearch, mergeSort } from "@/lib/dsa";
 import type { Borrow } from "../types/borrow.types";
 
 export type BorrowRequestTab = "pending" | "pickup" | "rejected";
@@ -12,23 +13,42 @@ export const sortBorrowRequests = (
   rows: Borrow[],
   order: BorrowRequestOrder,
   getDate: (borrow: Borrow) => string | null | undefined = (borrow) => borrow.created_at,
-) => [...rows].sort((a, b) => {
+) => mergeSort(rows, (a, b) => {
   const delta = timestamp(getDate(a)) - timestamp(getDate(b));
   return order === "oldest" ? delta : -delta;
 });
 
+/**
+ * Queue of pending borrow requests, first come, first served.
+ * Requests are sorted oldest first (merge sort, O(n log n)) and enqueued, so the
+ * front of the queue is always the next request a librarian should handle.
+ */
+export const buildPendingQueue = (rows: Borrow[]): Queue<Borrow> => new Queue(
+  sortBorrowRequests(linearSearch(rows, (row) => row.status === "PENDING_BORROW"), "oldest"),
+);
+
+/**
+ * Each pending request's place in line (1 = next), as a hash map from request ID.
+ * Built once in O(n); each table row then finds its position in O(1).
+ */
+export const getQueuePositions = (queue: Queue<Borrow>): HashMap<number> => {
+  const positions = new HashMap<number>();
+  queue.toArray().forEach((borrow, index) => positions.set(borrow.id, index + 1));
+  return positions;
+};
+
 export const classifyBorrowRequests = (rows: Borrow[], tab: BorrowRequestTab) => {
   if (tab === "pending") {
-    return sortBorrowRequests(rows.filter((row) => row.status === "PENDING_BORROW"), "oldest");
+    return buildPendingQueue(rows).toArray();
   }
   if (tab === "pickup") {
     return sortBorrowRequests(
-      rows.filter((row) => row.status === "READY_FOR_PICKUP"),
+      linearSearch(rows, (row) => row.status === "READY_FOR_PICKUP"),
       "oldest",
       (row) => row.approved_at ?? row.created_at,
     );
   }
-  return sortBorrowRequests(rows.filter((row) => row.status === "REJECTED"), "newest");
+  return sortBorrowRequests(linearSearch(rows, (row) => row.status === "REJECTED"), "newest");
 };
 
 export const toLocalDateKey = (value?: string | Date | null) => {
@@ -43,7 +63,7 @@ export const toLocalDateKey = (value?: string | Date | null) => {
 
 export const filterBorrowRequests = (rows: Borrow[], query: string, date: string) => {
   const needle = query.trim().toLowerCase();
-  return rows.filter((row) => {
+  return linearSearch(rows, (row) => {
     const searchable = [
       row.user_name,
       row.user_email,

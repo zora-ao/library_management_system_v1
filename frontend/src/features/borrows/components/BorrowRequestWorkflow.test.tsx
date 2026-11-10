@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+import { HashMap } from "@/lib/dsa";
 import type { Borrow } from "../types/borrow.types";
 import BorrowRequestsTable from "./BorrowRequestsTable";
 import RejectBorrowRequestDialog from "./RejectBorrowRequestDialog";
@@ -105,5 +106,24 @@ describe("borrow request workflow components", () => {
     expect(screen.getByRole("dialog")).toHaveClass("bg-popover", "text-popover-foreground", "sm:max-w-md");
     await user.click(screen.getByRole("button", { name: "Confirm pickup" }));
     expect(confirm).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows each pending request's place in the queue, with Next on the first", () => {
+    const second = { ...borrow, id: "second", book_title: "Refactoring" };
+    const positions = new HashMap<number>().set(borrow.id, 1).set("second", 2);
+    const { container } = render(<BorrowRequestsTable rows={[borrow, second]} tab="pending" onOpen={vi.fn()} queuePositions={positions} />);
+
+    expect(within(container).getByRole("columnheader", { name: "In line" })).toBeInTheDocument();
+    const firstRow = within(container).getByText("Clean Code").closest("tr")!;
+    expect(within(firstRow).getByText("#1")).toBeInTheDocument();
+    expect(within(firstRow).getByText("Next")).toBeInTheDocument();
+    const secondRow = within(container).getByText("Refactoring").closest("tr")!;
+    expect(within(secondRow).getByText("#2")).toBeInTheDocument();
+    expect(within(secondRow).queryByText("Next")).not.toBeInTheDocument();
+  });
+
+  it("hides the queue column outside the pending tab", () => {
+    const { container } = render(<BorrowRequestsTable rows={[{ ...borrow, status: "REJECTED" }]} tab="rejected" onOpen={vi.fn()} />);
+    expect(within(container).queryByRole("columnheader", { name: "In line" })).not.toBeInTheDocument();
   });
 });

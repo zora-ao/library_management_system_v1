@@ -1,19 +1,20 @@
 from datetime import datetime, timezone
-from uuid import UUID
 
 from app.models import Book, Review, Category, Borrow, Favorite
 from app.models.book import REVIEW_STATS_GROUP
 from app.utils.cloudinary import upload_book_cover
+from app.exceptions import ConflictError
 from app.extensions import db
+from app.services.base_service import BaseService
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, undefer_group
 
 
-class DuplicateReviewError(Exception):
+class DuplicateReviewError(ConflictError):
     """Raised when a user tries to review the same book twice."""
 
 
-class BookService:
+class BookService(BaseService):
     DEFAULT_PAGE_SIZE = 10
     # Public catalog pages are capped so one request cannot pull the whole table.
     MAX_PAGE_SIZE = 100
@@ -42,15 +43,6 @@ class BookService:
             raise ValueError("Pages must be greater than 0")
 
         return value
-
-    @staticmethod
-    def _parse_uuid(val, param_name="ID"):
-        if isinstance(val, str):
-            try:
-                return UUID(val)
-            except ValueError:
-                raise ValueError(f"Invalid {param_name} format")
-        return val
 
     @staticmethod
     def get_user_favorites(user_id):
@@ -374,24 +366,8 @@ class BookService:
         return related
 
     @staticmethod
-    def _parse_rating(raw_rating):
-        rating_error = f"Rating must be a whole number between {Review.MIN_RATING} and {Review.MAX_RATING}"
-        if isinstance(raw_rating, bool):
-            raise ValueError(rating_error)
-        if isinstance(raw_rating, str):
-            try:
-                raw_rating = int(raw_rating.strip())
-            except ValueError as error:
-                raise ValueError(rating_error) from error
-        if isinstance(raw_rating, float) and raw_rating.is_integer():
-            raw_rating = int(raw_rating)
-        if not isinstance(raw_rating, int) or not (Review.MIN_RATING <= raw_rating <= Review.MAX_RATING):
-            raise ValueError(rating_error)
-        return raw_rating
-
-    @staticmethod
     def add_review(book_id, user_id, rating, comment):
-        rating = BookService._parse_rating(rating)
+        rating = Review.parse_rating(rating)
         book_id = BookService._parse_uuid(book_id, "book ID")
         user_id = BookService._parse_uuid(user_id, "user ID")
 

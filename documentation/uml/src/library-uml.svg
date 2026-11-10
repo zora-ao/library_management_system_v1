@@ -1,0 +1,365 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3090" height="2469" viewBox="0 0 3090 2469"><style>
+  .box { fill: #ffffff; stroke: #111; stroke-width: 1.6; }
+  .head { fill: #f0f0f0; stroke: #111; stroke-width: 1.6; }
+  .edge { fill: none; stroke: #111; stroke-width: 1.6; }
+  .dashed { stroke-dasharray: 8 6; }
+  .hollow { fill: #ffffff; stroke: #111; stroke-width: 1.6; }
+  .filled { fill: #111; stroke: #111; stroke-width: 1.6; }
+  .frame { fill: none; stroke: #8a8a8a; stroke-width: 1.4; }
+  text { fill: #111; }
+  .name { font: 600 20px 'Segoe UI', Arial, sans-serif; text-anchor: middle; }
+  .stereo { font: 14px 'Segoe UI', Arial, sans-serif; text-anchor: middle; }
+  .member { font: 14px 'Cascadia Mono', Consolas, monospace; white-space: pre; }
+  .static { text-decoration: underline; }
+  .abstract { font-style: italic; }
+  .assoc { font: italic 600 15px 'Segoe UI', Arial, sans-serif; }
+  .mult { font: 15px 'Cascadia Mono', Consolas, monospace; }
+  .frame-title { font: 600 16px 'Segoe UI', Arial, sans-serif; fill: #444; }
+  .title { font: 600 24px 'Segoe UI', Arial, sans-serif; }
+  .legend { font: 15px 'Segoe UI', Arial, sans-serif; fill: #444; white-space: pre; }
+</style><rect width="3090" height="2469" fill="#ffffff"/><polygon points="1495.0,266 1482.0,288 1508.0,288" class="hollow"/>
+<polyline points="1495.0,288 1495.0,310" class="edge"/>
+<polyline points="925.0,310 2600.0,310" class="edge"/>
+<polyline points="925.0,310 925.0,358" class="edge"/>
+<polyline points="1190.0,310 1190.0,1113" class="edge"/>
+<polyline points="1495.0,310 1495.0,358" class="edge"/>
+<polyline points="1800.0,310 1800.0,1113" class="edge"/>
+<polyline points="2075.0,310 2075.0,358" class="edge"/>
+<polyline points="2600.0,310 2600.0,358" class="edge"/>
+<polyline points="575,446 725,446" class="edge"/>
+<text x="585" y="436" class="mult" text-anchor="start">1</text>
+<text x="715" y="436" class="mult" text-anchor="end">0..*</text>
+<text x="650.0" y="472" class="assoc" text-anchor="middle">has role</text>
+<polyline points="1125,446 1255,446" class="edge"/>
+<text x="1135" y="436" class="mult" text-anchor="start">1</text>
+<text x="1245" y="436" class="mult" text-anchor="end">0..*</text>
+<text x="1159" y="472" class="assoc" text-anchor="middle">places</text>
+<polyline points="1735,446 1865,446" class="edge"/>
+<text x="1745" y="436" class="mult" text-anchor="start">0..*</text>
+<text x="1855" y="436" class="mult" text-anchor="end">1</text>
+<text x="1835" y="472" class="assoc" text-anchor="middle">for</text>
+<polyline points="2285,446 2435,446" class="edge"/>
+<text x="2295" y="436" class="mult" text-anchor="start">0..*</text>
+<text x="2425" y="436" class="mult" text-anchor="end">0..1</text>
+<text x="2360.0" y="472" class="assoc" text-anchor="middle">classifies</text>
+<polyline points="1050,866 1050,1113" class="edge"/>
+<text x="1040" y="892" class="mult" text-anchor="end">1</text>
+<text x="1040" y="1101" class="mult" text-anchor="end">0..*</text>
+<text x="1062" y="994.5" class="assoc" text-anchor="start">writes</text>
+<polyline points="1495.0,1013 1495.0,1113" class="edge"/>
+<text x="1505.0" y="1039" class="mult" text-anchor="start">0..*</text>
+<text x="1505.0" y="1101" class="mult" text-anchor="start">1</text>
+<text x="1483.0" y="1068.0" class="assoc" text-anchor="end">in status</text>
+<polyline points="1940,866 1940,1113" class="edge"/>
+<text x="1950" y="892" class="mult" text-anchor="start">1</text>
+<text x="1950" y="1101" class="mult" text-anchor="start">0..*</text>
+<text x="1928" y="994.5" class="assoc" text-anchor="end">saved in</text>
+<polyline points="795,866 795,1440 1684,1440 1684,1285" class="edge"/>
+<text x="785" y="892" class="mult" text-anchor="end">1</text>
+<text x="1694" y="1311" class="mult" text-anchor="start">0..*</text>
+<text x="895" y="1430" class="assoc" text-anchor="middle">saves</text>
+<polygon points="2192.6,866 2182.6,881 2192.6,896 2202.6,881" class="filled"/>
+<polyline points="2192.6,896 2192.6,1490 1330,1490 1330,1390" class="edge"/>
+<text x="2204.6" y="916" class="mult" text-anchor="start">1</text>
+<text x="1320" y="1416" class="mult" text-anchor="end">0..*</text>
+<text x="2072.6" y="1480" class="assoc" text-anchor="middle">has reviews</text>
+<rect x="30" y="70" width="3030" height="1470" class="frame"/>
+<path d="M30,100 H107.0 L117.0,90 V70" class="frame"/>
+<text x="42" y="91" class="frame-title" text-anchor="start">models</text>
+<polygon points="860.5,1786 847.5,1808 873.5,1808" class="hollow"/>
+<polyline points="860.5,1808 860.5,1832" class="edge"/>
+<polyline points="343.5,1832 1289.0,1832" class="edge"/>
+<polyline points="343.5,1832 343.5,1868" class="edge"/>
+<polyline points="860.5,1832 860.5,1868" class="edge"/>
+<polyline points="1289.0,1832 1289.0,1868" class="edge"/>
+<polygon points="2317.0,1756 2304.0,1778 2330.0,1778" class="hollow"/>
+<polyline points="2317.0,1778 2317.0,1802" class="edge"/>
+<polyline points="1714.0,1802 2920.0,1802" class="edge"/>
+<polyline points="1714.0,1802 1714.0,2092" class="edge"/>
+<polyline points="2317.0,1802 2317.0,1838" class="edge"/>
+<polyline points="2920.0,1802 2920.0,2092" class="edge"/>
+<polygon points="2317.0,2010 2304.0,2032 2330.0,2032" class="hollow"/>
+<polyline points="2317.0,2032 2317.0,2056" class="edge"/>
+<polyline points="2003.0,2056 2631.0,2056" class="edge"/>
+<polyline points="2003.0,2056 2003.0,2092" class="edge"/>
+<polyline points="2317.0,2056 2317.0,2092" class="edge"/>
+<polyline points="2631.0,2056 2631.0,2092" class="edge"/>
+<polygon points="2003.0,2197 1990.0,2219 2016.0,2219" class="hollow"/>
+<polyline points="2003.0,2219 2003.0,2243" class="edge"/>
+<polyline points="2002.5,2243 2003.0,2243" class="edge"/>
+<polyline points="2002.5,2243 2002.5,2279" class="edge"/>
+<polygon points="2317.0,2197 2304.0,2219 2330.0,2219" class="hollow"/>
+<polyline points="2317.0,2219 2317.0,2243" class="edge"/>
+<polyline points="2317.0,2243 2717.0,2243" class="edge"/>
+<polyline points="2380.0,2243 2380.0,2279" class="edge"/>
+<polyline points="2717.0,2243 2717.0,2279" class="edge"/>
+<polygon points="1814,2132 1836,2119.0 1836,2145.0" class="hollow"/>
+<polyline points="1836,2132 1878,2132" class="edge"/>
+<polygon points="2820,2132 2798,2119.0 2798,2145.0" class="hollow"/>
+<polyline points="2756,2132 2798,2132" class="edge"/>
+<polygon points="1714.0,2188 1701.0,2210 1727.0,2210" class="hollow"/>
+<polyline points="2380.0,2359 2380.0,2399 1714.0,2399 1714.0,2210" class="edge"/>
+<rect x="30.0" y="1600" width="1484" height="839" class="frame"/>
+<path d="M30.0,1630 H126.0 L136.0,1620 V1600" class="frame"/>
+<text x="42.0" y="1621" class="frame-title" text-anchor="start">services</text>
+<rect x="1574.0" y="1600" width="1486" height="839" class="frame"/>
+<path d="M1574.0,1630 H1689.0 L1699.0,1620 V1600" class="frame"/>
+<text x="1586.0" y="1621" class="frame-title" text-anchor="start">exceptions</text>
+<polyline points="90.0,1600 90.0,1540" class="edge dashed"/>
+<polyline points="81.0,1556 90.0,1540 99.0,1556" class="edge"/>
+<text x="104.0" y="1575.0" class="assoc" text-anchor="start">«use»</text>
+<text x="30" y="42" class="title" text-anchor="start">Library Management System · UML Class Diagram</text>
+<text x="3060" y="42" class="legend" text-anchor="end">Visibility:  + public  ·  # protected  ·  - private  ·  underlined = class-level (static / classmethod)</text>
+<rect x="1330" y="120" width="330" height="146" class="box"/>
+<rect x="1330" y="120" width="330" height="64" class="head"/>
+<text x="1495.0" y="142" class="stereo">«abstract»</text>
+<text x="1495.0" y="167" class="name abstract">BaseEntity</text>
+<line x1="1330" y1="184" x2="1660" y2="184" class="edge"/>
+<text x="1346" y="209" class="member">+ id: UUID</text>
+<line x1="1330" y1="225" x2="1660" y2="225" class="edge"/>
+<text x="1346" y="250" class="member abstract">+ to_dict(): dict</text>
+<rect x="325" y="358" width="250" height="147" class="box"/>
+<rect x="325" y="358" width="250" height="48" class="head"/>
+<text x="450.0" y="389.0" class="name">Role</text>
+<line x1="325" y1="406" x2="575" y2="406" class="edge"/>
+<text x="341" y="431" class="member static">+ SEED: tuple</text>
+<text x="341" y="452" class="member">+ name: str</text>
+<text x="341" y="473" class="member">+ description: str</text>
+<line x1="325" y1="489" x2="575" y2="489" class="edge"/>
+<rect x="725" y="358" width="400" height="508" class="box"/>
+<rect x="725" y="358" width="400" height="48" class="head"/>
+<text x="925.0" y="389.0" class="name">User</text>
+<line x1="725" y1="406" x2="1125" y2="406" class="edge"/>
+<text x="741" y="431" class="member static">+ ROLE_STUDENT: str</text>
+<text x="741" y="452" class="member static">+ ROLE_LIBRARIAN: str</text>
+<text x="741" y="473" class="member static">+ ROLE_ADMIN: str</text>
+<text x="741" y="494" class="member static">+ ROLES: tuple</text>
+<text x="741" y="515" class="member static">+ STAFF_ROLES: tuple</text>
+<text x="741" y="536" class="member">+ username: str</text>
+<text x="741" y="557" class="member">+ email: str</text>
+<text x="741" y="578" class="member">+ phone: str</text>
+<text x="741" y="599" class="member">+ role: str</text>
+<text x="741" y="620" class="member">+ is_active: bool</text>
+<text x="741" y="641" class="member">+ google_id: str</text>
+<text x="741" y="662" class="member">+ avatar_url: str</text>
+<text x="741" y="683" class="member">+ created_at: datetime</text>
+<text x="741" y="704" class="member">- _password_hash: str</text>
+<line x1="725" y1="720" x2="1125" y2="720" class="edge"/>
+<text x="741" y="745" class="member">+ «set» password(plain: str)</text>
+<text x="741" y="766" class="member">+ check_password(plain: str): bool</text>
+<text x="741" y="787" class="member static">+ is_staff_role(role: str): bool</text>
+<text x="741" y="808" class="member static">+ is_admin_role(role: str): bool</text>
+<text x="741" y="829" class="member">+ is_admin(): bool</text>
+<text x="741" y="850" class="member">+ to_dict(): UserDict</text>
+<rect x="1255" y="358" width="480" height="655" class="box"/>
+<rect x="1255" y="358" width="480" height="48" class="head"/>
+<text x="1495.0" y="389.0" class="name">Borrow</text>
+<line x1="1255" y1="406" x2="1735" y2="406" class="edge"/>
+<text x="1271" y="431" class="member static">+ STATUS_PENDING_BORROW: str</text>
+<text x="1271" y="452" class="member static">+ STATUS_READY_FOR_PICKUP: str</text>
+<text x="1271" y="473" class="member static">+ STATUS_BORROWED: str</text>
+<text x="1271" y="494" class="member static">+ STATUS_PENDING_RETURN: str</text>
+<text x="1271" y="515" class="member static">+ STATUS_RETURNED: str</text>
+<text x="1271" y="536" class="member static">+ STATUS_REJECTED: str</text>
+<text x="1271" y="557" class="member static">+ STATUS_OVERDUE: str</text>
+<text x="1271" y="578" class="member static">+ STATUSES: tuple</text>
+<text x="1271" y="599" class="member static">+ OVERDUE_ELIGIBLE_STATUSES: tuple</text>
+<text x="1271" y="620" class="member static">+ RETURNABLE_STATUSES: tuple</text>
+<text x="1271" y="641" class="member">+ user_id: UUID</text>
+<text x="1271" y="662" class="member">+ book_id: UUID</text>
+<text x="1271" y="683" class="member">+ status: str</text>
+<text x="1271" y="704" class="member">+ borrowed_at: datetime</text>
+<text x="1271" y="725" class="member">+ due_date: datetime</text>
+<text x="1271" y="746" class="member">+ approved_at: datetime</text>
+<text x="1271" y="767" class="member">+ returned_at: datetime</text>
+<text x="1271" y="788" class="member">+ rejection_reason: str</text>
+<text x="1271" y="809" class="member">+ created_at: datetime</text>
+<line x1="1255" y1="825" x2="1735" y2="825" class="edge"/>
+<text x="1271" y="850" class="member">+ is_overdue(): bool</text>
+<text x="1271" y="871" class="member">+ approve(book: Book): void</text>
+<text x="1271" y="892" class="member">+ confirm_pickup(loan_days: int): void</text>
+<text x="1271" y="913" class="member">+ reject(reason: str): void</text>
+<text x="1271" y="934" class="member">+ mark_returned(book: Book): void</text>
+<text x="1271" y="955" class="member">- _require_status(allowed: tuple, message: str): void</text>
+<text x="1271" y="976" class="member static">- _isoformat_utc(value: datetime): str</text>
+<text x="1271" y="997" class="member">+ to_dict(): BorrowDict</text>
+<rect x="1865" y="358" width="420" height="508" class="box"/>
+<rect x="1865" y="358" width="420" height="48" class="head"/>
+<text x="2075.0" y="389.0" class="name">Book</text>
+<line x1="1865" y1="406" x2="2285" y2="406" class="edge"/>
+<text x="1881" y="431" class="member">+ isbn: str</text>
+<text x="1881" y="452" class="member">+ title: str</text>
+<text x="1881" y="473" class="member">+ author: str</text>
+<text x="1881" y="494" class="member">+ category_id: UUID</text>
+<text x="1881" y="515" class="member">+ description: str</text>
+<text x="1881" y="536" class="member">+ pages: int</text>
+<text x="1881" y="557" class="member">+ image_url: str</text>
+<text x="1881" y="578" class="member">+ is_deleted: bool</text>
+<text x="1881" y="599" class="member">+ archived_at: datetime</text>
+<text x="1881" y="620" class="member">+ created_at: datetime</text>
+<text x="1881" y="641" class="member">- _total_copies: int</text>
+<text x="1881" y="662" class="member">- _available_copies: int</text>
+<line x1="1865" y1="678" x2="2285" y2="678" class="edge"/>
+<text x="1881" y="703" class="member">+ «get» total_copies: int</text>
+<text x="1881" y="724" class="member">+ «get» available_copies: int</text>
+<text x="1881" y="745" class="member">+ «get» average_rating: float</text>
+<text x="1881" y="766" class="member">+ «get» total_reviews: int</text>
+<text x="1881" y="787" class="member">+ adjust_total_copies(new_total: int): void</text>
+<text x="1881" y="808" class="member">+ decrement_available(): void</text>
+<text x="1881" y="829" class="member">+ increment_available(): void</text>
+<text x="1881" y="850" class="member">+ to_dict(): BookDict</text>
+<rect x="2435" y="358" width="330" height="151" class="box"/>
+<rect x="2435" y="358" width="330" height="48" class="head"/>
+<text x="2600.0" y="389.0" class="name">Category</text>
+<line x1="2435" y1="406" x2="2765" y2="406" class="edge"/>
+<text x="2451" y="431" class="member">- _name: str</text>
+<line x1="2435" y1="447" x2="2765" y2="447" class="edge"/>
+<text x="2451" y="472" class="member">+ «get/set» name: str</text>
+<text x="2451" y="493" class="member">+ to_dict(): CategoryDict</text>
+<rect x="1030" y="1113" width="320" height="277" class="box"/>
+<rect x="1030" y="1113" width="320" height="48" class="head"/>
+<text x="1190.0" y="1144.0" class="name">Review</text>
+<line x1="1030" y1="1161" x2="1350" y2="1161" class="edge"/>
+<text x="1046" y="1186" class="member static">+ MIN_RATING: int = 1</text>
+<text x="1046" y="1207" class="member static">+ MAX_RATING: int = 5</text>
+<text x="1046" y="1228" class="member">+ book_id: UUID</text>
+<text x="1046" y="1249" class="member">+ user_id: UUID</text>
+<text x="1046" y="1270" class="member">+ rating: int</text>
+<text x="1046" y="1291" class="member">+ comment: str</text>
+<text x="1046" y="1312" class="member">+ created_at: datetime</text>
+<line x1="1030" y1="1328" x2="1350" y2="1328" class="edge"/>
+<text x="1046" y="1353" class="member static">+ parse_rating(raw_rating): int</text>
+<text x="1046" y="1374" class="member">+ to_dict(): ReviewDict</text>
+<rect x="1390" y="1113" width="210" height="147" class="box"/>
+<rect x="1390" y="1113" width="210" height="48" class="head"/>
+<text x="1495.0" y="1144.0" class="name">BorrowStatus</text>
+<line x1="1390" y1="1161" x2="1600" y2="1161" class="edge"/>
+<text x="1406" y="1186" class="member static">+ SEED: tuple</text>
+<text x="1406" y="1207" class="member">+ code: str</text>
+<text x="1406" y="1228" class="member">+ description: str</text>
+<line x1="1390" y1="1244" x2="1600" y2="1244" class="edge"/>
+<rect x="1640" y="1113" width="320" height="172" class="box"/>
+<rect x="1640" y="1113" width="320" height="48" class="head"/>
+<text x="1800.0" y="1144.0" class="name">Favorite</text>
+<line x1="1640" y1="1161" x2="1960" y2="1161" class="edge"/>
+<text x="1656" y="1186" class="member">+ user_id: UUID</text>
+<text x="1656" y="1207" class="member">+ book_id: UUID</text>
+<text x="1656" y="1228" class="member">+ created_at: datetime</text>
+<line x1="1640" y1="1244" x2="1960" y2="1244" class="edge"/>
+<text x="1656" y="1269" class="member">+ to_dict(): FavoriteDict</text>
+<rect x="612" y="1660" width="497" height="126" class="box"/>
+<rect x="612" y="1660" width="497" height="48" class="head"/>
+<text x="860.5" y="1691.0" class="name">BaseService</text>
+<line x1="612" y1="1708" x2="1109" y2="1708" class="edge"/>
+<line x1="612" y1="1724" x2="1109" y2="1724" class="edge"/>
+<text x="628" y="1749" class="member static"># _parse_uuid(val, param_name: str): UUID</text>
+<text x="628" y="1770" class="member static"># _get_or_404(model, record_id, label: str): BaseEntity</text>
+<rect x="70" y="1868" width="547" height="487" class="box"/>
+<rect x="70" y="1868" width="547" height="48" class="head"/>
+<text x="343.5" y="1899.0" class="name">BookService</text>
+<line x1="70" y1="1916" x2="617" y2="1916" class="edge"/>
+<text x="86" y="1941" class="member static">+ DEFAULT_PAGE_SIZE: int = 10</text>
+<text x="86" y="1962" class="member static">+ MAX_PAGE_SIZE: int = 100</text>
+<line x1="70" y1="1978" x2="617" y2="1978" class="edge"/>
+<text x="86" y="2003" class="member static">+ get_paginated_books(search_query, category_id, page, limit)</text>
+<text x="86" y="2024" class="member static">+ get_staff_catalog(state)</text>
+<text x="86" y="2045" class="member static">+ get_book_by_id(book_id, include_deleted)</text>
+<text x="86" y="2066" class="member static">+ create_book(form_data, image_file)</text>
+<text x="86" y="2087" class="member static">+ update_book(book_id, form_data, image_file)</text>
+<text x="86" y="2108" class="member static">+ archive_book(book_id)</text>
+<text x="86" y="2129" class="member static">+ restore_book(book_id)</text>
+<text x="86" y="2150" class="member static">+ delete_book(book_id)</text>
+<text x="86" y="2171" class="member static">+ get_related_books(book_id, limit)</text>
+<text x="86" y="2192" class="member static">+ get_or_create_category(category_input)</text>
+<text x="86" y="2213" class="member static">+ get_book_reviews(book_id)</text>
+<text x="86" y="2234" class="member static">+ get_book_reviews_stats(book_id)</text>
+<text x="86" y="2255" class="member static">+ add_review(book_id, user_id, rating, comment)</text>
+<text x="86" y="2276" class="member static">+ get_user_favorites(user_id)</text>
+<text x="86" y="2297" class="member static">+ add_favorite(user_id, book_id)</text>
+<text x="86" y="2318" class="member static">+ remove_favorite(user_id, book_id)</text>
+<text x="86" y="2339" class="member static">- _parse_book_integer(raw_value, label, minimum)</text>
+<rect x="667" y="1868" width="387" height="319" class="box"/>
+<rect x="667" y="1868" width="387" height="48" class="head"/>
+<text x="860.5" y="1899.0" class="name">BorrowService</text>
+<line x1="667" y1="1916" x2="1054" y2="1916" class="edge"/>
+<text x="683" y="1941" class="member static">+ BORROW_DURATION: int = 14</text>
+<text x="683" y="1962" class="member static">+ ACTIVE_STATUSES: tuple</text>
+<line x1="667" y1="1978" x2="1054" y2="1978" class="edge"/>
+<text x="683" y="2003" class="member static">+ get_all_borrows_admin()</text>
+<text x="683" y="2024" class="member static">+ get_borrowed_history(user_id)</text>
+<text x="683" y="2045" class="member static">+ get_user_active_borrows(user_id)</text>
+<text x="683" y="2066" class="member static">+ request_borrow(user_id, book_id)</text>
+<text x="683" y="2087" class="member static">+ approve_borrow_request(borrow_id)</text>
+<text x="683" y="2108" class="member static">+ confirm_borrow_pickup(borrow_id)</text>
+<text x="683" y="2129" class="member static">+ reject_borrow_request(borrow_id, reason)</text>
+<text x="683" y="2150" class="member static">+ approve_return_request(borrow_id)</text>
+<text x="683" y="2171" class="member static">- _apply(borrow, change)</text>
+<rect x="1104" y="1868" width="370" height="168" class="box"/>
+<rect x="1104" y="1868" width="370" height="48" class="head"/>
+<text x="1289.0" y="1899.0" class="name">CategoryService</text>
+<line x1="1104" y1="1916" x2="1474" y2="1916" class="edge"/>
+<line x1="1104" y1="1932" x2="1474" y2="1932" class="edge"/>
+<text x="1120" y="1957" class="member static">+ get_all_categories()</text>
+<text x="1120" y="1978" class="member static">+ create_category(name)</text>
+<text x="1120" y="1999" class="member static">+ update_category(category_id, new_name)</text>
+<text x="1120" y="2020" class="member static">+ delete_category(category_id)</text>
+<rect x="2207" y="1660" width="220" height="96" class="box"/>
+<rect x="2207" y="1660" width="220" height="64" class="head"/>
+<text x="2317.0" y="1682" class="stereo">«Python built-in»</text>
+<text x="2317.0" y="1707" class="name">Exception</text>
+<line x1="2207" y1="1724" x2="2427" y2="1724" class="edge"/>
+<line x1="2207" y1="1740" x2="2427" y2="1740" class="edge"/>
+<rect x="1614" y="2092" width="200" height="96" class="box"/>
+<rect x="1614" y="2092" width="200" height="64" class="head"/>
+<text x="1714.0" y="2114" class="stereo">«Python built-in»</text>
+<text x="1714.0" y="2139" class="name">ValueError</text>
+<line x1="1614" y1="2156" x2="1814" y2="2156" class="edge"/>
+<line x1="1614" y1="2172" x2="1814" y2="2172" class="edge"/>
+<rect x="2820" y="2092" width="200" height="96" class="box"/>
+<rect x="2820" y="2092" width="200" height="64" class="head"/>
+<text x="2920.0" y="2114" class="stereo">«Python built-in»</text>
+<text x="2920.0" y="2139" class="name">LookupError</text>
+<line x1="2820" y1="2156" x2="3020" y2="2156" class="edge"/>
+<line x1="2820" y1="2172" x2="3020" y2="2172" class="edge"/>
+<rect x="2187" y="1838" width="260" height="172" class="box"/>
+<rect x="2187" y="1838" width="260" height="48" class="head"/>
+<text x="2317.0" y="1869.0" class="name">LibraryError</text>
+<line x1="2187" y1="1886" x2="2447" y2="1886" class="edge"/>
+<text x="2203" y="1911" class="member static">+ status_code: int = 500</text>
+<text x="2203" y="1932" class="member">+ message: str</text>
+<line x1="2187" y1="1948" x2="2447" y2="1948" class="edge"/>
+<text x="2203" y="1973" class="member">+ __init__(message: str)</text>
+<text x="2203" y="1994" class="member">+ to_dict(): dict</text>
+<rect x="1878" y="2092" width="250" height="105" class="box"/>
+<rect x="1878" y="2092" width="250" height="48" class="head"/>
+<text x="2003.0" y="2123.0" class="name">ValidationError</text>
+<line x1="1878" y1="2140" x2="2128" y2="2140" class="edge"/>
+<text x="1894" y="2165" class="member static">+ status_code: int = 400</text>
+<line x1="1878" y1="2181" x2="2128" y2="2181" class="edge"/>
+<rect x="2192" y="2092" width="250" height="105" class="box"/>
+<rect x="2192" y="2092" width="250" height="48" class="head"/>
+<text x="2317.0" y="2123.0" class="name">ConflictError</text>
+<line x1="2192" y1="2140" x2="2442" y2="2140" class="edge"/>
+<text x="2208" y="2165" class="member static">+ status_code: int = 409</text>
+<line x1="2192" y1="2181" x2="2442" y2="2181" class="edge"/>
+<rect x="2506" y="2092" width="250" height="105" class="box"/>
+<rect x="2506" y="2092" width="250" height="48" class="head"/>
+<text x="2631.0" y="2123.0" class="name">NotFoundError</text>
+<line x1="2506" y1="2140" x2="2756" y2="2140" class="edge"/>
+<text x="2522" y="2165" class="member static">+ status_code: int = 404</text>
+<line x1="2506" y1="2181" x2="2756" y2="2181" class="edge"/>
+<rect x="1830" y="2279" width="345" height="80" class="box"/>
+<rect x="1830" y="2279" width="345" height="48" class="head"/>
+<text x="2002.5" y="2310.0" class="name">RegistrationValidationError</text>
+<line x1="1830" y1="2327" x2="2175" y2="2327" class="edge"/>
+<line x1="1830" y1="2343" x2="2175" y2="2343" class="edge"/>
+<rect x="2219" y="2279" width="322" height="80" class="box"/>
+<rect x="2219" y="2279" width="322" height="48" class="head"/>
+<text x="2380.0" y="2310.0" class="name">RegistrationConflictError</text>
+<line x1="2219" y1="2327" x2="2541" y2="2327" class="edge"/>
+<line x1="2219" y1="2343" x2="2541" y2="2343" class="edge"/>
+<rect x="2585" y="2279" width="264" height="80" class="box"/>
+<rect x="2585" y="2279" width="264" height="48" class="head"/>
+<text x="2717.0" y="2310.0" class="name">DuplicateReviewError</text>
+<line x1="2585" y1="2327" x2="2849" y2="2327" class="edge"/>
+<line x1="2585" y1="2343" x2="2849" y2="2343" class="edge"/></svg>

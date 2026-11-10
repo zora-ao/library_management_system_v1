@@ -1,3 +1,4 @@
+import { containsText, linearSearch, mergeSort } from "@/lib/dsa";
 import type { Category } from "../types/category.types";
 
 export type CategorySort = "name-asc" | "name-desc" | "most-books";
@@ -13,11 +14,8 @@ export const filterAndSortCategories = (
   search: string,
   sort: CategorySort,
 ) => {
-  const query = search.trim().toLocaleLowerCase();
-  return categories
-    .filter((category) => category.name.toLocaleLowerCase().includes(query))
-    .slice()
-    .sort((left, right) => {
+  const matches = linearSearch(categories, (category) => containsText([category.name], search));
+  return mergeSort(matches, (left, right) => {
       if (sort === "most-books") {
         return (right.book_count ?? 0) - (left.book_count ?? 0) || left.name.localeCompare(right.name);
       }

@@ -22,6 +22,7 @@ import {
 } from "@/features/borrows/lib/loanView";
 import { useAdminBorrows, useApproveReturn } from "@/hooks/useBorrows";
 import { cn } from "@/lib/utils";
+import { linearSearch, mergeSort } from "@/lib/dsa";
 
 const AdminBorrowsPage = () => {
   const { data: borrows = [], isLoading, isError, error } = useAdminBorrows();
@@ -46,7 +47,8 @@ const AdminBorrowsPage = () => {
 
   const visibleLoans = useMemo(() => {
     const source = mode === "active" ? activeLoans : returnedLoans;
-    const filtered = source.filter((borrow) => {
+    // Linear search, O(n): search text and filters in one pass; then merge sort, O(m log m).
+    const filtered = linearSearch(source, (borrow) => {
       if (!matchesLoanSearch(borrow, search)) return false;
       if (mode === "active") {
         if (activeFilter === "overdue" && !isLoanOverdue(borrow, today)) return false;
@@ -63,7 +65,7 @@ const AdminBorrowsPage = () => {
       return true;
     });
 
-    return [...filtered].sort((a, b) => {
+    return mergeSort(filtered, (a, b) => {
       const aValue = sort.startsWith("returned") ? a.returned_at : a.due_date;
       const bValue = sort.startsWith("returned") ? b.returned_at : b.due_date;
       const difference = new Date(aValue || 0).getTime() - new Date(bValue || 0).getTime();

@@ -53,17 +53,13 @@ def borrow_book():
     if not book_id:
         return jsonify({"message": "Book id is required"}), 400
 
-    try:
-        borrow = BorrowService.request_borrow(user_id, book_id)
-        return jsonify({
-            "message": "Borrow request submitted successfully. Waiting for librarian approval.",
-            "borrow": borrow.to_dict()
-        }), 201
-
-    except ValueError as e:
-        return jsonify({"message": str(e)}), 400
-    except Exception:
-        return jsonify({"message": "Something went wrong"}), 500
+    # Business-rule failures raise LibraryError subclasses, which the global
+    # handler in app/middleware/errors.py turns into 400/404 JSON responses.
+    borrow = BorrowService.request_borrow(user_id, book_id)
+    return jsonify({
+        "message": "Borrow request submitted successfully. Waiting for librarian approval.",
+        "borrow": borrow.to_dict()
+    }), 201
 
 
 # Returns are recorded by staff at the library desk (see approve-return below);
@@ -82,17 +78,11 @@ def get_all_borrows_admin():
 @borrows_bp.put("/admin/<uuid:id>/approve-borrow")
 @admin_required()
 def approve_borrow(id):
-    try:
-        borrow = BorrowService.approve_borrow_request(id)
-        return jsonify({
-            "message": "Borrow request approved and reserved for pickup",
-            "borrow": borrow.to_dict()
-        }), 200
-    except ValueError as e:
-        status_code = 404 if "not found" in str(e).lower() else 400
-        return jsonify({"message": str(e)}), status_code
-    except Exception:
-        return jsonify({"message": "Something went wrong"}), 500
+    borrow = BorrowService.approve_borrow_request(id)
+    return jsonify({
+        "message": "Borrow request approved and reserved for pickup",
+        "borrow": borrow.to_dict()
+    }), 200
 
 
 # Reject a borrow request
@@ -104,48 +94,30 @@ def reject_borrow(id):
     if not isinstance(reason, str) or not reason.strip():
         return jsonify({"message": "Rejection reason is required"}), 400
 
-    try:
-        borrow = BorrowService.reject_borrow_request(id, reason.strip())
-        return jsonify({
-            "message": "Borrow request rejected",
-            "borrow": borrow.to_dict()
-        }), 200
-    except ValueError as e:
-        status_code = 404 if "not found" in str(e).lower() else 400
-        return jsonify({"message": str(e)}), status_code
-    except Exception:
-        return jsonify({"message": "Something went wrong"}), 500
+    borrow = BorrowService.reject_borrow_request(id, reason.strip())
+    return jsonify({
+        "message": "Borrow request rejected",
+        "borrow": borrow.to_dict()
+    }), 200
 
 
 # Confirm that an approved reservation was physically picked up
 @borrows_bp.put("/admin/<uuid:id>/confirm-pickup")
 @admin_required()
 def confirm_pickup(id):
-    try:
-        borrow = BorrowService.confirm_borrow_pickup(id)
-        return jsonify({
-            "message": "Book pickup confirmed and loan started",
-            "borrow": borrow.to_dict()
-        }), 200
-    except ValueError as e:
-        status_code = 404 if "not found" in str(e).lower() else 400
-        return jsonify({"message": str(e)}), status_code
-    except Exception:
-        return jsonify({"message": "Something went wrong"}), 500
+    borrow = BorrowService.confirm_borrow_pickup(id)
+    return jsonify({
+        "message": "Book pickup confirmed and loan started",
+        "borrow": borrow.to_dict()
+    }), 200
 
 
 # Approve a return request
 @borrows_bp.put("/admin/<uuid:id>/approve-return")
 @admin_required()
 def approve_return(id):
-    try:
-        borrow = BorrowService.approve_return_request(id)
-        return jsonify({
-            "message": "Book return confirmed successfully",
-            "borrow": borrow.to_dict()
-        }), 200
-    except ValueError as e:
-        status_code = 404 if "not found" in str(e).lower() else 400
-        return jsonify({"message": str(e)}), status_code
-    except Exception:
-        return jsonify({"message": "Something went wrong"}), 500
+    borrow = BorrowService.approve_return_request(id)
+    return jsonify({
+        "message": "Book return confirmed successfully",
+        "borrow": borrow.to_dict()
+    }), 200

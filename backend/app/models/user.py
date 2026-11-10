@@ -10,6 +10,7 @@ class User(BaseEntity): # Inheritance
   ROLE_LIBRARIAN = "librarian"
   ROLE_ADMIN = "admin"
   ROLES = (ROLE_STUDENT, ROLE_LIBRARIAN, ROLE_ADMIN)
+  STAFF_ROLES = (ROLE_LIBRARIAN, ROLE_ADMIN)
 
   username = db.Column(db.String(100), unique=True, nullable=False)
   email = db.Column(db.String(100), unique=True, nullable=False)
@@ -69,8 +70,17 @@ class User(BaseEntity): # Inheritance
       return False
     return check_password_hash(self._password_hash, plain_password)
 
-  def is_admin_or_librarian(self) -> bool:
-    return self.role.lower() in ['admin', 'librarian']
+  @classmethod
+  def is_staff_role(cls, role: str | None) -> bool:
+    # Shared by instances and by the JWT middleware, which only has the role claim.
+    return (role or "").lower() in cls.STAFF_ROLES
+
+  @classmethod
+  def is_admin_role(cls, role: str | None) -> bool:
+    return (role or "").lower() == cls.ROLE_ADMIN
+
+  def is_admin(self) -> bool:
+    return self.is_admin_role(self.role)
 
   # polymorphism
   def to_dict(self) -> UserDict:

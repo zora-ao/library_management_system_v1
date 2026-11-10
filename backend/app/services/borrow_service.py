@@ -1,23 +1,20 @@
-from datetime import datetime, timezone, timedelta
-from uuid import UUID
-
 from sqlalchemy.orm import joinedload
 
+from app.exceptions import ValidationError
 from app.extensions import db
 from app.models import Borrow, Book
+from app.services.base_service import BaseService
 
 
-class BorrowService:
+class BorrowService(BaseService):
     BORROW_DURATION = 14
 
-    @staticmethod
-    def _parse_uuid(val, param_name="ID"):
-        if isinstance(val, str):
-            try:
-                return UUID(val)
-            except ValueError:
-                raise ValueError(f"Invalid {param_name} format")
-        return val
+    ACTIVE_STATUSES = (
+        Borrow.STATUS_PENDING_BORROW,
+        Borrow.STATUS_READY_FOR_PICKUP,
+        Borrow.STATUS_BORROWED,
+        Borrow.STATUS_PENDING_RETURN,
+    )
 
     @staticmethod
     def get_all_borrows_admin():
@@ -46,160 +43,87 @@ class BorrowService:
         return (
             Borrow.query.options(joinedload(Borrow.book))
             .filter_by(user_id=user_id)
-            .filter(Borrow.status.in_([
-                Borrow.STATUS_PENDING_BORROW,
-                Borrow.STATUS_READY_FOR_PICKUP,
-                Borrow.STATUS_BORROWED,
-                Borrow.STATUS_PENDING_RETURN,
-            ]))
+            .filter(Borrow.status.in_(BorrowService.ACTIVE_STATUSES))
             .all()
         )
+
+    @staticmethod
+    def _apply(borrow, change=None):
+        """Run ``change`` and save the borrow, or undo everything on failure."""
+        try:
+            if change is not None:
+                change()
+            db.session.commit()
+            db.session.refresh(borrow)
+            return borrow
+        except Exception:
+            db.session.rollback()
+            raise
 
     @staticmethod
     def request_borrow(user_id, book_id):
         user_id = BorrowService._parse_uuid(user_id, "User ID")
         book_id = BorrowService._parse_uuid(book_id, "Book ID")
 
-        book = db.session.get(Book, book_id, with_for_update=True)
-        if not book:
-            raise ValueError("Book not found")
+        book = BorrowService._get_or_404(Book, book_id, "Book", for_update=True)
 
         if book.available_copies <= 0:
-            raise ValueError("Book currently out of stock")
+            raise ValidationError("Book currently out of stock")
 
         # Prevent duplicate active requests or holds on the same book
         existing_active = Borrow.query.filter_by(user_id=user_id, book_id=book_id)\
-            .filter(Borrow.status.in_([
-                Borrow.STATUS_PENDING_BORROW,
-                Borrow.STATUS_READY_FOR_PICKUP,
-                Borrow.STATUS_BORROWED,
-                Borrow.STATUS_PENDING_RETURN,
-            ]))\
+            .filter(Borrow.status.in_(BorrowService.ACTIVE_STATUSES))\
             .first()
 
         if existing_active:
-            raise ValueError("You already have an active request or borrow for this book")
+            raise ValidationError("You already have an active request or borrow for this book")
 
-        try:
-            borrow = Borrow(
-                user_id=user_id,
-                book_id=book_id,
-                status=Borrow.STATUS_PENDING_BORROW
-            )
-            db.session.add(borrow)
-            db.session.commit()
-            db.session.refresh(borrow)
-            return borrow
-        except Exception:
-            db.session.rollback()
-            raise
+        borrow = Borrow(
+            user_id=user_id,
+            book_id=book_id,
+            status=Borrow.STATUS_PENDING_BORROW
+        )
+        db.session.add(borrow)
+        return BorrowService._apply(borrow)
 
     @staticmethod
     def approve_borrow_request(borrow_id):
         """Reserve an available copy for an approved request."""
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
-        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
-
-        if not borrow:
-            raise ValueError("Borrow record not found")
-
-        if borrow.status != Borrow.STATUS_PENDING_BORROW:
-            raise ValueError("Only requests that are waiting can be approved for borrow")
+        borrow = BorrowService._get_or_404(Borrow, borrow_id, "Borrow record", for_update=True)
 
         book = db.session.get(Book, borrow.book_id, with_for_update=True)
-        if not book or book.available_copies <= 0:
-            raise ValueError("Book is out of stock and cannot be borrowed")
+        if borrow.status == Borrow.STATUS_PENDING_BORROW and (not book or book.available_copies <= 0):
+            raise ValidationError("Book is out of stock and cannot be borrowed")
 
-        try:
-            book.decrement_available()
-            borrow.status = Borrow.STATUS_READY_FOR_PICKUP
-            borrow.approved_at = datetime.now(timezone.utc)
-            borrow.borrowed_at = None
-            borrow.due_date = None
-
-            db.session.commit()
-            db.session.refresh(borrow)
-            return borrow
-        except Exception:
-            db.session.rollback()
-            raise
+        return BorrowService._apply(borrow, lambda: borrow.approve(book))
 
     @staticmethod
     def confirm_borrow_pickup(borrow_id):
         """Start the loan clock after staff hands the reserved book to the student."""
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
-        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
+        borrow = BorrowService._get_or_404(Borrow, borrow_id, "Borrow record", for_update=True)
 
-        if not borrow:
-            raise ValueError("Borrow record not found")
-
-        if borrow.status != Borrow.STATUS_READY_FOR_PICKUP:
-            raise ValueError("Only requests ready for pickup can be confirmed")
-
-        try:
-            now = datetime.now(timezone.utc)
-            borrow.status = Borrow.STATUS_BORROWED
-            borrow.borrowed_at = now
-            borrow.due_date = now + timedelta(days=BorrowService.BORROW_DURATION)
-            db.session.commit()
-            db.session.refresh(borrow)
-            return borrow
-        except Exception:
-            db.session.rollback()
-            raise
+        return BorrowService._apply(
+            borrow, lambda: borrow.confirm_pickup(BorrowService.BORROW_DURATION)
+        )
 
     @staticmethod
     def reject_borrow_request(borrow_id, reason):
         """Librarian rejects a pending borrow request."""
         if not isinstance(reason, str) or not reason.strip():
-            raise ValueError("Rejection reason is required")
+            raise ValidationError("Rejection reason is required")
 
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
-        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
+        borrow = BorrowService._get_or_404(Borrow, borrow_id, "Borrow record", for_update=True)
 
-        if not borrow:
-            raise ValueError("Borrow record not found")
-
-        if borrow.status != Borrow.STATUS_PENDING_BORROW:
-            raise ValueError("Only requests that are waiting can be rejected")
-
-        try:
-            borrow.status = Borrow.STATUS_REJECTED
-            borrow.rejection_reason = reason.strip()
-            db.session.commit()
-            db.session.refresh(borrow)
-            return borrow
-        except Exception:
-            db.session.rollback()
-            raise
+        return BorrowService._apply(borrow, lambda: borrow.reject(reason))
 
     @staticmethod
     def approve_return_request(borrow_id):
         """Librarian confirms physical receipt of returned book."""
         borrow_id = BorrowService._parse_uuid(borrow_id, "Borrow ID")
-        borrow = db.session.get(Borrow, borrow_id, with_for_update=True)
-
-        if not borrow:
-            raise ValueError("Borrow record not found")
-
-        if borrow.status not in (
-            Borrow.STATUS_PENDING_RETURN,
-            Borrow.STATUS_BORROWED,
-            Borrow.STATUS_OVERDUE,
-        ):
-            raise ValueError("Borrow record is not waiting for return confirmation")
+        borrow = BorrowService._get_or_404(Borrow, borrow_id, "Borrow record", for_update=True)
 
         book = db.session.get(Book, borrow.book_id, with_for_update=True)
-
-        try:
-            borrow.status = Borrow.STATUS_RETURNED
-            borrow.returned_at = datetime.now(timezone.utc)
-
-            if book:
-                book.increment_available()
-
-            db.session.commit()
-            return borrow
-        except Exception:
-            db.session.rollback()
-            raise
+        return BorrowService._apply(borrow, lambda: borrow.mark_returned(book))

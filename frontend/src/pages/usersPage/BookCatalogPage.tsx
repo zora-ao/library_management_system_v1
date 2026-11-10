@@ -4,6 +4,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { LoadingState } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import BookCard from "@/features/books/components/books/BookCard";
+import { containsText, countBy, linearSearch, mergeSort } from "@/lib/dsa";
 
 const PAGE_SIZE = 8;
 export default function BookCatalogPage() {
@@ -16,10 +17,15 @@ export default function BookCatalogPage() {
   const [genre, setGenre] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const filtered = books.filter(book =>
-    [book.title, book.author, book.isbn, book.category_name].some(value => value?.toLowerCase().includes(query.trim().toLowerCase())) &&
+  // Linear search, O(n): the search text and the genre/availability filters in one pass.
+  const matches = linearSearch(books, book =>
+    containsText([book.title, book.author, book.isbn, book.category_name], query) &&
     (genre === "All" || book.category_name === genre) && (availability !== "available" || book.available_copies > 0)
-  ).sort((a, b) => sort === "Z-A" ? b.title.localeCompare(a.title) : a.title.localeCompare(b.title));
+  );
+  // Merge sort, O(m log m): orders only the m matching books.
+  const filtered = mergeSort(matches, (a, b) => sort === "Z-A" ? b.title.localeCompare(a.title) : a.title.localeCompare(b.title));
+  // Hash map, O(n) once: books per genre, so each genre button is an O(1) lookup.
+  const genreCounts = countBy(books, book => book.category_name);
   // Only books students have actually rated, best average first, then most reviewed.
   const topRated = books
     .filter(book => (book.total_reviews ?? 0) > 0)
@@ -49,12 +55,12 @@ export default function BookCatalogPage() {
           <label className="booky-field-label" htmlFor="catalog-sort">SORT BY</label>
           <select id="catalog-sort" value={sort} onChange={e => { setSort(e.target.value); setCurrentPage(1); }}><option value="A-Z">Title: A–Z</option><option value="Z-A">Title: Z–A</option></select>
           <fieldset className="booky-availability"><legend>AVAILABILITY</legend>{[["all", "All books"], ["available", "Available now"]].map(([value, label]) => <label key={value}><input type="radio" name="availability" checked={availability === value} onChange={() => { setAvailability(value); if (value === "all") setGenre("All"); setCurrentPage(1); }} />{label}</label>)}</fieldset>
-          <div className="booky-genres"><h3>GENRES</h3>{["All", ...genres].map(name => <button key={name} type="button" aria-pressed={genre === name} className={genre === name ? "is-active" : ""} onClick={() => { setGenre(name); setAvailability(name === "All" ? "all" : null); setCurrentPage(1); }}><span>{name === "All" ? "All genres" : name}</span><span>{name === "All" ? books.length : books.filter(b => b.category_name === name).length}</span></button>)}</div>
+          <div className="booky-genres"><h3>GENRES</h3>{["All", ...genres].map(name => <button key={name} type="button" aria-pressed={genre === name} className={genre === name ? "is-active" : ""} onClick={() => { setGenre(name); setAvailability(name === "All" ? "all" : null); setCurrentPage(1); }}><span>{name === "All" ? "All genres" : name}</span><span>{name === "All" ? books.length : (genreCounts.get(name) ?? 0)}</span></button>)}</div>
         </div>
       </aside>
       <div className="booky-results">
         {isLoading ? <LoadingState containerClassName="h-96" label="Loading catalog" /> : isError ? <div className="booky-empty" role="alert"><h2>We couldn’t load the catalog.</h2><p>Please try again in a moment.</p><Button type="button" onClick={() => void refetch()}>Try again</Button></div> : <>
-          {genre === "All" && <section aria-labelledby="top-rated-heading">
+          {genre === "All" && !query.trim() && <section aria-labelledby="top-rated-heading">
             <div className="booky-section-heading"><div><h2 id="top-rated-heading">Top rated</h2><p>The books students rate highest.</p></div><button type="button" onClick={() => document.getElementById("all-books")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Explore all&nbsp; →</button></div>
             {topRated.length ? <div className="booky-cards">{topRated.map(book => <BookCard key={book.id} book={book} variant="popular" />)}</div> : <p className="booky-empty">Top-rated books will appear here once students leave reviews.</p>}
           </section>}

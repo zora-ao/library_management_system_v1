@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { formatRequestDate, getBorrowReference, type BorrowRequestTab } from "../lib/borrowRequestView";
+import type { HashMap } from "@/lib/dsa";
 import type { Borrow } from "../types/borrow.types";
 
 const labels: Record<Borrow["status"], string> = {
@@ -29,6 +30,8 @@ interface BorrowRequestsTableProps {
   pageSize?: number;
   onPageChange?: (page: number) => void;
   onOpen: (borrow: Borrow) => void;
+  /** Place in the first-come, first-served queue (pending tab only). */
+  queuePositions?: HashMap<number>;
 }
 
 export default function BorrowRequestsTable({
@@ -38,6 +41,7 @@ export default function BorrowRequestsTable({
   pageSize = 8,
   onPageChange,
   onOpen,
+  queuePositions,
 }: BorrowRequestsTableProps) {
   if (!rows.length) {
     return (
@@ -58,12 +62,13 @@ export default function BorrowRequestsTable({
         <Table className="min-w-[820px] text-sm sm:text-base">
           <TableHeader>
             <TableRow className="border-border bg-muted/60 hover:bg-muted/60">
-              <TableHead>Student</TableHead><TableHead>Book / Request</TableHead><TableHead>Request Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Action</TableHead>
+              {queuePositions && <TableHead>In line</TableHead>}<TableHead>Student</TableHead><TableHead>Book / Request</TableHead><TableHead>Request Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {visible.map((row) => (
               <TableRow key={row.id} className="border-border/60 bg-card/30 hover:bg-muted/45">
+                {queuePositions && <TableCell className="whitespace-nowrap">{(() => { const position = queuePositions.get(row.id); return position === undefined ? "—" : <span className="flex items-center gap-2"><span className="font-semibold tabular-nums">#{position}</span>{position === 1 && <Badge className="text-xs">Next</Badge>}</span>; })()}</TableCell>}
                 <TableCell><p className="font-medium">{row.user_name || "Unknown student"}</p><p className="text-xs text-muted-foreground sm:text-sm">{row.user_email || "No email available"}</p></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">

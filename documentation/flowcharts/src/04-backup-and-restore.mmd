@@ -1,0 +1,21 @@
+---
+title: 4 · Encrypted backup and restore (admin only)
+---
+flowchart TD
+  A(["Admin opens Data Backups"]) --> CH{"Download or restore?"}
+  CH -->|"download"| SU1["Confirm identity<br/>password or Google"]
+  SU1 --> EX["POST /export<br/>pg_dump, then encrypt with passphrase"]
+  EX --> F["Encrypted .pahina-backup file<br/>+ safety token, valid 15 min"]
+  CH -->|"restore"| SAFE["Download a fresh backup first<br/>to get a safety token"]
+  SAFE --> UP["Upload backup file + passphrase"]
+  UP --> IN["POST /inspect<br/>decrypt and check the file"]
+  IN --> OK{"Right app, intact,<br/>same schema version,<br/>has an active admin?"}
+  OK -->|"no"| ERR["Restore refused<br/>database unchanged"]
+  OK -->|"yes"| RT["Restore token, valid 15 min"]
+  RT --> SU2["Confirm identity again"]
+  SU2 --> RS["POST /restore"]
+  RS --> MM["Maintenance mode on<br/>other API calls get 503"]
+  MM --> PR["pg_restore"]
+  PR --> EP["Rotate auth epoch<br/>everyone is signed out"]
+  EP --> OFF["Maintenance mode off"]
+  OFF --> LG(["Sign in again"])

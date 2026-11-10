@@ -149,7 +149,7 @@ def update_user_role(id):
   data = request.get_json() or {}
   new_role = data.get("role")
 
-  if new_role not in ["student", "librarian", "admin"]:
+  if new_role not in User.ROLES:
     return jsonify({
       "message": "Invalid role"
     }), 400
@@ -164,7 +164,9 @@ def update_user_role(id):
 
   target_user = User.query.get_or_404(id)
 
-  if actor_role != "admin" and (new_role == "admin" or target_user.role == "admin"):
+  if not User.is_admin_role(actor_role) and (
+    User.is_admin_role(new_role) or User.is_admin_role(target_user.role)
+  ):
     return jsonify({
       "message": "Only admins can grant or change the admin role"
     }), 403

@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.dialects.postgresql import UUID
+from app.exceptions import ValidationError
 from app.models.base import BaseEntity
 from app.models.schemas import BorrowDict
 from app.extensions import db
@@ -68,13 +69,64 @@ class Borrow(BaseEntity):
         due = self.due_date.replace(tzinfo=timezone.utc) if self.due_date.tzinfo is None else self.due_date
         return datetime.now(timezone.utc) > due
 
-    def marked_as_returned(self):
-        """Safely handles book return confirmation."""
-        if self.status == self.STATUS_RETURNED:
-            raise ValueError("It is already marked as returned")
+    # ---- Lifecycle (encapsulation) ------------------------------------
+    # Every status change goes through one of these methods, which check
+    # that the move is allowed from the current status. Services ask the
+    # borrow to change ("tell, don't ask") instead of editing `status`.
+    #
+    #   PENDING_BORROW -> READY_FOR_PICKUP -> BORROWED -> RETURNED
+    #   PENDING_BORROW -> REJECTED
 
-        self.returned_at = datetime.now(timezone.utc)
+    RETURNABLE_STATUSES = (STATUS_PENDING_RETURN, STATUS_BORROWED, STATUS_OVERDUE)
+
+    def _require_status(self, allowed: tuple[str, ...], message: str) -> None:
+        if self.status not in allowed:
+            raise ValidationError(message)
+
+    def approve(self, book) -> None:
+        """Reserve one copy of ``book`` for this request."""
+        self._require_status(
+            (self.STATUS_PENDING_BORROW,),
+            "Only requests that are waiting can be approved for borrow",
+        )
+        book.decrement_available()
+        self.status = self.STATUS_READY_FOR_PICKUP
+        self.approved_at = datetime.now(timezone.utc)
+        self.borrowed_at = None
+        self.due_date = None
+
+    def confirm_pickup(self, loan_days: int) -> None:
+        """Start the loan clock once the student collects the book."""
+        self._require_status(
+            (self.STATUS_READY_FOR_PICKUP,),
+            "Only requests ready for pickup can be confirmed",
+        )
+        now = datetime.now(timezone.utc)
+        self.status = self.STATUS_BORROWED
+        self.borrowed_at = now
+        self.due_date = now + timedelta(days=loan_days)
+
+    def reject(self, reason: str) -> None:
+        """Decline a waiting request with a reason shown to the student."""
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValidationError("Rejection reason is required")
+        self._require_status(
+            (self.STATUS_PENDING_BORROW,),
+            "Only requests that are waiting can be rejected",
+        )
+        self.status = self.STATUS_REJECTED
+        self.rejection_reason = reason.strip()
+
+    def mark_returned(self, book=None) -> None:
+        """Check the book back in and release its copy."""
+        self._require_status(
+            self.RETURNABLE_STATUSES,
+            "Borrow record is not waiting for return confirmation",
+        )
         self.status = self.STATUS_RETURNED
+        self.returned_at = datetime.now(timezone.utc)
+        if book is not None:
+            book.increment_available()
 
     @staticmethod
     def _isoformat_utc(value: datetime | None) -> str | None:

@@ -1,4 +1,5 @@
 import type { Borrow } from "@/features/borrows/types/borrow.types";
+import { containsText } from "@/lib/dsa";
 
 export type LoanWorkspaceMode = "active" | "history";
 export type ActiveLoanFilter = "all" | "overdue" | "due-today" | "borrowed";
@@ -71,8 +72,8 @@ export const returnOutcome = (borrow: Borrow) => {
 };
 
 export const matchesLoanSearch = (borrow: Borrow, query: string) => {
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) return true;
-  return [borrow.user_name, borrow.user_email, borrow.book_title, borrow.author, borrow.id, loanReference(borrow.id)]
-    .some((value) => value?.toLowerCase().includes(normalized));
+  return containsText(
+    [borrow.user_name, borrow.user_email, borrow.book_title, borrow.author, borrow.id, loanReference(borrow.id)],
+    query,
+  );
 };
