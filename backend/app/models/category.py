@@ -1,3 +1,4 @@
+from app.exceptions import ValidationError
 from app.models.base import BaseEntity
 from app.models.schemas import CategoryDict
 from app.extensions import db
@@ -22,7 +23,7 @@ class Category(BaseEntity): # inheritance
   @name.setter
   def name(self, value: str):
     if not value or not value.strip():
-      raise ValueError("Category name cannot be empty")
+      raise ValidationError("Category name cannot be empty")
     # making the name into title format
     self._name = value.strip().title()
 

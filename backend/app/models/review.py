@@ -1,3 +1,4 @@
+from app.exceptions import ValidationError
 from app.models.base import BaseEntity
 from app.models.schemas import ReviewDict
 from sqlalchemy.dialects.postgresql import UUID
@@ -25,6 +26,27 @@ class Review(BaseEntity):
   created_at = db.Column(db.DateTime, server_default=db.func.now())
 
   user = db.relationship("User", backref="reviews")
+
+  @classmethod
+  def parse_rating(cls, raw_rating) -> int:
+    """Turn user input into a valid star rating, or raise ValidationError.
+
+    The rule lives on the model that owns it; the database CHECK constraint
+    above is the second line of defence.
+    """
+    rating_error = f"Rating must be a whole number between {cls.MIN_RATING} and {cls.MAX_RATING}"
+    if isinstance(raw_rating, bool):
+      raise ValidationError(rating_error)
+    if isinstance(raw_rating, str):
+      try:
+        raw_rating = int(raw_rating.strip())
+      except ValueError as error:
+        raise ValidationError(rating_error) from error
+    if isinstance(raw_rating, float) and raw_rating.is_integer():
+      raw_rating = int(raw_rating)
+    if not isinstance(raw_rating, int) or not (cls.MIN_RATING <= raw_rating <= cls.MAX_RATING):
+      raise ValidationError(rating_error)
+    return raw_rating
 
   def to_dict(self) -> ReviewDict:
     return {

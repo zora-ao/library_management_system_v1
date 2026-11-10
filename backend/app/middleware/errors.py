@@ -1,8 +1,15 @@
 from flask import Blueprint, current_app, jsonify
 from sqlalchemy.exc import SQLAlchemyError
+from app.exceptions import LibraryError
 from app.extensions import db
 
 error_bp = Blueprint("errors", __name__)
+
+
+@error_bp.app_errorhandler(LibraryError)
+def handle_library_error(error: LibraryError):
+  # Polymorphism: each LibraryError subclass supplies its own status code.
+  return jsonify(error.to_dict()), error.status_code
 
 @error_bp.app_errorhandler(SQLAlchemyError)
 def handle_database_error(error):

@@ -3,6 +3,7 @@ from flask_jwt_extended import get_jwt
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from app.middleware.auth import admin_required
+from app.models import User
 from app.services.dashboard_service import DashboardService
 
 
@@ -28,7 +29,7 @@ def get_dashboard():
         except (ZoneInfoNotFoundError, ValueError):
             return jsonify({"message": "timezone is invalid"}), 400
 
-    include_user_count = get_jwt().get("role", "").lower() == "admin"
+    include_user_count = User.is_admin_role(get_jwt().get("role"))
     return jsonify(
         DashboardService.get_summary(
             include_user_count=include_user_count,
