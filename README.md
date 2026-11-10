@@ -108,6 +108,23 @@ Administrators can open **Data Backups** in the dashboard to download an encrypt
 - Restore accepts only authenticated backups for this application with the exact deployed Alembic revision set and at least one active administrator. Deploy schema migrations before creating the backup that will be used for recovery.
 - A successful restore rotates the authentication epoch and signs out every user. If security finalization fails after the native restore, the persistent maintenance flag intentionally stays enabled for fail-closed recovery.
 
+### Recovering when the app itself is broken
+
+The Data Backups page only works while the app runs and an administrator can log in. If the database was deleted badly enough that this is impossible (the `users`, `alembic_version` or `system_security_state` table is gone, every table was dropped or emptied, or `DATABASE_URL` now points at a brand-new empty database), restore from the command line instead. Run from the `backend` directory:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\recover_database.py C:\path\to\pahina-backup-20261109T000000Z.pahina-backup
+```
+
+It restores into the database in `DATABASE_URL`, prints which database that is, and asks for the backup passphrase and for the database name as confirmation. It then:
+
+1. decrypts and checks the backup (right application, intact, has an active administrator, made by a schema version this code knows);
+2. recreates `system_security_state` if it is missing, since backups exclude it;
+3. turns on maintenance mode, waits for in-flight requests, and restores every table in one transaction, so a failure leaves the database unchanged;
+4. signs everyone out, turns maintenance mode off, and runs any newer migrations.
+
+Afterwards, log in with an administrator account from the backup. Keep a recent backup file and its passphrase somewhere other than the database: once the database is gone, the admin page cannot produce one.
+
 ### Disposable PostgreSQL recovery test
 
 The integration test is destructive. Create an empty disposable database whose name contains `test`, give the application role ownership of its objects, and configure:
