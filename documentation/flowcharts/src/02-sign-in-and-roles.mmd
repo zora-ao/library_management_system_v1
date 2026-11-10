@@ -1,0 +1,22 @@
+---
+title: 2 · Sign-in and what each role can open
+---
+flowchart TD
+  A(["Open the app"]) --> B{"Token saved in<br/>localStorage?"}
+  B -->|"no"| L["/login or /register"]
+  L --> M{"How?"}
+  M -->|"email + password"| P["POST /api/auth/login"]
+  M -->|"Google account"| G["POST /api/auth/google"]
+  M -->|"new student"| R["POST /api/auth/register"]
+  P --> V{"Valid?"}
+  G --> V
+  R --> V
+  V -->|"no"| L
+  V -->|"yes"| T["JWT issued<br/>carries role + auth epoch"]
+  T --> S["Token + user saved"]
+  S --> RO{"Role"}
+  B -->|"yes"| RO
+  RO -->|"student"| ST["Book catalog · book details<br/>My borrows · My favorites<br/>Profile · About"]
+  RO -->|"librarian"| LB["Student pages, plus<br/>Dashboard · Book list · Categories<br/>Borrow requests · All borrows<br/>Users · DSA explorer"]
+  RO -->|"admin"| AD["Everything a librarian has, plus<br/>Data Backups"]
+  X["Unknown URL"] --> L

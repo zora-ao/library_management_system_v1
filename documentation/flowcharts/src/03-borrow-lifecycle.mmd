@@ -1,0 +1,13 @@
+---
+title: 3 · Borrow lifecycle, from request to return
+---
+flowchart TB
+  S(["Student taps Borrow"]) --> C{"Copies available<br/>and no active borrow<br/>of this book?"}
+  C -->|"no"| X["Request refused<br/>with a message"]
+  C -->|"yes"| PB["PENDING_BORROW"]
+  PB -->|"staff rejects<br/>reason required"| RJ["REJECTED"]
+  PB -->|"staff approves<br/>available copies − 1"| RP["READY_FOR_PICKUP"]
+  RP -->|"staff confirms pickup<br/>due date = today + 14 days"| BO["BORROWED"]
+  BO -->|"due date passes"| OD["OVERDUE<br/>shown, not stored"]
+  BO -->|"staff records return<br/>available copies + 1"| RT["RETURNED"]
+  OD -->|"staff records return<br/>available copies + 1"| RT
