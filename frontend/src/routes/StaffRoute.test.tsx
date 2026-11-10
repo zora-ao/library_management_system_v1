@@ -19,30 +19,30 @@ describe("StaffRoute", () => {
   it.each(["admin", "librarian"])("allows %s access", (role) => {
     auth.role = role;
     render(
-      <MemoryRouter initialEntries={["/dsa-explorer"]}>
+      <MemoryRouter initialEntries={["/book-list"]}>
         <Routes>
           <Route element={<StaffRoute />}>
-            <Route path="/dsa-explorer" element={<div>DSA workspace</div>} />
+            <Route path="/book-list" element={<div>Books workspace</div>} />
           </Route>
         </Routes>
       </MemoryRouter>,
     );
-    expect(screen.getByText("DSA workspace")).toBeInTheDocument();
+    expect(screen.getByText("Books workspace")).toBeInTheDocument();
   });
 
   it("redirects students away from the staff workspace", () => {
     auth.role = "student";
     render(
-      <MemoryRouter initialEntries={["/dsa-explorer"]}>
+      <MemoryRouter initialEntries={["/book-list"]}>
         <Routes>
           <Route element={<StaffRoute />}>
-            <Route path="/dsa-explorer" element={<div>DSA workspace</div>} />
+            <Route path="/book-list" element={<div>Books workspace</div>} />
           </Route>
           <Route path="/books" element={<div>Student catalog</div>} />
         </Routes>
       </MemoryRouter>,
     );
     expect(screen.getByText("Student catalog")).toBeInTheDocument();
-    expect(screen.queryByText("DSA workspace")).not.toBeInTheDocument();
+    expect(screen.queryByText("Books workspace")).not.toBeInTheDocument();
   });
 });

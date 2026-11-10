@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   DatabaseBackup,
-  Braces,
   LayoutDashboard,
   Layers3,
   LogOut,
@@ -99,7 +98,6 @@ export const NavContent: React.FC<NavContentProps> = ({ collapsed = false, onIte
         { label: "Loans & Returns", path: "/all-borrows/active", icon: RotateCcw },
         { label: "Books List", path: "/book-list", icon: BookOpen },
         { label: "Categories", path: "/categories", icon: Layers3 },
-        { label: "DSA Explorer", path: "/dsa-explorer", icon: Braces },
       ];
 
       if (isAdmin) {

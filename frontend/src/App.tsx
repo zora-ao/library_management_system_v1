@@ -22,7 +22,6 @@ const About = lazy(() => import("./pages/About"));
 const BorrowRequestsPage = lazy(() => import("./pages/adminPage/BorrowRequestsPage"));
 const CategoriesPage = lazy(() => import("./pages/adminPage/CategoriesPage"));
 const DataBackupsPage = lazy(() => import("./pages/adminPage/DataBackupsPage"));
-const DsaExplorerPage = lazy(() => import("./pages/adminPage/DsaExplorerPage"));
 
 const App = () => {
   const { user } = useAuth();
@@ -47,7 +46,6 @@ const App = () => {
               <Route path="/my-favorites" element={<MyFavoritesPage />} />
               <Route path="/profile" element={<UsersProfile />} />
               <Route element={<StaffRoute />}>
-                <Route path="/dsa-explorer" element={<DsaExplorerPage />} />
               </Route>
               <Route element={<AdminRoute />}>
                 <Route path="/backups" element={<DataBackupsPage />} />
