@@ -10,8 +10,10 @@ import BorrowRequestDetailsSheet from "@/features/borrows/components/BorrowReque
 import ConfirmPickupDialog from "@/features/borrows/components/ConfirmPickupDialog";
 import RejectBorrowRequestDialog from "@/features/borrows/components/RejectBorrowRequestDialog";
 import {
+  buildPendingQueue,
   classifyBorrowRequests,
   filterBorrowRequests,
+  getQueuePositions,
   getBorrowRequestCounts,
   sortBorrowRequests,
   type BorrowRequestOrder,
@@ -43,6 +45,8 @@ export default function BorrowRequestsPage() {
   const [pickupOpen, setPickupOpen] = useState(false);
 
   const counts = useMemo(() => getBorrowRequestCounts(borrows), [borrows]);
+  // Positions come from the whole queue, so they stay correct while searching or re-sorting.
+  const queuePositions = useMemo(() => getQueuePositions(buildPendingQueue(borrows)), [borrows]);
   const rows = useMemo(() => {
     if (!activeTab) return [];
     const classified = classifyBorrowRequests(borrows, activeTab);
@@ -95,7 +99,7 @@ export default function BorrowRequestsPage() {
             ]}
           />
         </div>
-        {isError ? <div className="flex min-h-64 flex-col items-center justify-center gap-3 p-6 text-center"><p className="font-semibold text-destructive">Could not load borrow requests</p><p className="text-sm text-muted-foreground">{error?.message || "Please try again."}</p><Button variant="outline" onClick={() => refetch()}>Try again</Button></div> : <BorrowRequestsTable rows={rows} tab={activeTab} page={page} onPageChange={setPage} onOpen={openRow} />}
+        {isError ? <div className="flex min-h-64 flex-col items-center justify-center gap-3 p-6 text-center"><p className="font-semibold text-destructive">Could not load borrow requests</p><p className="text-sm text-muted-foreground">{error?.message || "Please try again."}</p><Button variant="outline" onClick={() => refetch()}>Try again</Button></div> : <BorrowRequestsTable rows={rows} tab={activeTab} page={page} onPageChange={setPage} onOpen={openRow} queuePositions={activeTab === "pending" ? queuePositions : undefined} />}
       </section>
 
       <BorrowRequestDetailsSheet borrow={selected} open={detailsOpen} processing={processing} onOpenChange={setDetailsOpen} onApprove={(borrow) => approve.mutate(borrow.id, { onSuccess: () => setDetailsOpen(false) })} onReject={(borrow) => { setSelected(borrow); setDetailsOpen(false); setRejectOpen(true); }} />

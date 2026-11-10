@@ -1,4 +1,5 @@
 import type { Borrow } from "@/features/borrows/types/borrow.types";
+import { containsText, groupBy, linearSearch, mergeSort, type HashMap } from "@/lib/dsa";
 import type { User, UserRole } from "../types/auth.types";
 
 export type UserRoleFilter = "all" | UserRole;
@@ -34,16 +35,27 @@ export function getActiveLoansForUser(userId: string, borrows: Borrow[]) {
   );
 }
 
+/**
+ * Hash map from user ID to that user's active loans, built in one pass.
+ * Building it is O(b) for b borrows; each table row then looks up its loans in
+ * O(1) on average, instead of scanning every borrow again (O(users x b)).
+ */
+export function indexActiveLoansByUser(borrows: Borrow[]): HashMap<Borrow[]> {
+  return groupBy(
+    linearSearch(borrows, (borrow) => activeLoanStatuses.has(borrow.status)),
+    (borrow) => String(borrow.user_id),
+  );
+}
+
 export function filterAndSortUsers(users: User[], filters: UserFilters) {
-  const search = filters.search.trim().toLowerCase();
-  return users
-    .filter((user) => !search || user.username.toLowerCase().includes(search) || user.email.toLowerCase().includes(search))
-    .filter((user) => filters.role === "all" || user.role === filters.role)
-    .filter((user) => {
-      if (filters.status === "all") return true;
-      return filters.status === "active" ? Boolean(user.is_active) : !user.is_active;
-    })
-    .sort((left, right) => {
+  // One linear search (O(n)) checks the search text, role and status together.
+  const matches = linearSearch(users, (user) => {
+    if (!containsText([user.username, user.email], filters.search)) return false;
+    if (filters.role !== "all" && user.role !== filters.role) return false;
+    if (filters.status === "all") return true;
+    return filters.status === "active" ? Boolean(user.is_active) : !user.is_active;
+  });
+  return mergeSort(matches, (left, right) => {
       if (filters.sort === "name") return left.username.localeCompare(right.username);
       const leftTime = left.created_at ? new Date(left.created_at).getTime() : 0;
       const rightTime = right.created_at ? new Date(right.created_at).getTime() : 0;

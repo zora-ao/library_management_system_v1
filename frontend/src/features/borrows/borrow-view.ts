@@ -1,3 +1,4 @@
+import { containsText, linearSearch, mergeSort } from "@/lib/dsa";
 import type { Borrow } from "./types/borrow.types";
 
 const zone = "Asia/Manila";
@@ -42,12 +43,14 @@ export function filterBorrows(records: Borrow[], options: BorrowFilters, now = n
   const month = Number(parts.find(p => p.type === "month")?.value);
   const cutoff = options.period === "year" ? Date.UTC(year, 0, 1) : Date.UTC(year, month - (options.period === "quarter" ? 3 : 1), 1);
   const recordDate = (b: Borrow) => timestamp(b.returned_at || b.created_at);
-  return records.filter(b => {
+  // Linear search, O(n), then merge sort, O(m log m).
+  const matches = linearSearch(records, b => {
     const state = borrowState(b, now);
-    return [b.book_title, b.author].some(value => value?.toLowerCase().includes(query)) &&
+    return containsText([b.book_title, b.author], query) &&
       (options.history || options.status === "all" || options.status === state.kind || options.status === "borrowed" && ["BORROWED", "OVERDUE"].includes(b.status)) &&
       (!options.history || options.period === "all" || Number.isFinite(recordDate(b)) && calendarDay(recordDate(b)) >= cutoff);
-  }).sort((a, b) => {
+  });
+  return mergeSort(matches, (a, b) => {
     if (options.sort === "title") return a.book_title.localeCompare(b.book_title);
     const safe = (value: number, fallback: number) => Number.isFinite(value) ? value : fallback;
     if (options.sort === "borrowed") return safe(timestamp(b.borrowed_at || b.created_at), 0) - safe(timestamp(a.borrowed_at || a.created_at), 0);

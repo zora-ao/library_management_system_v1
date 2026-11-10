@@ -46,9 +46,9 @@ The backend is layered: **routes** (HTTP) → **services** (use cases) → **mod
 | | [`Category`](backend/app/models/category.py), [`Review`](backend/app/models/review.py) | `Category.name` setter validates and title-cases; `Review.parse_rating()` owns the 1–5 star rule. |
 | **Polymorphism** | `to_dict()` | Every model overrides `BaseEntity.to_dict()`; routes serialize any entity the same way. |
 | | [`handle_library_error`](backend/app/middleware/errors.py) | One handler serves every `LibraryError` subclass; each subclass supplies its own `status_code`. |
-| | [`ChainedHashTable[V]`](backend/app/dsa/hash_table.py) | Generic class that works for any value type. |
+| | [`HashMap<V>`, `Queue<T>`](frontend/src/lib/dsa) | Generic classes that work for any value type. |
 | **Abstraction** | Services | Routes call `BorrowService.approve_borrow_request(id)` without knowing about locking, transactions or SQL. |
-| | [`BookTitleBST.from_sorted()`](backend/app/dsa/binary_search_tree.py) | Factory classmethod hides how the balanced tree is built. |
+| | [`Queue<T>`](frontend/src/lib/dsa/Queue.ts) | Hides its linked-list nodes (`private head`, `tail`); callers only `enqueue()` and `dequeue()`. |
 | | [`ReviewEntity`](frontend/src/features/books/models/ReviewEntity.ts) | Frontend class wrapping raw review JSON with typed fields and a `formattedDate` getter. |
 
 Borrow lifecycle enforced by `Borrow`:
@@ -57,6 +57,18 @@ Borrow lifecycle enforced by `Borrow`:
 PENDING_BORROW --approve()--> READY_FOR_PICKUP --confirm_pickup()--> BORROWED --mark_returned()--> RETURNED
 PENDING_BORROW --reject(reason)--> REJECTED
 ```
+
+## Data Structures and Algorithms
+
+Three data structures of our own live in [`frontend/src/lib/dsa`](frontend/src/lib/dsa) and power real pages. Full analysis, Big-O and benchmark results: [documentation/dsa.md](documentation/dsa.md).
+
+| Data structure | Used in | Time |
+|---|---|---|
+| Array: `linearSearch`, `mergeSort` | All 8 search bars and their result lists | O(n) search, O(n log n) sort |
+| `HashMap` (separate chaining) | Loans per user (Users), books per genre (Catalog), queue positions | O(1) average lookup |
+| `Queue` (linked list, FIFO) | Pending borrow requests, first come first served | O(1) enqueue / dequeue |
+
+Benchmark: `node scripts/benchmark-dsa.ts` from the `frontend` folder.
 
 ## Installation
 
