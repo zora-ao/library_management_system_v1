@@ -60,7 +60,7 @@ export default function BookCatalogPage() {
       </aside>
       <div className="booky-results">
         {isLoading ? <LoadingState containerClassName="h-96" label="Loading catalog" /> : isError ? <div className="booky-empty" role="alert"><h2>We couldn’t load the catalog.</h2><p>Please try again in a moment.</p><Button type="button" onClick={() => void refetch()}>Try again</Button></div> : <>
-          {genre === "All" && <section aria-labelledby="top-rated-heading">
+          {genre === "All" && !query.trim() && <section aria-labelledby="top-rated-heading">
             <div className="booky-section-heading"><div><h2 id="top-rated-heading">Top rated</h2><p>The books students rate highest.</p></div><button type="button" onClick={() => document.getElementById("all-books")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Explore all&nbsp; →</button></div>
             {topRated.length ? <div className="booky-cards">{topRated.map(book => <BookCard key={book.id} book={book} variant="popular" />)}</div> : <p className="booky-empty">Top-rated books will appear here once students leave reviews.</p>}
           </section>}

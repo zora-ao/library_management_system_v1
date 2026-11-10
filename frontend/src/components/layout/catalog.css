@@ -613,15 +613,26 @@
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(var(--glass-blur));
   margin: 18px 0 28px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.booky-search:focus-within {
+  border-color: var(--ring);
+  box-shadow: var(--glass-shadow), 0 0 0 3px color-mix(in srgb, var(--ring) 25%, transparent);
 }
 .booky-search input {
   flex: 1;
   width: 0;
+  height: 100%;
   font-size: 15px;
   color: var(--foreground);
   background: transparent;
+  border: 0;
   outline: none;
+  appearance: none;
 }
+/* The whole bar shows focus (above), so the inner field drops its own square ring. */
+.booky .booky-search input:focus-visible { outline: none; }
+.booky-search input::-webkit-search-cancel-button { cursor: pointer; }
 .booky-search input::placeholder { color: var(--muted-foreground); }
 .booky-search .booky-search-button {
   height: 42px;

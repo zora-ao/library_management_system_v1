@@ -73,6 +73,22 @@ describe("BookCatalogPage filters", () => {
     expect(screen.getByRole("button", { name: "All genres2" })).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("hides Top rated while a search is submitted and shows it again when the search is cleared", () => {
+    render(<BookCatalogPage />);
+    const search = screen.getByRole("searchbox", { name: "Search title, author, or ISBN" });
+
+    fireEvent.change(search, { target: { value: "Fiction" } });
+    expect(screen.getByRole("heading", { name: "Top rated" })).toBeInTheDocument();
+
+    fireEvent.submit(search);
+    expect(screen.queryByRole("heading", { name: "Top rated" })).not.toBeInTheDocument();
+    expect(screen.getByText("Fiction Book")).toBeInTheDocument();
+
+    fireEvent.change(search, { target: { value: "" } });
+    fireEvent.submit(search);
+    expect(screen.getByRole("heading", { name: "Top rated" })).toBeInTheDocument();
+  });
+
   it("lists only reviewed books under Top rated, best first", () => {
     const books = useBooksMock().data;
     useBooksMock.mockReturnValue({
