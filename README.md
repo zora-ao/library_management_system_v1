@@ -31,6 +31,33 @@ Backend
 - Flask JWT Extended
 - PostgreSQL
 
+## Object-Oriented Design
+
+The backend is layered: **routes** (HTTP) → **services** (use cases) → **models** (data + rules). The four OOP principles are applied as follows.
+
+| Principle | Where | What it does |
+|---|---|---|
+| **Inheritance** | [`BaseEntity`](backend/app/models/base.py) | Abstract parent (`__abstract__ = True`) that gives `User`, `Book`, `Borrow`, `Category`, `Review` and `Favorite` a shared UUID `id` and the `to_dict()` contract. |
+| | [`BaseService`](backend/app/services/base_service.py) | Parent of `BookService`, `BorrowService` and `CategoryService`; shares `_parse_uuid()` and `_get_or_404()`. |
+| | [`LibraryError`](backend/app/exceptions.py) | Exception hierarchy: `ValidationError` (400), `NotFoundError` (404), `ConflictError` (409), extended by `DuplicateReviewError`, `RegistrationValidationError`, `RegistrationConflictError`. |
+| **Encapsulation** | [`User`](backend/app/models/user.py) | `password` is write-only: setting it stores a hash in the private `_password_hash`; reading it raises an error. |
+| | [`Book`](backend/app/models/book.py) | `_total_copies` / `_available_copies` are read-only properties; they change only through `decrement_available()`, `increment_available()` and `adjust_total_copies()`, which enforce the stock rules. |
+| | [`Borrow`](backend/app/models/borrow.py) | The borrow lifecycle (`approve()`, `confirm_pickup()`, `reject()`, `mark_returned()`) lives on the model; each method refuses a transition that is not allowed from the current status. |
+| | [`Category`](backend/app/models/category.py), [`Review`](backend/app/models/review.py) | `Category.name` setter validates and title-cases; `Review.parse_rating()` owns the 1–5 star rule. |
+| **Polymorphism** | `to_dict()` | Every model overrides `BaseEntity.to_dict()`; routes serialize any entity the same way. |
+| | [`handle_library_error`](backend/app/middleware/errors.py) | One handler serves every `LibraryError` subclass; each subclass supplies its own `status_code`. |
+| | [`ChainedHashTable[V]`](backend/app/dsa/hash_table.py) | Generic class that works for any value type. |
+| **Abstraction** | Services | Routes call `BorrowService.approve_borrow_request(id)` without knowing about locking, transactions or SQL. |
+| | [`BookTitleBST.from_sorted()`](backend/app/dsa/binary_search_tree.py) | Factory classmethod hides how the balanced tree is built. |
+| | [`ReviewEntity`](frontend/src/features/books/models/ReviewEntity.ts) | Frontend class wrapping raw review JSON with typed fields and a `formattedDate` getter. |
+
+Borrow lifecycle enforced by `Borrow`:
+
+```
+PENDING_BORROW --approve()--> READY_FOR_PICKUP --confirm_pickup()--> BORROWED --mark_returned()--> RETURNED
+PENDING_BORROW --reject(reason)--> REJECTED
+```
+
 ## Installation
 
 ### Backend
