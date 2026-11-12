@@ -39,7 +39,7 @@ def create_app():
       "http://127.0.0.1:5173",
       "https://library-management-system-libra.vercel.app",
     ],
-    expose_headers=["X-Backup-Safety-Token", "Content-Disposition"],
+    expose_headers=["Content-Disposition"],
   )
 
   db.init_app(app)

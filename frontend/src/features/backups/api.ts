@@ -58,16 +58,11 @@ export async function downloadBackup(input: ExportInput): Promise<DownloadResult
     },
     { responseType: "blob" },
   );
-  const safetyToken = responseHeader(response.headers, "x-backup-safety-token");
-  if (!safetyToken) {
-    throw new Error("Backup response did not include a safety token");
-  }
   return {
     blob: response.data,
     filename: safeDownloadFilename(
       responseHeader(response.headers, "content-disposition"),
     ),
-    safetyToken,
   };
 }
 
@@ -90,7 +85,6 @@ export async function restoreBackup(
   body.append("backup", input.file);
   body.append("passphrase", input.passphrase);
   body.append("restore_token", input.restoreToken);
-  body.append("safety_token", input.safetyToken);
   body.append("confirmation", input.confirmation);
   body.append("step_up_method", input.stepUp.method);
   body.append("step_up_credential", input.stepUp.credential);

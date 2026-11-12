@@ -5,9 +5,8 @@ flowchart TD
   A(["Admin opens Data Backups"]) --> CH{"Download or restore?"}
   CH -->|"download"| SU1["Confirm identity<br/>password or Google"]
   SU1 --> EX["POST /export<br/>pg_dump, then encrypt with passphrase"]
-  EX --> F["Encrypted .pahina-backup file<br/>+ safety token, valid 15 min"]
-  CH -->|"restore"| SAFE["Download a fresh backup first<br/>to get a safety token"]
-  SAFE --> UP["Upload backup file + passphrase"]
+  EX --> F["Encrypted .pahina-backup file"]
+  CH -->|"restore"| UP["Upload backup file + passphrase"]
   UP --> IN["POST /inspect<br/>decrypt and check the file"]
   IN --> OK{"Right app, intact,<br/>same schema version,<br/>has an active admin?"}
   OK -->|"no"| ERR["Restore refused<br/>database unchanged"]

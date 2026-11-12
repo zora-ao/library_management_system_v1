@@ -40,17 +40,14 @@ describe("database backup API", () => {
     const blob = new Blob(["encrypted"]);
     mocks.post.mockResolvedValue({
       data: blob,
-      headers: {
-        "content-disposition": disposition,
-        "x-backup-safety-token": "safety-token",
-      },
+      headers: { "content-disposition": disposition },
     });
 
     await expect(downloadBackup({
       passphrase: "long-enough-passphrase",
       confirmPassphrase: "long-enough-passphrase",
       stepUp: { method: "password", credential: "secret" },
-    })).resolves.toEqual({ blob, filename: expectedFilename, safetyToken: "safety-token" });
+    })).resolves.toEqual({ blob, filename: expectedFilename });
 
     expect(mocks.post).toHaveBeenCalledOnce();
     expect(mocks.post).toHaveBeenCalledWith(
@@ -62,20 +59,6 @@ describe("database backup API", () => {
       },
       { responseType: "blob" },
     );
-  });
-
-  it("rejects a download response without a safety token", async () => {
-    mocks.post.mockResolvedValue({
-      data: new Blob(["encrypted"]),
-      headers: { "content-disposition": "attachment; filename=backup.pahina-backup" },
-    });
-
-    await expect(downloadBackup({
-      passphrase: "long-enough-passphrase",
-      confirmPassphrase: "long-enough-passphrase",
-      stepUp: { method: "password", credential: "secret" },
-    })).rejects.toThrow("safety token");
-    expect(mocks.post).toHaveBeenCalledOnce();
   });
 
   it("inspects with one multipart request and no secrets in the URL", async () => {
@@ -104,7 +87,6 @@ describe("database backup API", () => {
       file,
       passphrase: "private-passphrase",
       restoreToken: "restore-token",
-      safetyToken: "safety-token",
       confirmation: "RESTORE DATABASE",
       stepUp: { method: "google", credential: "google-credential" },
     });
@@ -118,11 +100,11 @@ describe("database backup API", () => {
     expect(Object.fromEntries(body.entries())).toMatchObject({
       passphrase: "private-passphrase",
       restore_token: "restore-token",
-      safety_token: "safety-token",
       confirmation: "RESTORE DATABASE",
       step_up_method: "google",
       step_up_credential: "google-credential",
     });
+    expect(body.has("safety_token")).toBe(false);
     expect(body.get("backup")).toBe(file);
     expect(mocks.post.mock.calls[0][2]).toEqual({
       headers: { "Content-Type": undefined },

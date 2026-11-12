@@ -69,7 +69,6 @@ describe("DataBackupsPage", () => {
     mocks.download.mockResolvedValue({
       blob: new Blob(["encrypted"]),
       filename: "pahina-test.pahina-backup",
-      safetyToken: "fresh-safety-token",
     });
     mocks.inspect.mockResolvedValue({ manifest, restore_token: "restore-token" });
     mocks.restore.mockResolvedValue({ message: "Database restored successfully" });
@@ -112,14 +111,13 @@ describe("DataBackupsPage", () => {
     await waitFor(() => expect(mocks.download).toHaveBeenCalledOnce());
     expect(click).toHaveBeenCalledOnce();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:backup");
-    expect(screen.getByText(/fresh safety download is ready/i)).toBeInTheDocument();
+    expect(screen.getByText(/backup downloaded/i)).toBeInTheDocument();
   });
 
   it("accurately describes backup preparation while export is pending", async () => {
     let finishDownload: ((result: {
       blob: Blob;
       filename: string;
-      safetyToken: string;
     }) => void) | undefined;
     mocks.download.mockImplementation(() => new Promise((resolve) => {
       finishDownload = resolve;
@@ -143,7 +141,6 @@ describe("DataBackupsPage", () => {
       finishDownload?.({
         blob: new Blob(["encrypted"]),
         filename: "pahina-test.pahina-backup",
-        safetyToken: "fresh-safety-token",
       });
     });
     await waitFor(() => expect(screen.getByRole("button", {
@@ -177,16 +174,11 @@ describe("DataBackupsPage", () => {
     expect(screen.getByRole("button", { name: /restore database/i })).toBeDisabled();
   });
 
-  it("validates metadata and restores only after every destructive prerequisite", async () => {
+  it("validates metadata and restores without a fresh download first", async () => {
     const user = userEvent.setup();
     render(<DataBackupsPage />);
 
-    await waitFor(() => expect(screen.getByLabelText("Backup passphrase")).toBeEnabled());
-    await user.type(screen.getByLabelText("Backup passphrase"), "long-enough-passphrase");
-    await user.type(screen.getByLabelText("Confirm backup passphrase"), "long-enough-passphrase");
-    await user.type(screen.getByLabelText("Current password for backup"), "password");
-    await user.click(screen.getByRole("button", { name: /download encrypted backup/i }));
-
+    await waitFor(() => expect(screen.getByLabelText("Backup file")).toBeEnabled());
     const file = new File(["encrypted"], "selected.pahina-backup");
     fireEvent.change(screen.getByLabelText("Backup file"), { target: { files: [file] } });
     await user.type(screen.getByLabelText("Passphrase for selected backup"), "long-enough-passphrase");
@@ -204,6 +196,7 @@ describe("DataBackupsPage", () => {
     await user.click(screen.getByRole("button", { name: /restore now/i }));
 
     await waitFor(() => expect(mocks.restore).toHaveBeenCalledOnce());
+    expect(mocks.download).not.toHaveBeenCalled();
     expect(mocks.logout).toHaveBeenCalledOnce();
     expect(mocks.navigate).toHaveBeenCalledWith("/login?restored=1", { replace: true });
   });

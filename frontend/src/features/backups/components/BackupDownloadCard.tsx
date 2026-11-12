@@ -12,7 +12,6 @@ import { StepUpControl } from "./StepUpControl";
 interface BackupDownloadCardProps {
   enabled: boolean;
   googleAccount: boolean;
-  onSafetyToken: (token: string) => void;
 }
 
 
@@ -27,7 +26,6 @@ function errorMessage(error: unknown): string {
 export function BackupDownloadCard({
   enabled,
   googleAccount,
-  onSafetyToken,
 }: BackupDownloadCardProps) {
   const [passphrase, setPassphrase] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -65,12 +63,10 @@ export function BackupDownloadCard({
       } finally {
         URL.revokeObjectURL(url);
       }
-      onSafetyToken(result.safetyToken);
       setDownloaded(true);
       setPassphrase("");
       setConfirmation("");
     } catch (caught) {
-      onSafetyToken("");
       setError(errorMessage(caught));
     } finally {
       setStepUp({ method: googleAccount ? "google" : "password", credential: "" });
@@ -105,7 +101,7 @@ export function BackupDownloadCard({
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         {downloaded && (
           <p className="flex items-center gap-2 text-sm text-success">
-            <ShieldCheck className="size-4" /> A fresh safety download is ready for restore verification.
+            <ShieldCheck className="size-4" /> Backup downloaded. Keep the file and its passphrase somewhere safe.
           </p>
         )}
         <Button
