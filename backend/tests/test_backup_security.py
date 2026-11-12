@@ -139,7 +139,6 @@ class BackupSecurityTests(unittest.TestCase):
             self.assertIn("jti", payload)
 
             invalid_inputs = [
-                {"kind": "safety", "user_id": self.password_admin_id, "digest": digest},
                 {"kind": "restore", "user_id": uuid.uuid4(), "digest": digest},
                 {"kind": "restore", "user_id": self.password_admin_id, "digest": "b" * 64},
             ]
@@ -154,7 +153,7 @@ class BackupSecurityTests(unittest.TestCase):
             "itsdangerous.timed.time.time", return_value=1_000
         ):
             token = issue_operation_token(
-                "safety", self.password_admin_id, "c" * 64
+                "restore", self.password_admin_id, "c" * 64
             )
 
         with self.app.app_context():
@@ -163,7 +162,7 @@ class BackupSecurityTests(unittest.TestCase):
             ):
                 verify_operation_token(
                     f"{token}modified",
-                    kind="safety",
+                    kind="restore",
                     user_id=self.password_admin_id,
                     digest=None,
                     max_age=900,
@@ -174,7 +173,7 @@ class BackupSecurityTests(unittest.TestCase):
             ):
                 verify_operation_token(
                     token,
-                    kind="safety",
+                    kind="restore",
                     user_id=self.password_admin_id,
                     digest=None,
                     max_age=900,

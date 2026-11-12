@@ -140,9 +140,9 @@ Administrators can open **Data Backups** in the dashboard to download an encrypt
 - Install `pg_dump` and `pg_restore` on the backend host. Both client tools must have the same major version, and `pg_dump` must not be older than the PostgreSQL server. Set `BACKUP_PG_BIN_DIR` only when the binaries are not on `PATH`.
 - `BACKUP_PG_COMPRESSION_LEVEL` defaults to `1`. Lower values prepare backups faster but create larger files; allowed values are `0` through `9`.
 - Run the application with a PostgreSQL role that owns the application database objects and can connect, create, drop, and restore them. Superuser access is not required or recommended.
-- Set a strong `BACKUP_TOKEN_SIGNING_KEY` that is different from `JWT_SECRET_KEY`. Safety and restore tokens expire after 15 minutes.
+- Set a strong `BACKUP_TOKEN_SIGNING_KEY` that is different from `JWT_SECRET_KEY`. Restore tokens expire after 15 minutes.
 - The version-one envelope defaults to Scrypt `N=32768`, `r=8`, `p=1`, a 250 MiB maximum backup, and a 300-second native operation timeout. These backend limits are defined in `app/config.py`; align the reverse proxy request-body limit and timeout with them.
-- Serve the frontend and API over HTTPS. Expose `Content-Disposition` and `X-Backup-Safety-Token` through any proxy or gateway.
+- Serve the frontend and API over HTTPS. Expose `Content-Disposition` through any proxy or gateway.
 - Monitor free temporary disk space and operating-system cleanup. Export, inspection, and restore use bounded temporary workspaces that are removed when each request completes.
 - Restore accepts only authenticated backups for this application with the exact deployed Alembic revision set and at least one active administrator. Deploy schema migrations before creating the backup that will be used for recovery.
 - A successful restore rotates the authentication epoch and signs out every user. If security finalization fails after the native restore, the persistent maintenance flag intentionally stays enabled for fail-closed recovery.

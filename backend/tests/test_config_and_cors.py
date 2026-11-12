@@ -34,10 +34,7 @@ class ConfigAndCorsTests(unittest.TestCase):
 
     def test_config_sets_short_lived_backup_operation_tokens(self):
         self.assertTrue(hasattr(config_module.Config, "BACKUP_TOKEN_SIGNING_KEY"))
-        self.assertEqual(
-            config_module.Config.BACKUP_SAFETY_TOKEN_MAX_AGE_SECONDS,
-            900,
-        )
+        self.assertFalse(hasattr(config_module.Config, "BACKUP_SAFETY_TOKEN_MAX_AGE_SECONDS"))
         self.assertEqual(
             config_module.Config.BACKUP_RESTORE_TOKEN_MAX_AGE_SECONDS,
             900,

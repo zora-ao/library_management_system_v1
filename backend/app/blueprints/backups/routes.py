@@ -119,14 +119,12 @@ def export_backup():
 
     workspace = tempfile.TemporaryDirectory(prefix="pahina-backup-export-")
     artifact = BackupService.create_backup(passphrase, Path(workspace.name))
-    safety_token = issue_operation_token("safety", user_id, artifact.file_digest)
     response = send_file(
       artifact.path,
       as_attachment=True,
       download_name=artifact.filename,
       mimetype="application/octet-stream",
     )
-    response.headers["X-Backup-Safety-Token"] = safety_token
     response.response = _cleanup_stream(response.response, workspace)
     current_app.logger.info(
       "backup_export_completed",
@@ -182,13 +180,6 @@ def restore_backup():
         user_id=user_id,
         digest=inspected.file_digest,
         max_age=current_app.config.get("BACKUP_RESTORE_TOKEN_MAX_AGE_SECONDS", 900),
-      )
-      verify_operation_token(
-        request.form.get("safety_token", ""),
-        kind="safety",
-        user_id=user_id,
-        digest=None,
-        max_age=current_app.config.get("BACKUP_SAFETY_TOKEN_MAX_AGE_SECONDS", 900),
       )
       verify_step_up(
         user_id,

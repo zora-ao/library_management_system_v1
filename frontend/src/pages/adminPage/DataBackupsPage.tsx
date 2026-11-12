@@ -11,7 +11,6 @@ export default function DataBackupsPage() {
   const { user } = useAuth();
   const [capabilities, setCapabilities] = useState<BackupCapabilities | null>(null);
   const [capabilityError, setCapabilityError] = useState("");
-  const [safetyToken, setSafetyToken] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -57,8 +56,8 @@ export default function DataBackupsPage() {
       )}
 
       <div className="grid items-start gap-6 xl:grid-cols-2">
-        <BackupDownloadCard enabled={enabled} googleAccount={googleAccount} onSafetyToken={setSafetyToken} />
-        <BackupRestoreCard enabled={enabled} googleAccount={googleAccount} safetyToken={safetyToken} />
+        <BackupDownloadCard enabled={enabled} googleAccount={googleAccount} />
+        <BackupRestoreCard enabled={enabled} googleAccount={googleAccount} />
       </div>
     </section>
   );

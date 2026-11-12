@@ -27,7 +27,6 @@ class BackupRouteTests(unittest.TestCase):
             BACKUP_TOKEN_SIGNING_KEY="route-backup-signing-key",
             BACKUP_MAX_BYTES=1024 * 1024,
             MAX_CONTENT_LENGTH=1024 * 1024 + 1024,
-            BACKUP_SAFETY_TOKEN_MAX_AGE_SECONDS=900,
             BACKUP_RESTORE_TOKEN_MAX_AGE_SECONDS=900,
         )
         db.init_app(self.app)
@@ -113,7 +112,7 @@ class BackupRouteTests(unittest.TestCase):
 
     @patch("app.blueprints.backups.routes.verify_step_up")
     @patch("app.blueprints.backups.routes.BackupService.create_backup")
-    def test_export_streams_attachment_safety_token_and_cleans_workspace(self, create, step_up):
+    def test_export_streams_attachment_and_cleans_workspace(self, create, step_up):
         created_path = None
 
         def create_artifact(_passphrase, workspace):
@@ -140,7 +139,7 @@ class BackupRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, b"encrypted-backup")
         self.assertIn("attachment", response.headers["Content-Disposition"])
-        self.assertTrue(response.headers["X-Backup-Safety-Token"])
+        self.assertNotIn("X-Backup-Safety-Token", response.headers)
         response.close()
         self.assertIsNotNone(created_path)
         self.assertFalse(created_path.exists())
@@ -170,7 +169,7 @@ class BackupRouteTests(unittest.TestCase):
     @patch("app.blueprints.backups.routes.BackupService.restore_backup")
     @patch("app.blueprints.backups.routes.verify_step_up")
     @patch("app.blueprints.backups.routes.BackupService.inspect_backup")
-    def test_restore_requires_confirmation_and_both_bound_tokens(self, inspect, step_up, restore):
+    def test_restore_requires_confirmation_and_bound_restore_token(self, inspect, step_up, restore):
         inspected = InspectedBackup(
             path=Path("inspected.dump"),
             file_digest="d" * 64,
@@ -180,8 +179,8 @@ class BackupRouteTests(unittest.TestCase):
         with self.app.app_context():
             from app.services.backup_security import issue_operation_token
             restore_token = issue_operation_token("restore", self.admin_id, inspected.file_digest)
-            safety_token = issue_operation_token("safety", self.admin_id, "e" * 64)
 
+        # No fresh safety download is needed before restoring.
         response = self.client.post(
             "/api/admin/backups/restore",
             headers=self.headers(),
@@ -189,7 +188,6 @@ class BackupRouteTests(unittest.TestCase):
                 "backup": (io.BytesIO(b"encrypted"), "selected.pahina-backup"),
                 "passphrase": "long-enough-passphrase",
                 "restore_token": restore_token,
-                "safety_token": safety_token,
                 "confirmation": "RESTORE DATABASE",
                 "step_up_method": "password",
                 "step_up_credential": "correct-password",
@@ -208,7 +206,6 @@ class BackupRouteTests(unittest.TestCase):
                 "backup": (io.BytesIO(b"encrypted"), "selected.pahina-backup"),
                 "passphrase": "long-enough-passphrase",
                 "restore_token": restore_token,
-                "safety_token": safety_token,
                 "confirmation": "restore",
                 "step_up_method": "password",
                 "step_up_credential": "correct-password",

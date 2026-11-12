@@ -17,7 +17,6 @@ type RestoreStatus = "idle" | "validating" | "ready" | "restoring" | "complete";
 interface BackupRestoreCardProps {
   enabled: boolean;
   googleAccount: boolean;
-  safetyToken: string;
 }
 
 
@@ -29,7 +28,7 @@ function errorMessage(error: unknown): string {
 }
 
 
-export function BackupRestoreCard({ enabled, googleAccount, safetyToken }: BackupRestoreCardProps) {
+export function BackupRestoreCard({ enabled, googleAccount }: BackupRestoreCardProps) {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
@@ -48,7 +47,7 @@ export function BackupRestoreCard({ enabled, googleAccount, safetyToken }: Backu
   const canValidate = enabled && Boolean(file) && passphrase.length >= 12 && !busy;
   const canRestore = enabled
     && status === "ready"
-    && Boolean(inspection && safetyToken)
+    && Boolean(inspection)
     && confirmation === "RESTORE DATABASE"
     && Boolean(stepUp.credential);
 
@@ -83,7 +82,6 @@ export function BackupRestoreCard({ enabled, googleAccount, safetyToken }: Backu
         file,
         passphrase,
         restoreToken: inspection.restore_token,
-        safetyToken,
         confirmation,
         stepUp,
       });
@@ -149,7 +147,6 @@ export function BackupRestoreCard({ enabled, googleAccount, safetyToken }: Backu
 
         {inspection && (
           <>
-            {!safetyToken && <p className="text-sm text-warning">Download a fresh backup in this session before restoring.</p>}
             <div className="space-y-2">
               <Label htmlFor="restore-confirmation">Type RESTORE DATABASE</Label>
               <Input id="restore-confirmation" value={confirmation} disabled={busy} onChange={(event) => setConfirmation(event.target.value)} />

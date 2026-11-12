@@ -11,7 +11,7 @@ from app.models import User
 from app.services.auth_service import AuthService
 
 
-OperationKind = Literal["safety", "restore"]
+OperationKind = Literal["restore"]
 StepUpMethod = Literal["password", "google"]
 
 
@@ -65,7 +65,7 @@ def issue_operation_token(
   user_id: UUID,
   digest: str,
 ) -> str:
-  if kind not in ("safety", "restore"):
+  if kind != "restore":
     raise ValueError("Unsupported backup operation token kind")
   return _serializer().dumps({
     "kind": kind,

@@ -35,7 +35,6 @@ export interface ExportInput {
 export interface DownloadResult {
   blob: Blob;
   filename: string;
-  safetyToken: string;
 }
 
 export interface InspectInput {
@@ -50,7 +49,6 @@ export interface InspectResult {
 
 export interface RestoreInput extends InspectInput {
   restoreToken: string;
-  safetyToken: string;
   confirmation: string;
   stepUp: StepUpInput;
 }
